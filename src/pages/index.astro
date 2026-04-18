@@ -1,0 +1,123 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import ServiceCard from "~/components/ServiceCard.astro";
+import StatPill from "~/components/StatPill.astro";
+import CTASection from "~/components/CTASection.astro";
+
+const title = "Vectron Technologies — Engineering-grade AI automation";
+const description =
+  "Vectron Technologies builds AI automations for engineering firms and sales agencies, backed by deep RF & electromagnetics expertise. Systems that work in production.";
+---
+
+<BaseLayout title={title} description={description} path="/">
+  <Hero
+    eyebrow="Vectron Technologies"
+    title="Engineering-grade"
+    titleAccent="AI automation."
+    subtitle="We build AI systems that meet the standards of the engineers who use them. Backed by a decade of RF and electromagnetics work — so the automations we ship behave in production, not just in demos."
+    image="/images/generated/home-hero.png"
+    imageAlt="Dark industrial visual representing the Vectron brand — chrome, signal, and engineering precision."
+    primaryCta={{ href: "/contact/", label: "Book an intro" }}
+    secondaryCta={{ href: "#services", label: "What we do" }}
+  />
+
+  <Section
+    id="services"
+    eyebrow="Practice areas"
+    title="Where we work"
+    lede="Three sharply-defined offerings. Each is a complete practice — not a vague 'we can help with that'."
+  >
+    <div class="grid gap-6 md:grid-cols-3">
+      <ServiceCard
+        href="/services/ai-automation-for-engineering-firms/"
+        eyebrow="For Engineering Firms"
+        title="AI automation built to engineering standards"
+        description="Spec-traceable workflows for hardware and RF teams. Documentation, simulation orchestration, requirements management — automated without compromising rigor."
+        bullets={["CAD / sim tool integration", "Spec & requirements workflows", "Documentation generation"]}
+      />
+      <ServiceCard
+        href="/services/ai-automation-for-sales-agencies/"
+        eyebrow="For Sales Agencies"
+        title="Outbound automations that book meetings"
+        description="Lead sourcing, CRM enrichment, personalized outreach, and pipeline hygiene — engineered end-to-end. Replace scattered no-code stacks with systems that actually stay on."
+        bullets={["Lead sourcing & enrichment", "Personalized outreach at scale", "CRM hygiene & reporting"]}
+      />
+      <ServiceCard
+        href="/services/rf-electromagnetics/"
+        eyebrow="RF & Electromagnetics"
+        title="RF / EM consulting for hardware teams"
+        description="Antenna design, link-budget analysis, EMC/EMI investigations, and simulation review. Senior-level RF guidance on a project or retainer basis."
+        bullets={["Antenna & RF front-end design", "Link budget & propagation analysis", "EMC / EMI troubleshooting"]}
+      />
+    </div>
+  </Section>
+
+  <Section
+    tone="muted"
+    eyebrow="Why it matters"
+    title="Most AI work isn't engineered. Ours is."
+    lede="Most AI automation is prototyped, demoed, and shipped. That's fine — until it touches something that matters. Vectron was founded on the belief that AI systems should be treated like any other piece of production infrastructure: specified, tested, instrumented, and maintained."
+  >
+    <div class="grid gap-6 md:grid-cols-3">
+      <StatPill value="10+" label="Years in RF / electromagnetics engineering" />
+      <StatPill value="Spec-first" label="Every automation starts from written requirements" />
+      <StatPill value="Observable" label="Every system ships with logging, metrics, and runbooks" />
+    </div>
+
+    <div class="mt-14 grid gap-8 md:grid-cols-2">
+      <div>
+        <div class="eyebrow">How we work</div>
+        <ul class="mt-4 space-y-4 text-[color:var(--color-chrome-ink)]">
+          <li class="flex gap-4">
+            <span class="font-display text-[color:var(--color-accent)] w-6">01</span>
+            <div>
+              <div class="font-display text-white">Written spec before any code</div>
+              <p class="text-sm text-[color:var(--color-muted)] mt-1">Every engagement opens with a short requirements document. If we can't describe the system, we won't build it.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="font-display text-[color:var(--color-accent)] w-6">02</span>
+            <div>
+              <div class="font-display text-white">Build, instrument, validate</div>
+              <p class="text-sm text-[color:var(--color-muted)] mt-1">Systems ship with logging and tests. We show you the evidence they're working — not a screen recording.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="font-display text-[color:var(--color-accent)] w-6">03</span>
+            <div>
+              <div class="font-display text-white">Handoff or retain</div>
+              <p class="text-sm text-[color:var(--color-muted)] mt-1">We document cleanly for in-house ownership, or stay on retainer for maintenance and iteration.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="eyebrow">What we won't do</div>
+        <ul class="mt-4 space-y-3 text-[color:var(--color-muted)]">
+          <li class="flex gap-3">
+            <span class="text-[color:var(--color-chrome-dim)]">—</span>
+            <span>Ship a demo you can't maintain. Every deliverable has a runbook.</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="text-[color:var(--color-chrome-dim)]">—</span>
+            <span>Replace your judgment with an LLM. We automate the work around decisions, not the decisions themselves.</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="text-[color:var(--color-chrome-dim)]">—</span>
+            <span>Take an engagement we can't deliver with the rigor the problem deserves.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </Section>
+
+  <CTASection
+    eyebrow="Talk to us"
+    title="One conversation, one decision."
+    subtitle="A 30-minute call is usually enough to know whether we're the right fit. No decks, no sales pitch — a technical conversation about what you're trying to build."
+    primaryCta={{ href: "/contact/", label: "Start the conversation" }}
+  />
+</BaseLayout>

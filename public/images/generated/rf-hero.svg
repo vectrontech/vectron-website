@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="RF / electromagnetics hero placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0b0b"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+    <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a0a0a0"/>
+      <stop offset="25%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#606060"/>
+      <stop offset="80%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#a8a8a8"/>
+    </linearGradient>
+    <radialGradient id="pulse" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5eead4" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#5eead4" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <!-- RF arcs -->
+  <g transform="translate(300 400)">
+    <circle cx="0" cy="0" r="360" fill="url(#pulse)"/>
+    <g fill="none" stroke="rgba(94,234,212,0.45)" stroke-width="1">
+      <path d="M 0 -140 A 140 140 0 0 1 140 0"/>
+      <path d="M 0 -200 A 200 200 0 0 1 200 0"/>
+      <path d="M 0 -260 A 260 260 0 0 1 260 0"/>
+      <path d="M 0 -320 A 320 320 0 0 1 320 0"/>
+    </g>
+  </g>
+  <!-- RF front-end assembly silhouette -->
+  <g transform="translate(640 260)">
+    <!-- shielded enclosure -->
+    <rect x="0" y="0" width="440" height="280" rx="6" fill="url(#chrome)" opacity="0.92"/>
+    <rect x="14" y="14" width="412" height="252" rx="3" fill="#0a0a0a"/>
+    <!-- SMA connectors -->
+    <g>
+      <circle cx="0" cy="60" r="22" fill="url(#chrome)"/>
+      <circle cx="0" cy="60" r="10" fill="#1a1a1a"/>
+      <circle cx="0" cy="60" r="3" fill="#c8c8c8"/>
+
+      <circle cx="0" cy="140" r="22" fill="url(#chrome)"/>
+      <circle cx="0" cy="140" r="10" fill="#1a1a1a"/>
+      <circle cx="0" cy="140" r="3" fill="#c8c8c8"/>
+
+      <circle cx="0" cy="220" r="22" fill="url(#chrome)"/>
+      <circle cx="0" cy="220" r="10" fill="#1a1a1a"/>
+      <circle cx="0" cy="220" r="3" fill="#c8c8c8"/>
+    </g>
+    <!-- PCB trace glow -->
+    <g stroke="rgba(94,234,212,0.5)" stroke-width="1" fill="none">
+      <path d="M 40 60 L 120 60 L 160 90 L 240 90 L 280 60 L 400 60"/>
+      <path d="M 40 140 L 200 140 L 240 170 L 400 170"/>
+      <path d="M 40 220 L 160 220 L 200 190 L 280 190 L 320 220 L 400 220"/>
+    </g>
+  </g>
+  <text x="600" y="730" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" fill="#7a7a7a" letter-spacing="6">PLACEHOLDER — RF / EM</text>
+</svg>

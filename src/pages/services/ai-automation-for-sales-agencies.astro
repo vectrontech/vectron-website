@@ -1,0 +1,79 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import CTASection from "~/components/CTASection.astro";
+
+const title = "AI Automation for Sales Agencies — Vectron Technologies";
+const description =
+  "Outbound automations that actually ship meetings: lead sourcing, CRM enrichment, personalized outreach, pipeline hygiene. Engineered systems — not a tangle of no-code glue.";
+---
+
+<BaseLayout title={title} description={description} path="/services/ai-automation-for-sales-agencies/" ogImage="/images/generated/sales-hero.png">
+  <Hero
+    eyebrow="Sales Agencies"
+    title="Outbound systems"
+    titleAccent="that don't break on Monday."
+    subtitle="Your agency runs on automations — lead sourcing, enrichment, personalization, scheduling. When any link in that chain fails, your pipeline does too. Vectron builds outbound infrastructure that stays on."
+    image="/images/generated/sales-hero.png"
+    imageAlt="Dark abstract visual suggesting data flow, CRM, and outreach at scale."
+    primaryCta={{ href: "/contact/", label: "Book an intro" }}
+    secondaryCta={{ href: "#stack", label: "Stack we work on" }}
+  />
+
+  <Section
+    eyebrow="Why us"
+    title="Built by engineers, delivered to sales."
+    lede="We're not a marketing shop that learned to code. Vectron's core is engineering — which is exactly what an outbound stack needs when it starts doing real volume. Observability, retries, graceful degradation, cost controls: the unglamorous work that separates systems that scale from systems that fall over."
+  />
+
+  <Section
+    id="stack"
+    tone="muted"
+    eyebrow="What we build"
+    title="Typical engagements"
+  >
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="card p-8">
+        <div class="eyebrow">Top of funnel</div>
+        <h3 class="mt-3 font-display text-xl text-white">Lead sourcing & enrichment</h3>
+        <p class="mt-3 text-[color:var(--color-muted)]">
+          Multi-source lead pipelines with verified emails, firmographic enrichment, and signal-based scoring. Feeds your outreach tool with leads that are actually worth your sequences.
+        </p>
+      </div>
+      <div class="card p-8">
+        <div class="eyebrow">Personalization</div>
+        <h3 class="mt-3 font-display text-xl text-white">Deep outreach personalization</h3>
+        <p class="mt-3 text-[color:var(--color-muted)]">
+          Per-lead research pulled from the web, LinkedIn, company materials, and recent news. Delivered as structured variables your sequences can use — not pasted into a prompt and prayed over.
+        </p>
+      </div>
+      <div class="card p-8">
+        <div class="eyebrow">CRM hygiene</div>
+        <h3 class="mt-3 font-display text-xl text-white">CRM automation & reporting</h3>
+        <p class="mt-3 text-[color:var(--color-muted)]">
+          De-duplication, auto-enrichment, lifecycle stage automation, and reporting pipelines. Your HubSpot or Salesforce stops being a landfill.
+        </p>
+      </div>
+      <div class="card p-8">
+        <div class="eyebrow">Infrastructure</div>
+        <h3 class="mt-3 font-display text-xl text-white">Ops observability</h3>
+        <p class="mt-3 text-[color:var(--color-muted)]">
+          Metrics on delivery rates, sequence health, API costs, and workflow failures. When something breaks you'll know before a client does.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section
+    eyebrow="Tooling"
+    title="We meet your stack where it is."
+    lede="Clay, Instantly, Smartlead, Apollo, HubSpot, Salesforce, Attio, n8n, Make, custom Python — whatever you already run, we can extend and instrument. When something genuinely needs to be replaced, we'll say so and explain why."
+  />
+
+  <CTASection
+    eyebrow="Next step"
+    title="Show us your stack."
+    subtitle="A 30-minute call. Screen share your current outbound flow — we'll tell you the first two things to fix and whether we're the right team to help."
+  />
+</BaseLayout>

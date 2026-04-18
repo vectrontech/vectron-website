@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Vectron hero placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0b0b"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+    <radialGradient id="orbChrome" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#d0d0d0"/>
+      <stop offset="60%" stop-color="#606060"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="70%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#5eead4" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <rect width="1200" height="800" fill="url(#glow)"/>
+  <!-- Chromed sphere: engineering precision as an object -->
+  <g transform="translate(820 420)">
+    <circle cx="0" cy="0" r="320" fill="none" stroke="rgba(94,234,212,0.12)" stroke-width="1"/>
+    <circle cx="0" cy="0" r="260" fill="none" stroke="rgba(94,234,212,0.22)" stroke-width="1"/>
+    <circle cx="0" cy="0" r="200" fill="url(#orbChrome)"/>
+    <ellipse cx="-60" cy="-90" rx="70" ry="30" fill="rgba(255,255,255,0.25)"/>
+  </g>
+  <!-- horizontal signal line -->
+  <line x1="80" y1="600" x2="1120" y2="600" stroke="rgba(94,234,212,0.35)" stroke-width="1"/>
+  <circle cx="80" cy="600" r="4" fill="#5eead4"/>
+  <circle cx="1120" cy="600" r="4" fill="#5eead4"/>
+  <text x="600" y="730" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" fill="#7a7a7a" letter-spacing="6">PLACEHOLDER — HOME</text>
+</svg>

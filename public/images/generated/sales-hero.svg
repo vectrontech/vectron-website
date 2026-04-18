@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Sales services hero placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0b0b"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5eead4" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#5eead4" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#5eead4" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="1"/>
+    </linearGradient>
+    <radialGradient id="convergence" cx="85%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#5eead4" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="0.8" fill="rgba(255,255,255,0.08)"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#dots)"/>
+  <rect width="1200" height="800" fill="url(#convergence)"/>
+  <!-- converging data flow lines -->
+  <g fill="none" stroke="url(#flow)" stroke-width="1.5">
+    <path d="M 100 180 C 400 200, 600 400, 1000 400"/>
+    <path d="M 100 280 C 400 300, 600 400, 1000 400"/>
+    <path d="M 100 400 C 400 400, 600 400, 1000 400"/>
+    <path d="M 100 520 C 400 500, 600 400, 1000 400"/>
+    <path d="M 100 620 C 400 600, 600 400, 1000 400"/>
+  </g>
+  <!-- source nodes -->
+  <g fill="#d9d9d9">
+    <circle cx="100" cy="180" r="5"/>
+    <circle cx="100" cy="280" r="5"/>
+    <circle cx="100" cy="400" r="5"/>
+    <circle cx="100" cy="520" r="5"/>
+    <circle cx="100" cy="620" r="5"/>
+  </g>
+  <!-- terminus -->
+  <circle cx="1000" cy="400" r="14" fill="#ffffff"/>
+  <circle cx="1000" cy="400" r="24" fill="none" stroke="rgba(94,234,212,0.6)" stroke-width="1.5"/>
+  <circle cx="1000" cy="400" r="40" fill="none" stroke="rgba(94,234,212,0.3)" stroke-width="1"/>
+  <text x="600" y="730" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" fill="#7a7a7a" letter-spacing="6">PLACEHOLDER — SALES</text>
+</svg>

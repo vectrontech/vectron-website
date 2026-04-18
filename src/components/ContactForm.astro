@@ -1,0 +1,107 @@
+---
+const formspreeId = import.meta.env.PUBLIC_FORMSPREE_ID ?? "";
+const action = formspreeId ? `https://formspree.io/f/${formspreeId}` : "";
+const configured = Boolean(formspreeId);
+---
+
+<form
+  id="contact-form"
+  method="POST"
+  action={action}
+  class="space-y-5"
+  data-configured={String(configured)}
+>
+  {!configured && (
+    <div class="card p-4 text-sm text-amber-300/90 border-amber-900/50">
+      Contact form is not yet wired up. Set <code class="font-mono text-xs">PUBLIC_FORMSPREE_ID</code> in <code class="font-mono text-xs">.env</code> and rebuild.
+    </div>
+  )}
+
+  <div class="grid gap-5 md:grid-cols-2">
+    <div>
+      <label for="name" class="field-label">Name</label>
+      <input id="name" name="name" type="text" required autocomplete="name" class="field" placeholder="Your name" />
+    </div>
+    <div>
+      <label for="email" class="field-label">Email</label>
+      <input id="email" name="email" type="email" required autocomplete="email" class="field" placeholder="you@company.com" />
+    </div>
+  </div>
+
+  <div class="grid gap-5 md:grid-cols-2">
+    <div>
+      <label for="company" class="field-label">Company</label>
+      <input id="company" name="company" type="text" autocomplete="organization" class="field" placeholder="Company name" />
+    </div>
+    <div>
+      <label for="interest" class="field-label">What brings you here</label>
+      <select id="interest" name="interest" class="field" required>
+        <option value="" disabled selected>Select one</option>
+        <option value="ai-engineering">AI automation for an engineering firm</option>
+        <option value="ai-sales">AI automation for a sales agency</option>
+        <option value="rf">RF / electromagnetics consulting</option>
+        <option value="other">Something else</option>
+      </select>
+    </div>
+  </div>
+
+  <div>
+    <label for="message" class="field-label">Message</label>
+    <textarea id="message" name="message" rows="6" required class="field resize-y" placeholder="A few sentences on what you're working on and what you're trying to solve."></textarea>
+  </div>
+
+  <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true" />
+
+  <div class="flex items-center justify-between gap-4 pt-2">
+    <p class="text-xs text-[color:var(--color-chrome-dim)]">
+      We reply within one business day.
+    </p>
+    <button type="submit" class="btn btn-primary" disabled={!configured}>
+      Send message
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="contact-status" class="text-sm" role="status" aria-live="polite"></div>
+</form>
+
+<script>
+  const form = document.getElementById("contact-form") as HTMLFormElement | null;
+  const status = document.getElementById("contact-status");
+
+  if (form && status && form.dataset.configured === "true") {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      status.textContent = "Sending…";
+      status.className = "text-sm text-[color:var(--color-muted)]";
+
+      try {
+        const data = new FormData(form);
+        const res = await fetch(form.action, {
+          method: "POST",
+          body: data,
+          headers: { Accept: "application/json" },
+        });
+        if (res.ok) {
+          form.reset();
+          status.textContent = "Thanks — message received. You'll hear back within one business day.";
+          status.className = "text-sm text-[color:var(--color-accent)]";
+        } else {
+          const json = await res.json().catch(() => ({}));
+          const msg = (json && (json.error || (json.errors && json.errors[0]?.message))) || "Something went wrong. Please email info@vectrontechnologies.com.";
+          status.textContent = msg;
+          status.className = "text-sm text-amber-400";
+        }
+      } catch {
+        status.textContent = "Network error. Please email info@vectrontechnologies.com.";
+        status.className = "text-sm text-amber-400";
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

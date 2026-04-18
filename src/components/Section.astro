@@ -1,0 +1,50 @@
+---
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lede?: string;
+  align?: "left" | "center";
+  tone?: "default" | "muted";
+  class?: string;
+}
+
+const {
+  id,
+  eyebrow,
+  title,
+  lede,
+  align = "left",
+  tone = "default",
+  class: className = "",
+} = Astro.props;
+
+const wrapper =
+  tone === "muted"
+    ? "relative bg-[color:var(--color-bg-elev)] border-y border-[color:var(--color-chrome-rule)]"
+    : "relative";
+---
+
+<section id={id} class={`${wrapper} py-20 md:py-28 ${className}`}>
+  <div class="container-narrow">
+    {(eyebrow || title || lede) && (
+      <div class={`max-w-3xl ${align === "center" ? "mx-auto text-center" : ""}`}>
+        {eyebrow && <div class="eyebrow">{eyebrow}</div>}
+        {title && (
+          <h2 class="mt-4 font-display text-3xl md:text-5xl font-semibold text-white leading-[1.05]">
+            {title}
+          </h2>
+        )}
+        {lede && (
+          <p class="mt-5 text-lg text-[color:var(--color-muted)] leading-relaxed">
+            {lede}
+          </p>
+        )}
+      </div>
+    )}
+
+    <div class={(eyebrow || title || lede) ? "mt-14" : ""}>
+      <slot />
+    </div>
+  </div>
+</section>

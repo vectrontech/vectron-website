@@ -1,0 +1,46 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  primaryCta?: { href: string; label: string };
+  secondaryCta?: { href: string; label: string };
+}
+
+const {
+  eyebrow = "Next step",
+  title,
+  subtitle,
+  primaryCta = { href: "/contact/", label: "Book an intro" },
+  secondaryCta,
+} = Astro.props;
+---
+
+<section class="relative py-24 md:py-32">
+  <div class="absolute inset-0 bg-blueprint bg-blueprint-fade opacity-50 pointer-events-none" aria-hidden="true"></div>
+  <div class="container-narrow relative">
+    <div class="card p-10 md:p-14 text-center overflow-hidden relative">
+      <div class="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-[color:var(--color-accent)] to-transparent opacity-60" aria-hidden="true"></div>
+      <div class="eyebrow">{eyebrow}</div>
+      <h2 class="mt-4 font-display text-4xl md:text-5xl font-semibold leading-[1.05]">
+        <span class="chrome-text">{title}</span>
+      </h2>
+      {subtitle && (
+        <p class="mt-5 max-w-2xl mx-auto text-lg text-[color:var(--color-muted)] leading-relaxed">
+          {subtitle}
+        </p>
+      )}
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href={primaryCta.href} class="btn btn-primary">
+          {primaryCta.label}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        {secondaryCta && (
+          <a href={secondaryCta.href} class="btn btn-ghost">{secondaryCta.label}</a>
+        )}
+      </div>
+    </div>
+  </div>
+</section>

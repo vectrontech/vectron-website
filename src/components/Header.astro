@@ -1,0 +1,36 @@
+---
+const nav = [
+  { href: "/services/ai-automation-for-engineering-firms/", label: "Engineering" },
+  { href: "/services/ai-automation-for-sales-agencies/", label: "Sales" },
+  { href: "/services/rf-electromagnetics/", label: "RF / EM" },
+  { href: "/contact/", label: "Contact" },
+];
+---
+
+<header class="sticky top-0 z-50 backdrop-blur-md bg-[rgba(5,5,5,0.7)] border-b border-[color:var(--color-chrome-rule)]">
+  <div class="container-narrow flex items-center justify-between h-16">
+    <a href="/" class="flex items-center group" aria-label="Vectron Technologies home">
+      <img
+        src="/brand/vectron-wordmark.svg"
+        alt="Vectron Technologies"
+        class="h-10 md:h-11 w-auto block"
+        width="120"
+        height="42"
+      />
+    </a>
+
+    <nav class="hidden md:flex items-center gap-8">
+      {nav.map((item) => (
+        <a
+          href={item.href}
+          class="text-[0.9rem] text-[color:var(--color-muted)] hover:text-white transition-colors font-body"
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <a href="/contact/" class="btn btn-ghost md:hidden text-sm">Contact</a>
+    <a href="/contact/" class="btn btn-primary hidden md:inline-flex text-sm">Book an intro</a>
+  </div>
+</header>

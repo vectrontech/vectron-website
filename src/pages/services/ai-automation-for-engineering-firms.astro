@@ -1,0 +1,96 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import CTASection from "~/components/CTASection.astro";
+
+const title = "AI Automation for Engineering Firms — Vectron Technologies";
+const description =
+  "AI automation for hardware, RF, and engineering firms. Spec-traceable workflows, documentation generation, simulation orchestration — built by engineers who understand what the work actually requires.";
+---
+
+<BaseLayout title={title} description={description} path="/services/ai-automation-for-engineering-firms/" ogImage="/images/generated/engineering-hero.png">
+  <Hero
+    eyebrow="Engineering Firms"
+    title="AI automation"
+    titleAccent="that respects your spec."
+    subtitle="Most AI vendors have never read a datasheet. We have. Vectron builds automation for engineering firms whose work has to hold up to review — not just impress a product demo."
+    image="/images/generated/engineering-hero.png"
+    imageAlt="Abstract technical render evoking simulation, mesh, and engineering precision."
+    primaryCta={{ href: "/contact/", label: "Start a conversation" }}
+    secondaryCta={{ href: "#scope", label: "See scope" }}
+  />
+
+  <Section
+    eyebrow="The problem"
+    title="Engineering teams are drowning in the work around the work."
+    lede="Requirements capture, traceability matrices, review documentation, verification evidence, customer deliverables — the artifacts around the engineering are often the bottleneck, not the engineering itself. Most AI tools make this worse by adding another thing to babysit."
+  />
+
+  <Section
+    id="scope"
+    tone="muted"
+    eyebrow="Where we help"
+    title="Engagements that actually fit engineering work"
+  >
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="card p-8">
+        <div class="eyebrow">Specs & requirements</div>
+        <h3 class="mt-3 font-display text-xl text-white">Requirements-to-verification pipelines</h3>
+        <p class="mt-3 text-[color:var(--color-muted)]">
+          Automated extraction of requirements from customer documents, traceability into verification artifacts, and drift detection when specs change mid-program.
+        </p>
+      </div>
+      <div class="card p-8">
+        <div class="eyebrow">Documentation</div>
+        <h3 class="mt-3 font-display text-xl text-white">Deliverable & report generation</h3>
+        <p class="mt-3 text-[color:var(--color-muted)]">
+          From sim outputs and test data to customer-ready reports. Formatted to your house style, consistent across programs, reviewed by an engineer before it goes out.
+        </p>
+      </div>
+      <div class="card p-8">
+        <div class="eyebrow">Simulation & tooling</div>
+        <h3 class="mt-3 font-display text-xl text-white">Simulation orchestration</h3>
+        <p class="mt-3 text-[color:var(--color-muted)]">
+          Batch-sweep harnesses around HFSS, CST, ADS, Matlab — triggered, logged, and archived. Fewer lost runs, fewer "who owns this sweep" questions.
+        </p>
+      </div>
+      <div class="card p-8">
+        <div class="eyebrow">Knowledge & search</div>
+        <h3 class="mt-3 font-display text-xl text-white">Internal technical search</h3>
+        <p class="mt-3 text-[color:var(--color-muted)]">
+          Retrieval systems grounded in your past programs, reports, and simulation archives — so engineers can find what's already been solved instead of re-solving it.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section
+    eyebrow="Delivery model"
+    title="Engagement shapes"
+  >
+    <div class="grid gap-6 md:grid-cols-3">
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">01</div>
+        <h3 class="mt-3 font-display text-xl text-white">Diagnostic (1–2 weeks)</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)]">Fixed-fee assessment. Where automation pays off, where it doesn't, and a short plan.</p>
+      </div>
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">02</div>
+        <h3 class="mt-3 font-display text-xl text-white">Build (4–10 weeks)</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)]">Scoped system build with written spec, instrumented rollout, and runbook.</p>
+      </div>
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">03</div>
+        <h3 class="mt-3 font-display text-xl text-white">Retainer</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)]">Ongoing engineering partner. Maintenance, iteration, new workflows on a monthly cadence.</p>
+      </div>
+    </div>
+  </Section>
+
+  <CTASection
+    eyebrow="Next step"
+    title="Let's look at your workflow."
+    subtitle="A 30-minute call. Bring one problem. We'll tell you whether automation fits — and if it doesn't, we'll say so."
+  />
+</BaseLayout>

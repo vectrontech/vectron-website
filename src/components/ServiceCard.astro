@@ -1,0 +1,41 @@
+---
+interface Props {
+  href: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  bullets?: string[];
+}
+
+const { href, eyebrow, title, description, bullets = [] } = Astro.props;
+---
+
+<a href={href} class="card block p-8 h-full group">
+  <div class="eyebrow">{eyebrow}</div>
+  <h3 class="mt-4 font-display text-2xl font-semibold text-white leading-tight">
+    {title}
+  </h3>
+  <p class="mt-3 text-[color:var(--color-muted)] leading-relaxed">
+    {description}
+  </p>
+
+  {bullets.length > 0 && (
+    <ul class="mt-5 space-y-2">
+      {bullets.map((b) => (
+        <li class="flex gap-3 text-sm text-[color:var(--color-chrome-ink)]">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="mt-[5px] shrink-0 text-[color:var(--color-accent)]" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" fill="currentColor" />
+          </svg>
+          <span>{b}</span>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <div class="mt-7 inline-flex items-center gap-2 text-sm font-display text-[color:var(--color-chrome-ink)] group-hover:text-white transition-colors">
+    <span>Read more</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true">
+      <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</a>
