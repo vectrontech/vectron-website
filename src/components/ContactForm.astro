@@ -88,7 +88,7 @@ const configured = Boolean(formspreeId);
         });
         if (res.ok) {
           form.reset();
-          status.textContent = "Thanks — message received. You'll hear back within one business day.";
+          status.textContent = "Thanks, message received. You'll hear back within one business day.";
           status.className = "text-sm text-[color:var(--color-accent)]";
         } else {
           const json = await res.json().catch(() => ({}));
