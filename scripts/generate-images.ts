@@ -16,6 +16,7 @@ import { GoogleGenAI } from "@google/genai";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = resolve(__dirname, "..", "public", "images", "generated");
@@ -132,10 +133,14 @@ async function generateOne(slug: string, prompt: string, model: string) {
   }
 
   const bytes = Buffer.from(imagePart.inlineData.data, "base64");
-  const outPath = resolve(OUT_DIR, `${slug}.png`);
-  await writeFile(outPath, bytes);
-  const kb = Math.round(bytes.byteLength / 1024);
-  console.log(`[gen] ${slug} wrote ${kb}KB → ${outPath}`);
+  const outPng = resolve(OUT_DIR, `${slug}.png`);
+  const outWebp = resolve(OUT_DIR, `${slug}.webp`);
+  await writeFile(outPng, bytes);
+  await sharp(bytes).resize({ width: 1600, withoutEnlargement: true }).webp({ quality: 82 }).toFile(outWebp);
+  const pngKb = Math.round(bytes.byteLength / 1024);
+  const { size: webpBytes } = await import("node:fs").then((m) => m.promises.stat(outWebp));
+  const webpKb = Math.round(webpBytes / 1024);
+  console.log(`[gen] ${slug} wrote ${pngKb}KB png, ${webpKb}KB webp`);
 }
 
 async function main() {
