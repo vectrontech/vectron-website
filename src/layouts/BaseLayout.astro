@@ -8,11 +8,50 @@ interface Props {
   description: string;
   path: string;
   ogImage?: string;
+  /**
+   * Optional schema.org JSON-LD object (a Service, ProfessionalService, etc.)
+   * to inject on this page in addition to the site-wide Organization schema.
+   */
+  serviceJsonLd?: Record<string, unknown>;
 }
 
-const { title, description, path, ogImage = "/images/generated/home-hero.png" } = Astro.props;
+const { title, description, path, ogImage = "/og.png", serviceJsonLd } = Astro.props;
 const canonical = new URL(path, Astro.site).toString();
 const absoluteOg = new URL(ogImage, Astro.site).toString();
+
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: "Vectron Technologies",
+  legalName: "Vectron Technologies LLC",
+  url: "https://vectrontechnologies.com",
+  logo: "https://vectrontechnologies.com/brand/vectron-letterhead.svg",
+  email: "info@vectrontechnologies.com",
+  description:
+    "Engineering-grade AI and machine learning automation, antenna design, and electromagnetics consulting. Founded by an RF engineer with 15+ years of hardware experience.",
+  founder: {
+    "@type": "Person",
+    name: "Domenic Belgiovane",
+    jobTitle: "Founder",
+  },
+  address: {
+    "@type": "PostalAddress",
+    addressRegion: "AZ",
+    addressCountry: "US",
+  },
+  knowsAbout: [
+    "Antenna design",
+    "Electromagnetics",
+    "RF engineering",
+    "Link budget analysis",
+    "EMC and EMI",
+    "AI automation",
+    "Machine learning",
+    "LLM workflows",
+    "Engineering process automation",
+  ],
+  areaServed: { "@type": "Country", name: "United States" },
+};
 ---
 
 <!doctype html>
@@ -33,6 +72,8 @@ const absoluteOg = new URL(ogImage, Astro.site).toString();
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={absoluteOg} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
@@ -40,6 +81,12 @@ const absoluteOg = new URL(ogImage, Astro.site).toString();
     <meta name="twitter:image" content={absoluteOg} />
 
     <meta name="theme-color" content="#050505" />
+    <meta name="robots" content="index, follow" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(orgJsonLd)} />
+    {serviceJsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(serviceJsonLd)} />
+    )}
   </head>
   <body>
     <Header />

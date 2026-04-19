@@ -47,14 +47,31 @@ const FLOWCHART_STYLE = [
 
 const flow = (p: string) => `${p}. Style: ${FLOWCHART_STYLE}.`;
 
+const OG_STYLE = [
+  "16:9 landscape composition exactly 1200x630 pixels",
+  "dark obsidian background",
+  "premium chrome and brushed metal aesthetic",
+  "subtle teal signal accent",
+  "leave generous empty negative space on the right side for headline overlay",
+  "no text, no logos, no watermarks, no human faces",
+].join(", ");
+
 const IMAGES: { slug: string; prompt: string }[] = [
+  {
+    slug: "og",
+    prompt:
+      "An editorial dark hero composition: a brushed-aluminum precision-machined object on the left, dissolving into thin teal signal traces and chrome filaments that flow toward open dark space on the right. " +
+      `Style: ${OG_STYLE}.`,
+  },
   {
     slug: "home-hero",
     prompt: compose(
-      "A single object on a dark surface: a precision-machined aluminum block with anodized chamfers, " +
-      "wrapped in a fine mesh of glowing teal signal lines that trace across its surface. " +
-      "Studio product photography, shallow depth of field, one hero object centered-right in frame. " +
-      "Evokes engineering precision and AI automation coming together."
+      "A single hero object: a precision-machined RF parabolic dish or phased-array antenna in brushed aluminum, " +
+      "rendered as if it is partially dissolving into liquid chrome ribbons that flow and curl through the surrounding dark space. " +
+      "The antenna is solid and engineered at its core, but its edges trail off into abstract mercury-like chrome filaments. " +
+      "One soft teal radio-wave arc passes behind it as the only color accent. " +
+      "Studio product photography lighting, shallow depth of field, single object positioned centered-right in frame. " +
+      "Evokes the fusion of real RF engineering hardware with abstract signal and data flow."
     ),
   },
   {

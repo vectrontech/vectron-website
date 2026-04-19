@@ -4,12 +4,28 @@ import Hero from "~/components/Hero.astro";
 import Section from "~/components/Section.astro";
 import CTASection from "~/components/CTASection.astro";
 
-const title = "RF & Electromagnetics Consulting: Vectron Technologies";
+const title = "Antenna Design and Electromagnetics Consulting | Vectron Technologies";
 const description =
-  "Senior RF and electromagnetics consulting: antenna design, link-budget analysis, EMC/EMI investigations, and simulation review. On a project or retainer basis.";
+  "Senior antenna design and electromagnetics consulting. Link budget analysis, EMC and EMI investigations, HFSS, CST, and FEKO simulation review. Project or retainer engagements.";
+
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Antenna design and electromagnetics consulting",
+  provider: {
+    "@type": "ProfessionalService",
+    name: "Vectron Technologies",
+    url: "https://vectrontechnologies.com",
+  },
+  serviceType: "RF and electromagnetics engineering",
+  description:
+    "Antenna design and integration, link budget and propagation analysis, EMC and EMI investigations, and independent design or simulation review. Tools include HFSS, CST, FEKO, and ADS.",
+  areaServed: { "@type": "Country", name: "United States" },
+  url: "https://vectrontechnologies.com/services/rf-electromagnetics/",
+};
 ---
 
-<BaseLayout title={title} description={description} path="/services/rf-electromagnetics/" ogImage="/images/generated/rf-hero.png">
+<BaseLayout title={title} description={description} path="/services/rf-electromagnetics/" ogImage="/images/generated/rf-hero.png" serviceJsonLd={serviceJsonLd}>
   <Hero
     eyebrow="RF / Electromagnetics"
     title="Senior RF consulting,"

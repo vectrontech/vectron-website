@@ -4,12 +4,28 @@ import Hero from "~/components/Hero.astro";
 import Section from "~/components/Section.astro";
 import CTASection from "~/components/CTASection.astro";
 
-const title = "AI Automation for Engineering Firms: Vectron Technologies";
+const title = "AI and ML Automation for Engineering Firms | Vectron Technologies";
 const description =
-  "AI automation for hardware, RF, and engineering firms. Spec-traceable workflows, documentation generation, and simulation orchestration, built by engineers who understand what the work actually requires.";
+  "AI and machine learning automation for hardware, antenna, and electromagnetics teams. Spec-traceable workflows, simulation orchestration, and documentation generation built by an RF engineer.";
+
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "AI and ML automation for engineering firms",
+  provider: {
+    "@type": "ProfessionalService",
+    name: "Vectron Technologies",
+    url: "https://vectrontechnologies.com",
+  },
+  serviceType: "AI automation consulting",
+  description:
+    "AI and machine learning workflows engineered to spec for hardware, RF, antenna, and electromagnetics teams. Includes requirements traceability, simulation orchestration, documentation generation, and internal technical search.",
+  areaServed: { "@type": "Country", name: "United States" },
+  url: "https://vectrontechnologies.com/services/ai-automation-for-engineering-firms/",
+};
 ---
 
-<BaseLayout title={title} description={description} path="/services/ai-automation-for-engineering-firms/" ogImage="/images/generated/engineering-hero.png">
+<BaseLayout title={title} description={description} path="/services/ai-automation-for-engineering-firms/" ogImage="/images/generated/engineering-hero.png" serviceJsonLd={serviceJsonLd}>
   <Hero
     eyebrow="Engineering Firms"
     title="AI automation"

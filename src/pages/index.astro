@@ -6,12 +6,59 @@ import ServiceCard from "~/components/ServiceCard.astro";
 import StatPill from "~/components/StatPill.astro";
 import CTASection from "~/components/CTASection.astro";
 
-const title = "Vectron Technologies: Engineering-grade AI automation";
+const title = "Vectron Technologies: Engineering-grade AI and ML automation";
 const description =
-  "Vectron Technologies builds AI automations for engineering firms and sales agencies, backed by deep RF & electromagnetics expertise. Systems that work in production.";
+  "AI and machine learning automation backed by 15 years of antenna design and electromagnetics engineering. Vectron Technologies builds production-grade AI workflows for engineering firms and sales agencies.";
+
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: "Vectron Technologies",
+  url: "https://vectrontechnologies.com",
+  serviceType: [
+    "AI automation",
+    "Machine learning consulting",
+    "Antenna design",
+    "Electromagnetics consulting",
+    "RF engineering",
+  ],
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Vectron services",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "AI automation for engineering firms",
+          url: "https://vectrontechnologies.com/services/ai-automation-for-engineering-firms/",
+          description: "AI and ML workflows for hardware, RF, and engineering teams. Spec-traceable, production-grade.",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "AI automation for sales agencies",
+          url: "https://vectrontechnologies.com/services/ai-automation-for-sales-agencies/",
+          description: "Engineered outbound infrastructure: lead sourcing, AI personalization, CRM automation.",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "RF and electromagnetics consulting",
+          url: "https://vectrontechnologies.com/services/rf-electromagnetics/",
+          description: "Antenna design, link budget analysis, EMC and EMI investigations, simulation review.",
+        },
+      },
+    ],
+  },
+};
 ---
 
-<BaseLayout title={title} description={description} path="/">
+<BaseLayout title={title} description={description} path="/" serviceJsonLd={serviceJsonLd}>
   <Hero
     eyebrow="Vectron Technologies"
     title="Engineering-grade"

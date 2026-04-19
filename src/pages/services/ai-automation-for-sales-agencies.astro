@@ -4,12 +4,28 @@ import Hero from "~/components/Hero.astro";
 import Section from "~/components/Section.astro";
 import CTASection from "~/components/CTASection.astro";
 
-const title = "AI Automation for Sales Agencies: Vectron Technologies";
+const title = "AI and ML Automation for Sales Agencies | Vectron Technologies";
 const description =
-  "Outbound automations that actually ship meetings: lead sourcing, CRM enrichment, personalized outreach, pipeline hygiene. Engineered systems, not a tangle of no-code glue.";
+  "AI and machine learning workflows for outbound: lead sourcing, enrichment, deep personalization, CRM hygiene. Engineered infrastructure that does not break in production.";
+
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "AI and ML automation for sales agencies",
+  provider: {
+    "@type": "ProfessionalService",
+    name: "Vectron Technologies",
+    url: "https://vectrontechnologies.com",
+  },
+  serviceType: "AI automation consulting",
+  description:
+    "Engineered outbound infrastructure: lead sourcing, enrichment, AI personalization, sequence orchestration, reply handling, and CRM automation. Built and instrumented to stay on at scale.",
+  areaServed: { "@type": "Country", name: "United States" },
+  url: "https://vectrontechnologies.com/services/ai-automation-for-sales-agencies/",
+};
 ---
 
-<BaseLayout title={title} description={description} path="/services/ai-automation-for-sales-agencies/" ogImage="/images/generated/sales-hero.png">
+<BaseLayout title={title} description={description} path="/services/ai-automation-for-sales-agencies/" ogImage="/images/generated/sales-hero.png" serviceJsonLd={serviceJsonLd}>
   <Hero
     eyebrow="Sales Agencies"
     title="Outbound systems"
