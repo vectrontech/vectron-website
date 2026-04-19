@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <defs>
+    <linearGradient id="chromeBright" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#a0a0a0"/>
+      <stop offset="12%" stop-color="#e8e8e8"/>
+      <stop offset="22%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#b8b8b8"/>
+      <stop offset="40%" stop-color="#d0d0d0"/>
+      <stop offset="48%" stop-color="#f5f5f5"/>
+      <stop offset="55%" stop-color="#909090"/>
+      <stop offset="62%" stop-color="#c8c8c8"/>
+      <stop offset="70%" stop-color="#e0e0e0"/>
+      <stop offset="78%" stop-color="#ffffff"/>
+      <stop offset="85%" stop-color="#b0b0b0"/>
+      <stop offset="92%" stop-color="#dcdcdc"/>
+      <stop offset="100%" stop-color="#a8a8a8"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0b0b"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+  <path d="M 220 280 L 600 940 L 980 280 L 870 280 L 600 750 L 330 280 Z" fill="url(#chromeBright)"/>
+</svg>
