@@ -110,8 +110,12 @@ const IMAGES: { slug: string; prompt: string }[] = [
     prompt: flow(
       "A clean hub-and-spoke architecture diagram. " +
       "At the very top center: one prominent rectangular brushed-chrome node labeled 'AI ORCHESTRATOR' with an 'AGENT' subtitle. " +
-      "Below it, five vertical columns fan out, each headed by a category card: " +
-      "'MEMORY', 'PRODUCTIVITY', 'RESEARCH', 'CONTENT', 'INTEGRATIONS'. " +
+      "Below it, five vertical columns fan out, each headed by a category card with the platform logo on the left of the title: " +
+      "'MEMORY' (with the Obsidian app logo, the purple gem icon), " +
+      "'PRODUCTIVITY' (with the multicolor Google G logo), " +
+      "'RESEARCH' (with the NotebookLM blue spiral notebook icon), " +
+      "'CONTENT' (with the red YouTube play button logo), " +
+      "'INTEGRATIONS' (with the white GitHub Octocat icon). " +
       "Each category card connects up to the orchestrator with a single thin teal vertical line. " +
       "Under each category card, three smaller chrome capsule nodes stacked vertically with these labels: " +
       "Memory column: 'Knowledge Base', 'Project Context', 'Auto Memory'. " +
@@ -122,6 +126,7 @@ const IMAGES: { slug: string; prompt: string }[] = [
       "At the very bottom, a single wide horizontal bar labeled 'AUTOMATION LAYER' with three small subtitles inside it: " +
       "'On Demand', 'Scheduled', 'Triggered'. " +
       "The automation bar connects upward to all five columns with thin dashed teal lines. " +
+      "Logos should be small, centered vertically inside their category card, immediately to the left of the category title text. " +
       "Composition: cinematic wide 3:2, generous spacing, dark obsidian background, soft teal glow on connection lines."
     ),
   },
