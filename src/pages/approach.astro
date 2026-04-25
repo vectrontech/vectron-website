@@ -1,0 +1,234 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import CTASection from "~/components/CTASection.astro";
+
+const title = "Our Approach: The Four-Layer Method | Vectron Technologies";
+const description =
+  "How Vectron builds engineering-grade AI systems. A four-layer framework, a single-brain orchestrator, a fleet of named agents, and a compounding timeline that gets sharper every month.";
+---
+
+<BaseLayout title={title} description={description} path="/approach/">
+  <Hero
+    eyebrow="Our Approach"
+    title="The four-layer"
+    titleAccent="method."
+    subtitle="A repeatable framework for shipping AI systems that actually run in production. Borrowed from the best operators we've studied, refined across our engagements, and grounded in what breaks in the first 90 days."
+    primaryCta={{ href: "/contact/", label: "Book an intro" }}
+    secondaryCta={{ href: "#layers", label: "See the layers" }}
+  />
+
+  <Section
+    id="layers"
+    eyebrow="The framework"
+    title="Four layers, in this order."
+    lede="Every engagement we ship moves through these four layers. Skip one and the system collapses. Treat them as engineering disciplines, not deliverables, and the system compounds."
+  >
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">01</div>
+        <div class="eyebrow mt-4">Layer one</div>
+        <h3 class="mt-3 font-display text-xl text-white">Capabilities</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          Raw AI tools. LLMs, embeddings, vision, speech, function-calling. The primitives. We pick the ones that fit your security profile and run them on infrastructure you control.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">02</div>
+        <div class="eyebrow mt-4">Layer two</div>
+        <h3 class="mt-3 font-display text-xl text-white">World model</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          Your company's memory. Documents, simulation archives, CRM history, support tickets, code, drawings. Indexed, embedded, and retrievable so an agent can ground its answers in your reality, not the open internet.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">03</div>
+        <div class="eyebrow mt-4">Layer three</div>
+        <h3 class="mt-3 font-display text-xl text-white">Intelligence layer</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          The decision maker. Agents that reason, route, escalate, and call the right capability with the right context. This is where most AI projects fail. We treat it like a control plane, not a chatbot.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">04</div>
+        <div class="eyebrow mt-4">Layer four</div>
+        <h3 class="mt-3 font-display text-xl text-white">Surfaces</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          Where humans actually touch the system. Slack bots, dashboards, dropdowns inside your existing tools, scheduled email reports. The system meets your team where they already work.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section
+    tone="muted"
+    eyebrow="The architecture"
+    title="One brain. A fleet of specialists."
+    lede="Underneath the framework is a single orchestrator pattern. Every input flows through one shared memory and routing layer, then fans out to purpose-built agents that do narrow work well."
+  >
+    <div class="rail-glow">
+      <div class="relative rounded-[14px] border border-[color:var(--color-chrome-rule)] overflow-hidden bg-black">
+        <picture>
+          <source srcset="/images/generated/architecture-v2.webp" type="image/webp" />
+          <img
+            src="/images/generated/architecture-v2.png"
+            alt="Architecture diagram with an AI orchestrator at the top fanning out to memory, productivity, research, content, and integrations columns."
+            width="1600"
+            height="1067"
+            loading="lazy"
+            decoding="async"
+            class="block w-full h-auto aspect-[3/2] object-cover"
+          />
+        </picture>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+      </div>
+    </div>
+  </Section>
+
+  <Section
+    eyebrow="The fleet"
+    title="Named agents, scoped roles."
+    lede="Generic AI assistants get vague answers. We give every agent a specific job, a specific scope, and a name your team uses on Slack. These are illustrative roles. Each client gets a fleet built for their actual operations."
+  >
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="card p-8">
+        <div class="eyebrow">Operations</div>
+        <h3 class="mt-3 font-display text-xl text-white">ALFRED</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          The CEO and ops layer. Surfaces what needs attention, drafts followups, prepares the weekly review. The first agent most teams hire and the one that keeps showing up.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="eyebrow">Sales</div>
+        <h3 class="mt-3 font-display text-xl text-white">ARROW</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          Pipeline triage and outbound. Scores leads against your real ICP. Pulls context for every meeting. Drafts followups that reference what was actually said on the call.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="eyebrow">Discovery</div>
+        <h3 class="mt-3 font-display text-xl text-white">ORACLE</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          The research and search agent. Sweeps the web, your archives, your specs. Returns answers grounded in citations, not vibes.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="eyebrow">Production</div>
+        <h3 class="mt-3 font-display text-xl text-white">FLASH</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          The content and document agent. Turns sim outputs, transcripts, and drafts into customer-ready deliverables that match your house style.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="eyebrow">Recruiting</div>
+        <h3 class="mt-3 font-display text-xl text-white">CYBORG</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          Sourcing, screening, and interview prep. Drafts personalized outreach. Pulls everything a hiring manager needs ten minutes before the call.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="eyebrow">Coordination</div>
+        <h3 class="mt-3 font-display text-xl text-white">WORLD AGENT</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          The router. Decides which agent owns a request, hands off context, escalates to a human when confidence drops. This is the agent that keeps the fleet from fighting each other.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section
+    tone="muted"
+    eyebrow="Reality check"
+    title="What breaks. And how we prevent it."
+    lede="Every AI deployment hits the same three failure modes in the first 90 days. We design for them up front instead of pretending they won't happen."
+  >
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="card p-8">
+        <div class="eyebrow">Failure mode 01</div>
+        <h3 class="mt-4 font-display text-xl text-white leading-snug">
+          Agent conflicts.
+        </h3>
+        <div class="mt-5 font-display text-[color:var(--color-accent)] text-sm uppercase tracking-[0.18em]">
+          Hard scoping.
+        </div>
+        <p class="mt-3 text-[color:var(--color-muted)] leading-relaxed">
+          Two agents try to own the same task. Or one agent steps on another's data. We give every agent a written charter, a shared schema, and a single coordinator that owns routing.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="eyebrow">Failure mode 02</div>
+        <h3 class="mt-4 font-display text-xl text-white leading-snug">
+          Security incidents.
+        </h3>
+        <div class="mt-5 font-display text-[color:var(--color-accent)] text-sm uppercase tracking-[0.18em]">
+          Sandboxed by default.
+        </div>
+        <p class="mt-3 text-[color:var(--color-muted)] leading-relaxed">
+          Every agent runs with the minimum permissions it needs. Sensitive actions (sending money, sharing files externally, posting publicly) require human confirmation. Audit logs capture every call.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="eyebrow">Failure mode 03</div>
+        <h3 class="mt-4 font-display text-xl text-white leading-snug">
+          Hallucinations and broken automations.
+        </h3>
+        <div class="mt-5 font-display text-[color:var(--color-accent)] text-sm uppercase tracking-[0.18em]">
+          Tested like infrastructure.
+        </div>
+        <p class="mt-3 text-[color:var(--color-muted)] leading-relaxed">
+          Every agent ships with a regression suite. We grade outputs against ground truth, alert on drift, and roll back automatically when an agent's accuracy drops below threshold.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section
+    eyebrow="The timeline"
+    title="The compounding flywheel."
+    lede="AI systems do not pay off in week one. They pay off in month three, when the data has compounded and the agents have been calibrated against your team. Here is what to expect."
+  >
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">Month 1</div>
+        <h3 class="mt-3 font-display text-lg text-white">Calibration. Expect rough edges.</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          Hallucinations show up. Automations break. Edge cases surface that nobody anticipated. This is the work. We instrument heavily, fix fast, and document every failure mode.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">Month 2</div>
+        <h3 class="mt-3 font-display text-lg text-white">Patterns. The agents get sharper.</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          The system has seen enough of your reality to start surfacing patterns. Lead prioritization gets accurate. Issues surface earlier. Reports stop needing manual cleanup.
+        </p>
+      </div>
+
+      <div class="card p-8">
+        <div class="chrome-text font-display text-3xl font-semibold">Month 3+</div>
+        <h3 class="mt-3 font-display text-lg text-white">Flywheel. The system compounds.</h3>
+        <p class="mt-3 text-sm text-[color:var(--color-muted)] leading-relaxed">
+          Data compounds. Agents share context. The fleet starts catching things humans missed. This is the version we're after. Most teams quit before they get here. We don't let you.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <CTASection
+    eyebrow="Apply this to your team"
+    title="Book a 30-minute scoping call."
+    subtitle="Bring one workflow you'd want automated. We'll map it against the four layers, sketch which agents would own it, and tell you whether the timeline fits your patience."
+    primaryCta={{ href: "/contact/", label: "Start the conversation" }}
+  />
+</BaseLayout>
