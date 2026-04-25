@@ -105,6 +105,26 @@ const IMAGES: { slug: string; prompt: string }[] = [
       "Looks like a real product you'd see in a lab, not a render."
     ),
   },
+  {
+    slug: "architecture-diagram",
+    prompt: flow(
+      "A clean hub-and-spoke architecture diagram. " +
+      "At the very top center: one prominent rectangular brushed-chrome node labeled 'AI ORCHESTRATOR' with an 'AGENT' subtitle. " +
+      "Below it, five vertical columns fan out, each headed by a category card: " +
+      "'MEMORY', 'PRODUCTIVITY', 'RESEARCH', 'CONTENT', 'INTEGRATIONS'. " +
+      "Each category card connects up to the orchestrator with a single thin teal vertical line. " +
+      "Under each category card, three smaller chrome capsule nodes stacked vertically with these labels: " +
+      "Memory column: 'Knowledge Base', 'Project Context', 'Auto Memory'. " +
+      "Productivity column: 'Email Triage', 'Calendar', 'Docs and Sheets'. " +
+      "Research column: 'Deep Research', 'Web Crawl', 'Vector Search'. " +
+      "Content column: 'Outlines', 'Long Form', 'Short Form'. " +
+      "Integrations column: 'CRM', 'Stripe', 'GitHub'. " +
+      "At the very bottom, a single wide horizontal bar labeled 'AUTOMATION LAYER' with three small subtitles inside it: " +
+      "'On Demand', 'Scheduled', 'Triggered'. " +
+      "The automation bar connects upward to all five columns with thin dashed teal lines. " +
+      "Composition: cinematic wide 3:2, generous spacing, dark obsidian background, soft teal glow on connection lines."
+    ),
+  },
 ];
 
 const IMAGE_MIME = /^image\//;
