@@ -19,18 +19,18 @@ const nav = [
       />
     </a>
 
-    <nav class="hidden md:flex items-center gap-8">
+    <nav class="hidden sm:flex items-center gap-5 md:gap-8">
       {nav.map((item) => (
         <a
           href={item.href}
-          class="text-[0.9rem] text-[color:var(--color-muted)] hover:text-white transition-colors font-body"
+          class="text-[0.85rem] md:text-[0.9rem] text-[color:var(--color-muted)] hover:text-white transition-colors font-body"
         >
           {item.label}
         </a>
       ))}
     </nav>
 
-    <a href="/contact/" class="btn btn-ghost md:hidden text-sm">Contact</a>
+    <a href="/contact/" class="btn btn-ghost sm:hidden text-sm">Contact</a>
     <a href="/contact/" class="btn btn-primary hidden md:inline-flex text-sm">Book an intro</a>
   </div>
 </header>
