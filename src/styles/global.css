@@ -97,6 +97,12 @@ body {
   -webkit-mask-image: radial-gradient(ellipse at center, black 0%, black 40%, transparent 85%);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg-video {
+    display: none;
+  }
+}
+
 /* Hairline rule with chrome sheen. */
 .rule-chrome {
   height: 1px;
