@@ -98,13 +98,18 @@ body {
 }
 
 .hero-bg-video {
-  transform: scale(1.3);
-  transform-origin: center center;
+  object-fit: contain;
+  object-position: center top;
+  transform: scale(1);
+  transform-origin: center top;
 }
 
 @media (min-width: 768px) {
   .hero-bg-video {
+    object-fit: cover;
+    object-position: center center;
     transform: scale(1.78);
+    transform-origin: center center;
   }
 }
 
