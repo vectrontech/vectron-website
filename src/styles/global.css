@@ -98,8 +98,14 @@ body {
 }
 
 .hero-bg-video {
-  transform: scale(1.78);
+  transform: scale(1.3);
   transform-origin: center center;
+}
+
+@media (min-width: 768px) {
+  .hero-bg-video {
+    transform: scale(1.78);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
