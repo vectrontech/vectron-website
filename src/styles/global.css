@@ -97,6 +97,11 @@ body {
   -webkit-mask-image: radial-gradient(ellipse at center, black 0%, black 40%, transparent 85%);
 }
 
+.hero-bg-video {
+  transform: scale(1.78);
+  transform-origin: center center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-bg-video {
     display: none;
