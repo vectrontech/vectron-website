@@ -4,24 +4,84 @@ import Hero from "~/components/Hero.astro";
 import Section from "~/components/Section.astro";
 import CTASection from "~/components/CTASection.astro";
 
-const title = "Antenna Design and Electromagnetics Consulting | Vectron Technologies";
+const title =
+  "RF, Electromagnetics & EMI/EMC Consulting | Antenna Design | Vectron";
 const description =
-  "Senior antenna design and electromagnetics consulting. Link budget analysis, EMC and EMI investigations, HFSS, CST, and FEKO simulation review. Project or retainer engagements.";
+  "Senior RF engineering and electromagnetics consulting: antenna design, link budget analysis, EMC/EMI investigations, and HFSS, CST, FEKO simulation review. Project, retainer, or advisory engagements across the United States.";
+
+const faqs = [
+  {
+    q: "What does Vectron's RF and electromagnetics consulting cover?",
+    a: "Antenna design and integration, RF front-end design, link budget and propagation analysis, EMC/EMI investigations, and independent simulation or design review. We support concept through measurement, with HFSS, CST, FEKO, and ADS in routine use.",
+  },
+  {
+    q: "Do you handle EMI/EMC investigations and compliance failures?",
+    a: "Yes. We do root-cause analysis on emissions and susceptibility failures, design-for-EMC reviews, and physics-based mitigation, not symptom chasing. We engage either before a compliance test (to de-risk it) or after a fail (to identify and close the gap).",
+  },
+  {
+    q: "How is RF consulting priced?",
+    a: "Three engagement shapes: fixed-scope projects with defined deliverables and review cadence, monthly retainers for embedded senior engineering on an ongoing program, or hours-based advisory for short-form technical questions. Rates depend on scope; contact us for a quote.",
+  },
+  {
+    q: "Which simulation tools do you use?",
+    a: "HFSS, CST Microwave Studio, FEKO, and Keysight ADS in routine production use. We can also operate inside a client's existing tool stack and review simulations performed by your team independently.",
+  },
+  {
+    q: "Where are you located and who do you serve?",
+    a: "Vectron Technologies LLC is based in the United States and works with clients across the country. RF and electromagnetics engagements are typically remote with on-site visits as needed for measurement, lab, or design-review work.",
+  },
+  {
+    q: "Can you do antenna design from scratch?",
+    a: "Yes. Concept through measurement for printed, wire, and aperture antennas, including co-design with RF front-ends and the host platform. We deliver simulations, measured results, and integration guidance.",
+  },
+  {
+    q: "Do you take engagements with NDA / ITAR / export-control constraints?",
+    a: "We routinely work under NDA. ITAR and export-controlled work is evaluated case-by-case based on the specific program and counterparty controls in place.",
+  },
+];
 
 const serviceJsonLd = {
   "@context": "https://schema.org",
   "@type": "Service",
-  name: "Antenna design and electromagnetics consulting",
+  name: "RF, electromagnetics, and EMI/EMC consulting",
   provider: {
     "@type": "ProfessionalService",
     name: "Vectron Technologies",
     url: "https://vectrontechnologies.com",
   },
-  serviceType: "RF and electromagnetics engineering",
+  serviceType: [
+    "RF engineering consulting",
+    "Electromagnetics consulting",
+    "EMI consulting",
+    "EMC consulting",
+    "Antenna design",
+    "Link budget analysis",
+    "RF simulation review",
+  ],
   description:
-    "Antenna design and integration, link budget and propagation analysis, EMC and EMI investigations, and independent design or simulation review. Tools include HFSS, CST, FEKO, and ADS.",
+    "RF engineering and electromagnetics consulting. Antenna design and integration, link budget and propagation analysis, EMC/EMI investigations, and independent design or simulation review. Tools include HFSS, CST, FEKO, and ADS.",
   areaServed: { "@type": "Country", name: "United States" },
   url: "https://vectrontechnologies.com/services/rf-electromagnetics/",
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "RF and electromagnetics offerings",
+    itemListElement: [
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Antenna design and integration", description: "Printed, wire, and aperture antennas, simulated in HFSS, CST, FEKO and validated through measurement. Co-design with RF front-end and host platform." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "RF link budget and propagation analysis", description: "End-to-end link budgets for terrestrial, line-of-sight, and satellite links. Margin accounting that holds up to independent review." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "EMI / EMC investigations and design-for-EMC review", description: "Root-cause analysis on emissions and susceptibility failures. Physics-based mitigation. Design reviews ahead of compliance testing." } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Independent RF simulation and design review", description: "Senior review of your team's RF simulations, designs, and test plans before a costly build commits." } },
+    ],
+  },
+};
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
 };
 ---
 
@@ -99,6 +159,27 @@ const serviceJsonLd = {
       </div>
     </div>
   </Section>
+
+  <Section
+    id="faq"
+    eyebrow="FAQ"
+    title="RF & electromagnetics consulting — common questions"
+    lede="Quick answers to what RF and EMI/EMC consulting buyers usually ask first."
+  >
+    <div class="mx-auto max-w-3xl">
+      {faqs.map((f) => (
+        <details class="group border-b border-[color:var(--color-chrome-rule)] py-5">
+          <summary class="flex cursor-pointer items-center justify-between gap-4 font-display text-lg text-white">
+            <span>{f.q}</span>
+            <span class="text-[color:var(--color-chrome-dim)] transition-transform group-open:rotate-45">+</span>
+          </summary>
+          <p class="mt-3 text-[color:var(--color-muted)] leading-relaxed">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </Section>
+
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
 
   <CTASection
     eyebrow="Next step"
