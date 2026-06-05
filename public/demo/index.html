@@ -6,262 +6,175 @@
 <title>RFTrueLink — Interactive Demo</title>
 <meta name="description" content="Try RFTrueLink in your browser. Build RF chains, see cascaded gain, noise figure, and P1dB update in real time."/>
 <style>
-/* ================================================================
-   RFTrueLink Web Demo — self-contained, no dependencies
-   ================================================================ */
 :root{
-  --bg:       #0a1628;
-  --bg1:      #0f1e38;
-  --bg2:      #142039;
-  --bg3:      #1a2744;
-  --line:     rgba(255,255,255,0.08);
-  --line2:    rgba(255,255,255,0.14);
-  --fg:       #eaf0fa;
-  --fg-mute:  #a6b3cc;
-  --fg-dim:   #6f7d99;
-  --accent:   #f5a524;
-  --accent-hi:#ffc15c;
-  --accent-lo:#c77f0f;
-  --accent-ink:#0a1628;
-  --cyan:     #60b0f0;
-  --success:  #36d49b;
-  --warn:     #f5c842;
-  --danger:   #ff7a7a;
-  --r-sm:4px;--r-md:8px;--r-lg:14px;--r-xl:20px;
-  --sh:0 8px 32px rgba(0,0,0,0.4);
+  --chrome:     #16202e;
+  --chrome2:    #1e2a3a;
+  --chrome3:    #263347;
+  --border:     rgba(255,255,255,.08);
+  --border2:    rgba(255,255,255,.14);
+  --fg:         #dde4f0;
+  --fg-mute:    #7e8fa8;
+  --fg-dim:     #4e5e78;
+  --accent:     #1976d2;
+  --canvas-bg:  #fafafa;       /* light canvas — matches actual app */
+  --wire:       #212121;       /* black wires — matches actual app */
+  --sel-color:  #1565c0;       /* selection blue */
+  --green:      #43a047;
+  --cyan:       #5b9bd5;
+  --amber:      #f5a524;
+  --red:        #e53935;
+  --nav-h:      46px;
+  --pal-w:      218px;
+  --res-h:      205px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg);
-  font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,Helvetica,sans-serif;
-  font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+html,body{height:100%;overflow:hidden;
+  background:var(--chrome);color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,sans-serif;
+  font-size:12px;line-height:1.4;-webkit-font-smoothing:antialiased;}
 button{font:inherit;cursor:pointer;border:0;background:none;color:inherit;}
 input,select{font:inherit;color:inherit;}
-::selection{background:var(--accent);color:var(--accent-ink);}
+::selection{background:var(--accent);color:#fff;}
 
-/* ---- Layout --------------------------------------------------- */
-#app{display:grid;grid-template-rows:48px 1fr 220px;height:100vh;overflow:hidden;}
+/* ── App shell ──────────────────────────────────────────────── */
+#app{display:grid;grid-template-rows:var(--nav-h) 1fr var(--res-h);height:100vh;overflow:hidden;}
+
+/* ── Toolbar ────────────────────────────────────────────────── */
 #toolbar{
-  display:flex;align-items:center;gap:8px;padding:0 16px;
-  background:rgba(10,22,40,0.92);
-  border-bottom:1px solid var(--line);
-  backdrop-filter:blur(10px);
-  z-index:10;
+  background:#0d1520;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;padding:0 14px;z-index:20;
 }
-#toolbar .logo{
-  display:flex;align-items:center;gap:8px;
-  font-size:14px;font-weight:700;letter-spacing:-0.02em;color:var(--fg);
-  margin-right:8px;
+.logo{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;
+  letter-spacing:-.025em;margin-right:4px;}
+.logo svg{width:24px;height:24px;flex-shrink:0;}
+.logo-demo{font-size:10px;font-weight:400;color:var(--fg-dim);margin-top:1px;}
+.sep{width:1px;height:22px;background:var(--border2);flex-shrink:0;}
+.tb-lbl{font-size:11px;color:var(--fg-mute);}
+.tb-inp{
+  width:68px;padding:3px 7px;
+  background:var(--chrome2);border:1px solid var(--border2);
+  border-radius:4px;color:var(--fg);font-size:12px;
 }
-#toolbar .logo svg{width:26px;height:26px;}
-#toolbar .sep{width:1px;height:24px;background:var(--line2);margin:0 4px;}
-#toolbar .freq-row{display:flex;align-items:center;gap:6px;color:var(--fg-mute);font-size:12px;}
-#toolbar .freq-row input{
-  width:80px;padding:4px 8px;
-  background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);
-  color:var(--fg);
+.tb-inp:focus{outline:none;border-color:var(--accent);}
+.tb-btn{
+  padding:4px 10px;border-radius:4px;font-size:11px;
+  border:1px solid var(--border2);color:var(--fg-mute);transition:all .12s;
 }
-#toolbar .freq-row input:focus{outline:none;border-color:var(--accent);}
-#toolbar .pill{
-  padding:4px 12px;border-radius:var(--r-xl);font-size:12px;font-weight:600;
-  background:var(--accent);color:var(--accent-ink);margin-left:auto;
-  transition:background .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+.tb-btn:hover{border-color:var(--red);color:var(--red);}
+.cta{
+  margin-left:auto;padding:5px 14px;border-radius:20px;
+  font-size:12px;font-weight:600;background:var(--accent);color:#fff;
+  text-decoration:none;display:inline-flex;align-items:center;gap:5px;
+  transition:background .12s;white-space:nowrap;
 }
-#toolbar .pill:hover{background:var(--accent-hi);}
-#toolbar .clear-btn{
-  padding:4px 10px;border-radius:var(--r-sm);font-size:12px;
-  border:1px solid var(--line2);color:var(--fg-mute);
-  transition:all .15s;
-}
-#toolbar .clear-btn:hover{border-color:var(--danger);color:var(--danger);}
+.cta:hover{background:#1565c0;color:#fff;}
 
-/* ---- Main area ------------------------------------------------ */
-#main{display:grid;grid-template-columns:200px 1fr;overflow:hidden;}
+/* ── Main ───────────────────────────────────────────────────── */
+#main{display:grid;grid-template-columns:var(--pal-w) 1fr;overflow:hidden;}
 
-/* ---- Palette -------------------------------------------------- */
-#palette{
-  background:var(--bg1);border-right:1px solid var(--line);
-  overflow-y:auto;padding:12px 8px;display:flex;flex-direction:column;gap:4px;
-}
-#palette h4{
-  font-size:10px;text-transform:uppercase;letter-spacing:.14em;
-  color:var(--fg-dim);font-weight:600;padding:8px 4px 4px;
-}
-.pal-item{
-  display:flex;align-items:center;gap:9px;
-  padding:8px 10px;border-radius:var(--r-md);
-  border:1px solid var(--line);background:rgba(255,255,255,0.02);
-  cursor:grab;transition:all .15s;user-select:none;
-}
-.pal-item:hover{border-color:var(--line2);background:rgba(255,255,255,0.05);transform:translateX(2px);}
-.pal-item:active{cursor:grabbing;}
-.pal-icon{
-  width:28px;height:28px;border-radius:var(--r-sm);
-  display:grid;place-items:center;font-size:14px;flex-shrink:0;
-  border:1px solid rgba(255,255,255,0.1);
-}
-.pal-info{min-width:0;}
-.pal-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pal-sub{font-size:10px;color:var(--fg-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
-/* ---- Canvas area ---------------------------------------------- */
-#canvas-wrap{
-  position:relative;overflow:hidden;
-  background:
-    radial-gradient(800px 600px at 70% 30%,rgba(245,165,36,.07),transparent 60%),
-    radial-gradient(600px 500px at 10% 80%,rgba(70,120,220,.10),transparent 60%),
-    var(--bg);
-}
-/* Dot grid */
-#canvas-wrap::before{
-  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
-  background-image:radial-gradient(circle,rgba(255,255,255,.07) 1px,transparent 1px);
-  background-size:28px 28px;
-}
-#canvas{position:absolute;inset:0;z-index:1;}
-#drop-hint{
-  position:absolute;inset:0;z-index:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:12px;color:var(--fg-dim);pointer-events:none;
-  transition:opacity .2s;
-}
-#drop-hint.hidden{opacity:0;}
-#drop-hint .big-icon{font-size:48px;opacity:.4;}
-#drop-hint p{font-size:13px;text-align:center;max-width:220px;line-height:1.5;}
-
-/* ---- Block nodes ---------------------------------------------- */
-.block{
-  position:absolute;user-select:none;
-  display:flex;flex-direction:column;align-items:center;
-  gap:6px;cursor:grab;
-  filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));
-}
-.block:active{cursor:grabbing;}
-.block.selected .block-body{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 24px rgba(245,165,36,.25);}
-.block-body{
-  background:var(--bg2);
-  border:1.5px solid var(--line2);border-radius:var(--r-lg);
-  padding:10px 14px;min-width:88px;
-  display:flex;flex-direction:column;align-items:center;gap:5px;
-  position:relative;transition:border-color .15s,box-shadow .15s;
-}
-.block-icon{font-size:20px;}
-.block-name{font-size:11px;font-weight:700;text-align:center;letter-spacing:.01em;}
-.block-val{font-size:10px;color:var(--fg-mute);text-align:center;}
-.block-label{font-size:10px;color:var(--fg-dim);text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-/* port dots */
-.port-in,.port-out{
-  position:absolute;top:50%;transform:translateY(-50%);
-  width:10px;height:10px;border-radius:50%;
-  background:var(--bg2);border:2px solid var(--fg-dim);
-  transition:border-color .15s,transform .15s;
-}
-.port-in{left:-6px;}
-.port-out{right:-6px;}
-.block:hover .port-in,.block:hover .port-out{border-color:var(--cyan);}
-/* chain-index badge */
-.block-idx{
-  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
-  font-size:9px;font-weight:700;letter-spacing:.1em;
-  color:var(--fg-dim);
-}
-/* delete button */
-.block-del{
-  position:absolute;top:-8px;right:-8px;
-  width:18px;height:18px;border-radius:50%;
-  background:var(--bg3);border:1px solid var(--line2);
-  font-size:10px;color:var(--fg-dim);
-  display:none;align-items:center;justify-content:center;
-  transition:all .12s;z-index:2;
-}
-.block:hover .block-del,.block.selected .block-del{display:flex;}
-.block-del:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
-
-/* SVG wires overlay */
-#wires{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:visible;}
-
-/* ---- Inspector (right-click / click-selected) ----------------- */
-#inspector{
-  position:absolute;z-index:20;
-  background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-xl);
-  padding:16px;width:220px;
-  box-shadow:var(--sh);
-  display:none;
-}
-#inspector h5{font-size:13px;font-weight:700;margin-bottom:12px;}
-#inspector .field{margin-bottom:10px;}
-#inspector label{font-size:11px;color:var(--fg-mute);display:block;margin-bottom:3px;}
-#inspector input,#inspector select{
-  width:100%;padding:5px 8px;
-  background:var(--bg3);border:1px solid var(--line2);border-radius:var(--r-sm);
-  font-size:12px;color:var(--fg);
-}
-#inspector input:focus,#inspector select:focus{outline:none;border-color:var(--accent);}
-#inspector .close-btn{
-  position:absolute;top:10px;right:10px;
-  width:22px;height:22px;border-radius:50%;
-  background:rgba(255,255,255,.05);font-size:12px;
-  color:var(--fg-mute);display:grid;place-items:center;
-}
-#inspector .close-btn:hover{background:rgba(255,255,255,.1);color:var(--fg);}
-
-/* ---- Results table -------------------------------------------- */
-#results-area{
-  border-top:1px solid var(--line);background:var(--bg1);
+/* ── Palette ────────────────────────────────────────────────── */
+#pal{
+  background:var(--chrome2);border-right:1px solid var(--border);
   display:flex;flex-direction:column;overflow:hidden;
 }
-#results-header{
-  display:flex;align-items:center;gap:12px;
-  padding:8px 16px 0;flex-shrink:0;
+#pal-search-row{padding:10px 10px 5px;flex-shrink:0;}
+#pal-search{
+  width:100%;padding:5px 8px;background:var(--chrome3);
+  border:1px solid var(--border2);border-radius:4px;
+  color:var(--fg);font-size:11px;
 }
-#results-header h4{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--fg-dim);font-weight:600;}
-.cascade-summary{
-  display:flex;gap:16px;margin-left:auto;
+#pal-search:focus{outline:none;border-color:var(--accent);}
+#pal-search::placeholder{color:var(--fg-dim);}
+#pal-list{flex:1;overflow-y:auto;padding:0 6px 8px;}
+.pal-h{font-size:10px;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--fg-dim);font-weight:600;padding:10px 4px 4px;}
+.pal-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 8px;border-radius:5px;margin-bottom:2px;
+  border:1px solid transparent;cursor:grab;
+  transition:all .12s;user-select:none;
 }
-.cascade-summary .metric{
-  display:flex;flex-direction:column;align-items:flex-end;
+.pal-item:hover{background:rgba(255,255,255,.05);border-color:var(--border);}
+.pal-item:active{cursor:grabbing;}
+.pal-badge{
+  width:32px;height:32px;border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
 }
-.cascade-summary .metric span:first-child{font-size:10px;color:var(--fg-dim);}
-.cascade-summary .metric span:last-child{font-size:14px;font-weight:700;}
-.val-gain{color:var(--success);}
-.val-nf{color:var(--cyan);}
-.val-p1db{color:var(--accent);}
-.val-na{color:var(--fg-dim);}
+.pal-name{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pal-kpi{font-size:10px;color:var(--fg-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
 
-#results-table-wrap{overflow-x:auto;flex:1;padding:6px 16px 12px;}
-table{border-collapse:collapse;width:100%;min-width:600px;font-size:11.5px;}
-th{
-  position:sticky;top:0;z-index:1;
-  background:var(--bg1);
-  color:var(--fg-dim);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.1em;
-  padding:4px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;
+/* ── Canvas ─────────────────────────────────────────────────── */
+#cvwrap{
+  position:relative;overflow:hidden;
+  background:var(--canvas-bg);  /* LIGHT — matches actual RFTrueLink */
 }
-th:first-child,th:nth-child(2){text-align:left;}
-td{
-  padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);
-  text-align:right;
+#schematic{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+#drop-hint{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+  pointer-events:none;transition:opacity .2s;color:#bdbdbd;
 }
-td:first-child,td:nth-child(2){text-align:left;}
-tr:last-child td{border-bottom:0;}
-tr.row-total{
-  background:rgba(255,255,255,.04);font-weight:700;
-}
-tr.row-total td:first-child{color:var(--fg-dim);letter-spacing:.06em;text-transform:uppercase;font-size:10px;}
-.td-gain{color:var(--success);}
-.td-nf{color:var(--cyan);}
-.td-p1db{color:var(--accent);}
-.td-na{color:var(--fg-dim);}
+#drop-hint.hidden{opacity:0;}
+#drop-hint .dh-icon{font-size:40px;opacity:.45;}
+#drop-hint p{font-size:12px;text-align:center;max-width:200px;line-height:1.6;}
 
-/* ---- Empty state for table ------------------------------------ */
-#table-empty{
-  padding:20px;text-align:center;color:var(--fg-dim);font-size:12px;
-  display:none;
+/* ── Inspector ──────────────────────────────────────────────── */
+#insp{
+  position:absolute;z-index:30;display:none;
+  background:var(--chrome2);border:1px solid var(--border2);
+  border-radius:8px;padding:14px;width:210px;
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
 }
+#insp-close{
+  position:absolute;top:8px;right:8px;width:20px;height:20px;
+  border-radius:50%;background:rgba(255,255,255,.06);
+  font-size:10px;display:grid;place-items:center;color:var(--fg-mute);
+}
+#insp-close:hover{background:rgba(255,255,255,.12);color:var(--fg);}
+#insp-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+#insp-sub{font-size:10px;color:var(--fg-dim);margin-bottom:11px;}
+.ifield{margin-bottom:9px;}
+.ifield label{font-size:10px;color:var(--fg-mute);display:block;margin-bottom:3px;}
+.ifield input{
+  width:100%;padding:4px 7px;background:var(--chrome3);
+  border:1px solid var(--border2);border-radius:4px;font-size:12px;color:var(--fg);
+}
+.ifield input:focus{outline:none;border-color:var(--accent);}
+.inote{font-size:10px;color:var(--fg-dim);margin-top:10px;line-height:1.5;}
 
-/* ---- Responsive squish ---------------------------------------- */
-@media(max-width:700px){
-  #palette{display:none;}
-  #main{grid-template-columns:1fr;}
+/* ── Results ─────────────────────────────────────────────────── */
+#results{
+  border-top:1px solid var(--border);background:var(--chrome);
+  display:flex;flex-direction:column;overflow:hidden;
 }
+#res-hdr{display:flex;align-items:center;padding:7px 14px 0;flex-shrink:0;gap:10px;}
+.rh-title{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--fg-dim);font-weight:600;}
+#res-sum{display:flex;gap:16px;margin-left:auto;}
+.rsm{display:flex;flex-direction:column;align-items:flex-end;}
+.rsm span:first-child{font-size:9px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em;}
+.rsm span:last-child{font-size:13px;font-weight:700;}
+
+#res-wrap{overflow:auto;flex:1;padding:4px 14px 10px;}
+#res-tbl{border-collapse:collapse;width:100%;font-size:11px;min-width:700px;}
+#res-tbl th{
+  position:sticky;top:0;z-index:1;background:var(--chrome);
+  padding:4px 10px;color:var(--fg-dim);font-size:9.5px;
+  font-weight:600;text-transform:uppercase;letter-spacing:.09em;
+  text-align:right;border-bottom:1px solid var(--border2);white-space:nowrap;
+}
+#res-tbl th:nth-child(-n+2){text-align:left;}
+#res-tbl td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.03);text-align:right;}
+#res-tbl td:nth-child(-n+2){text-align:left;}
+/* Column tinting — matches actual RFTrueLink app */
+.col-g{background:#19253a!important;}
+.col-nf{background:#182437!important;}
+tr.row-sys{background:rgba(255,255,255,.04);font-weight:700;}
+tr.row-sys td:nth-child(2){font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-dim);}
+.td-desig{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;font-weight:700;letter-spacing:.04em;}
+.cv-gain{color:#66bb6a;}.cv-nf{color:#5b9bd5;}.cv-p1db{color:var(--amber);}
+.cv-warn{color:#ffa726;}.cv-na{color:var(--fg-dim);}
+#tbl-empty{padding:14px;text-align:center;color:var(--fg-dim);display:none;}
 </style>
 </head>
 <body>
@@ -272,728 +185,580 @@ tr.row-total td:first-child{color:var(--fg-dim);letter-spacing:.06em;text-transf
   <div class="logo">
     <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="tb" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="lb" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#1a237e"/><stop offset="100%" stop-color="#0d1b3a"/>
         </linearGradient>
-        <linearGradient id="tw" x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id="lw" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stop-color="#80deea"/><stop offset="100%" stop-color="#26c6da"/>
         </linearGradient>
       </defs>
-      <rect x="32" y="32" width="448" height="448" rx="92" fill="url(#tb)"/>
+      <rect x="32" y="32" width="448" height="448" rx="92" fill="url(#lb)"/>
       <path d="M112 256 C156 152,200 360,256 256 S356 152,400 256"
-            fill="none" stroke="url(#tw)" stroke-width="26" stroke-linecap="round"/>
+            fill="none" stroke="url(#lw)" stroke-width="26" stroke-linecap="round"/>
       <circle cx="112" cy="256" r="36" fill="#eceff1" stroke="#263238" stroke-width="4"/>
       <circle cx="112" cy="256" r="13" fill="#263238"/>
       <circle cx="400" cy="256" r="36" fill="#eceff1" stroke="#263238" stroke-width="4"/>
       <circle cx="400" cy="256" r="13" fill="#263238"/>
     </svg>
-    RFTrueLink <span style="color:var(--fg-dim);font-weight:400;font-size:11px;">demo</span>
+    RFTrueLink <span class="logo-demo">demo</span>
   </div>
 
   <div class="sep"></div>
+  <span class="tb-lbl">Freq</span>
+  <input id="freq-in" class="tb-inp" type="number" min=".001" max="110" step=".1" value="2.4"/>
+  <span class="tb-lbl">GHz</span>
 
-  <div class="freq-row">
-    <label for="freq-in">Freq</label>
-    <input id="freq-in" type="number" min="0.001" max="100" step="0.1" value="2.4"/>
-    <span>GHz</span>
-  </div>
+  <div class="sep"></div>
+  <span class="tb-lbl">Pin</span>
+  <input id="pin-in" class="tb-inp" type="number" min="-120" max="30" step="1" value="-40"/>
+  <span class="tb-lbl">dBm</span>
 
-  <button class="clear-btn" id="clear-btn">Clear chain</button>
-
-  <a class="pill" href="https://vectrontechnologies.com/RFtrueLink/" target="_blank" rel="noopener">
-    ↗ Get the full app
-  </a>
+  <button class="tb-btn" id="clear-btn">Clear</button>
+  <a class="cta" href="/RFtrueLink/" target="_blank" rel="noopener">↗ Get the full app</a>
 </div>
 
 <!-- MAIN -->
 <div id="main">
 
   <!-- PALETTE -->
-  <div id="palette">
-    <h4>Ideal</h4>
-    <!-- populated by JS -->
-    <h4 id="pal-real-h">Real Components</h4>
-    <!-- populated by JS -->
+  <div id="pal">
+    <div id="pal-search-row">
+      <input id="pal-search" type="text" placeholder="🔍 Search components…"/>
+    </div>
+    <div id="pal-list"></div>
   </div>
 
-  <!-- CANVAS -->
-  <div id="canvas-wrap">
+  <!-- CANVAS (light background, SVG schematic) -->
+  <div id="cvwrap">
     <div id="drop-hint">
-      <div class="big-icon">⛓</div>
-      <p>Drag components from the left panel to build your RF chain</p>
+      <div class="dh-icon">⛓</div>
+      <p>Drag components from the library to build your RF chain</p>
     </div>
-    <svg id="wires"></svg>
-    <div id="canvas"></div>
-
-    <!-- Inspector -->
-    <div id="inspector">
-      <button class="close-btn" id="insp-close">✕</button>
-      <h5 id="insp-title">Component</h5>
+    <svg id="schematic" xmlns="http://www.w3.org/2000/svg"></svg>
+    <!-- Inspector panel -->
+    <div id="insp">
+      <button id="insp-close">✕</button>
+      <div id="insp-title"></div>
+      <div id="insp-sub"></div>
       <div id="insp-fields"></div>
     </div>
   </div>
 
-</div><!-- /main -->
+</div>
 
 <!-- RESULTS -->
-<div id="results-area">
-  <div id="results-header">
-    <h4>Link Budget</h4>
-    <div class="cascade-summary" id="cascade-summary">
-      <div class="metric"><span>Total Gain</span><span class="val-na" id="sum-gain">—</span></div>
-      <div class="metric"><span>Cascaded NF</span><span class="val-na" id="sum-nf">—</span></div>
-      <div class="metric"><span>Output P1dB</span><span class="val-na" id="sum-p1db">—</span></div>
+<div id="results">
+  <div id="res-hdr">
+    <span class="rh-title">Link Budget — <span id="rh-freq">2.4 GHz</span></span>
+    <div id="res-sum">
+      <div class="rsm"><span>Total Gain</span><span class="cv-na" id="sum-gain">—</span></div>
+      <div class="rsm"><span>Casc. NF</span><span class="cv-na" id="sum-nf">—</span></div>
+      <div class="rsm"><span>Output P1dB</span><span class="cv-na" id="sum-p1db">—</span></div>
     </div>
   </div>
-  <div id="results-table-wrap">
-    <div id="table-empty">Add components to see cascaded calculations</div>
-    <table id="results-table">
+  <div id="res-wrap">
+    <div id="tbl-empty">Add components above to see cascaded calculations</div>
+    <table id="res-tbl">
       <thead>
         <tr>
-          <th>#</th>
+          <th>Desig.</th>
           <th>Component</th>
-          <th>Stage Gain (dB)</th>
-          <th>Cum. Gain (dB)</th>
-          <th>Stage NF (dB)</th>
-          <th>Casc. NF (dB)</th>
-          <th>Stage P1dB (dBm)</th>
-          <th>Pin to P1dB (dB)</th>
+          <th class="col-g">Gain [dB]</th>
+          <th>Signal [dBm]</th>
+          <th class="col-nf">Casc. NF [dB]</th>
+          <th>Noise [dBm/Hz]</th>
+          <th>P1dB out [dBm]</th>
         </tr>
       </thead>
-      <tbody id="results-body"></tbody>
+      <tbody id="res-body"></tbody>
     </table>
   </div>
 </div>
 
 </div><!-- /app -->
-
 <script>
-/* ================================================================
-   RFTrueLink Web Demo — Chain builder + cascade calculator
-   Cascade math ported from src/linkbudget/calc/cascade.py (Friis NF)
-   ================================================================ */
+'use strict';
+/* ============================================================
+   RFTrueLink Web Demo
+   Cascade math ported from src/linkbudget/calc/cascade.py
+   SVG symbols match actual desktop app (symbols.py)
+   ============================================================ */
+const NS = 'http://www.w3.org/2000/svg';
+const mk = (tag, a={}) => {
+  const el = document.createElementNS(NS, tag);
+  for (const [k,v] of Object.entries(a)) el.setAttribute(k, String(v));
+  return el;
+};
+const txt = (el, s) => { el.textContent = s; return el; };
+const f1 = v => (v==null||isNaN(v)) ? '—' : v.toFixed(1);
 
-// ---- Component Library ----------------------------------------
-// Each entry: { id, name, category, sub, icon, color, params }
-// params: { gain_db, nf_db, p1db_out_dbm, loss_db, conv_loss_db }
-// For passive (attenuator/filter): gain = -loss, nf = loss
+/* ── Library ─────────────────────────────────────────────────── */
+/* Category badge colors from library_kpi.py CATEGORY_FILLS_HEX */
+const CAT = {
+  amplifier: { fill:'#EFE6D9', ink:'#5d4037', prefix:'A'  },
+  attenuator:{ fill:'#E3E3E3', ink:'#424242', prefix:'AT' },
+  filter:    { fill:'#E3E3E3', ink:'#424242', prefix:'F'  },
+  mixer:     { fill:'#F5D6C6', ink:'#bf360c', prefix:'M'  },
+};
 
-const LIBRARY = [
-  // --- Ideal components ---
-  {
-    id:'ideal-amp', name:'Amplifier', category:'amplifier',
+const LIB = [
+  // ── Ideal ──
+  { id:'amp',    name:'Amplifier',   cat:'amplifier',  ideal:true,
     sub:'Ideal · configurable',
-    icon:'⬡', color:'#1e3a5f',
-    ideal:true,
-    params:{ gain_db:20, nf_db:3, p1db_out_dbm:20 }
-  },
-  {
-    id:'ideal-atten', name:'Attenuator', category:'attenuator',
+    p:{ gain_db:20, nf_db:3, p1db_out:20 } },
+  { id:'atten',  name:'Attenuator',  cat:'attenuator', ideal:true,
     sub:'Ideal · configurable',
-    icon:'⊟', color:'#2a2a1e',
-    ideal:true,
-    params:{ loss_db:10 }
-  },
-  {
-    id:'ideal-filter', name:'Filter', category:'filter',
+    p:{ loss_db:10 } },
+  { id:'filter', name:'Filter (BPF)',cat:'filter',     ideal:true,
     sub:'Ideal · configurable',
-    icon:'⊜', color:'#1e2a2a',
-    ideal:true,
-    params:{ loss_db:1 }
-  },
-  {
-    id:'ideal-mixer', name:'Mixer', category:'mixer',
+    p:{ loss_db:1 } },
+  { id:'mixer',  name:'Mixer',       cat:'mixer',      ideal:true,
     sub:'Ideal · configurable',
-    icon:'⊗', color:'#2a1e3a',
-    ideal:true,
-    params:{ conv_loss_db:7, nf_db:7, p1db_in_dbm:1 }
-  },
-  // --- Real components ---
-  {
-    id:'mc-zx60', name:'ZX60-4016E-S+', category:'amplifier',
-    sub:'Mini-Circuits · 20 MHz–4 GHz',
-    icon:'⬡', color:'#1e3a5f',
-    real:true,
-    manufacturer:'Mini-Circuits',
-    // Gain/NF tables as [freq_GHz, value_dB] pairs
-    gain_table:[[0.02,19.93],[0.1,20.14],[0.5,19.94],[1,19.54],[1.5,18.96],[2,18.24],[2.5,17.42],[3,16.51],[3.5,15.68],[4,14.93]],
-    nf_table:  [[0.02,3.78],[0.1,3.51],[0.5,3.73],[1,3.82],[2,3.97],[3,4.09],[4,4.45]],
-    p1db_table:[[0.02,17.64],[0.5,17.94],[2,17.68],[3,16.20],[4,14.35]],
-    params:{ gain_db:20, nf_db:3.9, p1db_out_dbm:17.5 } // defaults (overridden by table at f)
-  },
-  {
-    id:'ka-lna', name:'Ka-band LNA', category:'amplifier',
+    p:{ conv_loss_db:7, nf_db:7, p1db_in:1 } },
+  // ── Real ──
+  { id:'mc-zx60', name:'ZX60-4016E-S+', cat:'amplifier',
+    mfr:'Mini-Circuits', sub:'Mini-Circuits · 0.02–4 GHz',
+    gain_t: [[.02,19.93],[.1,20.14],[.5,19.94],[1,19.54],[1.5,18.96],[2,18.24],[2.5,17.42],[3,16.51],[3.5,15.68],[4,14.93]],
+    nf_t:   [[.02,3.78],[.1,3.51],[.5,3.73],[1,3.82],[2,3.97],[3,4.09],[4,4.45]],
+    p1_t:   [[.02,17.64],[.5,17.94],[2,17.68],[3,16.20],[4,14.35]],
+    p:{ gain_db:20, nf_db:3.9, p1db_out:17.5 } },
+  { id:'ka-lna',  name:'Ka-band LNA', cat:'amplifier',
     sub:'Generic · 26–40 GHz',
-    icon:'⬡', color:'#1e3a5f',
-    real:true,
-    gain_table:[[26,30],[30,32],[34,31],[40,28]],
-    nf_table:null, // constant
-    p1db_table:null,
-    params:{ gain_db:31, nf_db:2.5, p1db_out_dbm:15 }
-  },
-  {
-    id:'mc-bwk2', name:'BW-K2-2W44+', category:'attenuator',
-    sub:'Mini-Circuits · DC–40 GHz · 2 dB',
-    icon:'⊟', color:'#2a2a1e',
-    real:true,
-    loss_table:[[0.01,1.63],[1,1.67],[5,1.73],[10,1.79],[15,1.84],[18,1.92],[20,1.94],[26.5,1.99],[30,2.10],[40,2.53]],
-    params:{ loss_db:2 }
-  },
-  {
-    id:'marki-ml1', name:'Marki ML1-0220', category:'mixer',
-    sub:'Marki · 2–20 GHz · 7 dB loss',
-    icon:'⊗', color:'#2a1e3a',
-    real:true,
-    params:{ conv_loss_db:7, nf_db:7, p1db_in_dbm:1 }
-  },
+    gain_t: [[26,30],[30,32],[34,31],[40,28]],
+    p:{ gain_db:31, nf_db:2.5, p1db_out:15 } },
+  { id:'mc-bwk2', name:'BW-K2-2W44+', cat:'attenuator',
+    mfr:'Mini-Circuits', sub:'Mini-Circuits · DC–40 GHz · 2 dB',
+    loss_t: [[.01,1.63],[1,1.67],[5,1.73],[10,1.79],[15,1.84],[18,1.92],[20,1.94],[26.5,1.99],[30,2.10],[40,2.53]],
+    p:{ loss_db:2 } },
+  { id:'marki',   name:'Marki ML1-0220', cat:'mixer',
+    mfr:'Marki Microwave', sub:'Marki · 2–20 GHz',
+    p:{ conv_loss_db:7, nf_db:7, p1db_in:1 } },
 ];
 
-// Icon colors by category
-const CAT_COLORS = {
-  amplifier:'rgba(96,176,240,0.15)',
-  attenuator:'rgba(245,165,36,0.15)',
-  filter:'rgba(54,212,155,0.15)',
-  mixer:'rgba(180,130,255,0.15)',
-};
-const CAT_BORDER = {
-  amplifier:'rgba(96,176,240,0.4)',
-  attenuator:'rgba(245,165,36,0.4)',
-  filter:'rgba(54,212,155,0.4)',
-  mixer:'rgba(180,130,255,0.4)',
-};
+/* ── State ───────────────────────────────────────────────────── */
+let chain = [], selectedId = null, nextId = 1;
+let freqGhz = 2.4, pinDbm = -40;
 
-// ---- State -----------------------------------------------------
-let chain = [];       // ordered array of block instances
-let selectedId = null;
-let nextId = 1;
-let freqGhz = 2.4;
-
-// ---- Linear interpolation (mirrors np.interp) ------------------
-function lerp(x, table) {
-  if (!table || table.length === 0) return null;
-  if (table.length === 1) return table[0][1];
-  if (x <= table[0][0]) return table[0][1];
-  if (x >= table[table.length-1][0]) return table[table.length-1][1];
-  for (let i = 0; i < table.length-1; i++) {
-    const [x0,y0] = table[i], [x1,y1] = table[i+1];
-    if (x >= x0 && x <= x1) return y0 + (y1-y0)*(x-x0)/(x1-x0);
+/* ── Interpolation (np.interp equivalent) ─────────────────────── */
+function interp(x, t) {
+  if (!t||!t.length) return null;
+  if (x<=t[0][0]) return t[0][1];
+  if (x>=t[t.length-1][0]) return t[t.length-1][1];
+  for (let i=0;i<t.length-1;i++){
+    const[x0,y0]=t[i],[x1,y1]=t[i+1];
+    if(x>=x0&&x<=x1) return y0+(y1-y0)*(x-x0)/(x1-x0);
   }
-  return table[table.length-1][1];
+  return t[t.length-1][1];
 }
 
-// ---- Get effective stage parameters at current frequency -------
-function stageParams(block) {
-  const lib = block.libEntry;
-  const cat = lib.category;
-  const f = freqGhz;
-  const ov = block.overrides; // user-edited values
-
-  let gainDb=null, nfDb=null, p1dbOutDbm=null, p1dbInDbm=null;
-
-  if (cat === 'amplifier') {
-    gainDb    = ov.gain_db  ?? (lib.gain_table  ? lerp(f,lib.gain_table)  : lib.params.gain_db);
-    nfDb      = ov.nf_db    ?? (lib.nf_table    ? lerp(f,lib.nf_table)    : lib.params.nf_db);
-    p1dbOutDbm= ov.p1db_out ?? (lib.p1db_table  ? lerp(f,lib.p1db_table)  : lib.params.p1db_out_dbm);
-  } else if (cat === 'attenuator' || cat === 'filter') {
-    const loss = ov.loss_db ?? (lib.loss_table ? lerp(f,lib.loss_table) : lib.params.loss_db);
-    gainDb = -loss;
-    nfDb   = loss;  // passive: NF = insertion loss
-  } else if (cat === 'mixer') {
-    const convLoss = ov.conv_loss_db ?? lib.params.conv_loss_db;
-    gainDb     = -convLoss;
-    nfDb       = ov.nf_db      ?? lib.params.nf_db;
-    p1dbInDbm  = ov.p1db_in    ?? lib.params.p1db_in_dbm;
-    // Output P1dB ≈ Input P1dB + Conversion Gain (approx)
-    p1dbOutDbm = p1dbInDbm + gainDb;
+/* ── Stage parameters at current freq ────────────────────────── */
+function sp(block) {
+  const L=block.lib, o=block.ov, f=freqGhz, c=L.cat;
+  let gain=0, nf=0, p1out=null, p1in=null;
+  if (c==='amplifier') {
+    gain  = o.gain_db  ?? (L.gain_t ? interp(f,L.gain_t) : L.p.gain_db);
+    nf    = o.nf_db    ?? (L.nf_t   ? interp(f,L.nf_t)   : L.p.nf_db);
+    p1out = o.p1db_out ?? (L.p1_t   ? interp(f,L.p1_t)   : L.p.p1db_out);
+  } else if (c==='attenuator'||c==='filter') {
+    const loss = o.loss_db ?? (L.loss_t ? interp(f,L.loss_t) : L.p.loss_db);
+    gain=-loss; nf=loss;
+  } else if (c==='mixer') {
+    const cl = o.conv_loss_db ?? L.p.conv_loss_db;
+    gain=-cl; nf=o.nf_db??L.p.nf_db;
+    p1in =o.p1db_in??L.p.p1db_in;
+    p1out=p1in+gain;
   }
-  return { gainDb, nfDb, p1dbOutDbm, p1dbInDbm };
+  return {gain,nf,p1out,p1in};
 }
 
-// ---- Cascade calculator (Friis NF, cumulative gain, P1dB) ------
-// Ported from cascade.py: evaluate_path(), friis_nf loop
+/* ── Cascade (Friis NF + noise density from cascade.py) ─────── */
+const KTB = Math.pow(10,-17.4); // 10^(-174/10) mW/Hz
 function calcCascade() {
-  if (chain.length === 0) return [];
-  const rows = [];
-  let cumGainDb = 0;
-  let nfLinTotal = null;   // linear noise factor
-  let gRunningLin = 1.0;
-  let inputPowerDbm = -40; // assumed input (informational only)
-
-  for (let i = 0; i < chain.length; i++) {
-    const sp = stageParams(chain[i]);
-    const { gainDb, nfDb, p1dbOutDbm } = sp;
-
-    // Cumulative gain
-    cumGainDb += gainDb;
-
-    // Friis NF cascade (mirrors cascade.py lines 94-151)
-    const nfLin = Math.pow(10, nfDb / 10);
-    if (nfLinTotal === null) {
-      nfLinTotal = nfLin;
-    } else {
-      nfLinTotal = nfLinTotal + (nfLin - 1) / gRunningLin;
-    }
-    gRunningLin *= Math.pow(10, gainDb / 10);
-
-    const cascNfDb = 10 * Math.log10(nfLinTotal);
-
-    // Distance to P1dB compression at this stage output
-    // Pin to stage = input power + cumulative gain up to previous stage
-    const pinAtStage = inputPowerDbm + (cumGainDb - gainDb);
-    let pinToP1db = null;
-    if (p1dbOutDbm !== null) {
-      // P1dB is output-referred; pin to P1dB = p1db_out - cum_gain
-      pinToP1db = p1dbOutDbm - cumGainDb;
-    }
-
-    rows.push({
-      idx: i+1,
-      name: chain[i].libEntry.name,
-      overrideName: chain[i].overrides.name || null,
-      gainDb, cumGainDb, nfDb, cascNfDb, p1dbOutDbm, pinToP1db
-    });
-  }
+  if(!chain.length) return [];
+  const desigs=getDesigs(), rows=[];
+  let cumG=0, nfLin=null, gRun=1, sig=pinDbm, noiseL=KTB;
+  chain.forEach((b,i)=>{
+    const s=sp(b), gL=Math.pow(10,s.gain/10), nL=Math.pow(10,s.nf/10);
+    cumG+=s.gain; sig+=s.gain;
+    // Friis NF (cascade.py lines 94-151)
+    nfLin = nfLin==null ? nL : nfLin+(nL-1)/gRun;
+    gRun*=gL;
+    const cascNF=10*Math.log10(nfLin);
+    // Noise density (cascade.py lines 291-318)
+    const neff=Math.max(noiseL, nL*KTB);
+    const nout=Math.max(KTB, neff*gL);
+    const noiseDbHz=10*Math.log10(nout);
+    noiseL=nout;
+    const hdroom=s.p1out!=null ? s.p1out-sig : null;
+    rows.push({desig:desigs[i], name:b.ov.name||b.lib.name,
+      gain:s.gain, cumG, sig, nf:s.nf, cascNF, noiseDbHz,
+      p1out:s.p1out, hdroom});
+  });
   return rows;
 }
-
-// ---- Format helpers -------------------------------------------
-function fmt1(v) { return v === null || isNaN(v) ? '—' : v.toFixed(1); }
-
-// ---- Build palette UI ------------------------------------------
-function buildPalette() {
-  const pal = document.getElementById('palette');
-  const realH = document.getElementById('pal-real-h');
-  LIBRARY.forEach(lib => {
-    const el = document.createElement('div');
-    el.className = 'pal-item';
-    el.draggable = true;
-    el.dataset.libId = lib.id;
-    el.innerHTML = `
-      <div class="pal-icon" style="background:${CAT_COLORS[lib.category]||'rgba(255,255,255,.05)'};border-color:${CAT_BORDER[lib.category]||'var(--line2)'}">
-        ${lib.icon}
-      </div>
-      <div class="pal-info">
-        <div class="pal-name">${lib.name}</div>
-        <div class="pal-sub">${lib.sub}</div>
-      </div>`;
-    el.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('libId', lib.id);
-      e.dataTransfer.effectAllowed = 'copy';
-    });
-    if (lib.ideal) pal.insertBefore(el, realH);
-    else pal.appendChild(el);
+function getDesigs(){
+  const cnt={};
+  return chain.map(b=>{
+    const px=CAT[b.lib.cat]?.prefix||'U';
+    cnt[px]=(cnt[px]||0)+1; return px+cnt[px];
   });
 }
 
-// ---- Canvas drag-drop -----------------------------------------
-const canvasWrap = document.getElementById('canvas-wrap');
-const canvasEl   = document.getElementById('canvas');
+/* ── SVG Symbols (matching symbols.py in actual app) ─────────── */
+const BLOCK=64, PORT_R=4, STUB=12;
 
-canvasWrap.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect='copy'; });
-canvasWrap.addEventListener('drop', e => {
-  e.preventDefault();
-  const libId = e.dataTransfer.getData('libId');
-  if (!libId) return;
-  const lib = LIBRARY.find(l => l.id === libId);
-  if (!lib) return;
-  addBlock(lib);
-});
-
-function addBlock(lib) {
-  const id = 'b' + (nextId++);
-  const block = {
-    id, libEntry: lib,
-    overrides: {},   // user edits: gain_db, nf_db, loss_db, etc.
-    x: 0, y: 0,     // set by layout
-  };
-  chain.push(block);
-  renderCanvas();
-  updateResults();
-  selectBlock(id);
+function drawSym(cat) {
+  const g=mk('g');
+  if(cat==='amplifier'){
+    // Filled triangle pointing right — exact match to actual app (symbols.py)
+    g.appendChild(mk('polygon',{
+      points:'4,4 4,60 60,32',
+      fill:'#fff3e0',stroke:'#212121','stroke-width':1.5,'stroke-linejoin':'round'
+    }));
+  } else if(cat==='attenuator'){
+    // Horizontal zigzag resistor — attenuator glyph from symbols.py
+    g.appendChild(mk('polyline',{
+      points:'0,32 9,32 14,20 22,44 30,20 38,44 46,20 55,32 64,32',
+      fill:'none',stroke:'#212121','stroke-width':1.5,
+      'stroke-linejoin':'round','stroke-linecap':'round'
+    }));
+  } else if(cat==='filter'){
+    // Box with BPF label
+    g.appendChild(mk('rect',{x:8,y:18,width:48,height:28,rx:2,
+      fill:'#f0f0f0',stroke:'#212121','stroke-width':1.5}));
+    txt(g.appendChild(mk('text',{x:32,y:32,
+      'text-anchor':'middle','dominant-baseline':'middle',
+      'font-size':9,'font-weight':'bold',fill:'#424242',
+      'font-family':'ui-monospace,monospace'})),'BPF');
+  } else if(cat==='mixer'){
+    // Circle with × — exact match to actual app
+    g.appendChild(mk('circle',{cx:32,cy:32,r:26,
+      fill:'#ffcdd2',stroke:'#b71c1c','stroke-width':1.5}));
+    g.appendChild(mk('line',{x1:14,y1:14,x2:50,y2:50,stroke:'#b71c1c','stroke-width':2.2}));
+    g.appendChild(mk('line',{x1:50,y1:14,x2:14,y2:50,stroke:'#b71c1c','stroke-width':2.2}));
+  }
+  return g;
 }
 
-// ---- Layout (horizontal auto-chain) ----------------------------
-const BLOCK_W   = 96;
-const BLOCK_GAP = 56;  // gap between blocks
-const CHAIN_START_X = 32;
-const CHAIN_Y_CENTER = 0.4; // fraction of canvas height
-
-function layoutBlocks() {
-  const wrap = canvasWrap.getBoundingClientRect();
-  const H = wrap.height;
-  const cy = H * CHAIN_Y_CENTER;
-  chain.forEach((block, i) => {
-    block.x = CHAIN_START_X + i * (BLOCK_W + BLOCK_GAP);
-    block.y = cy - 52; // offset so center of block-body aligns
-  });
+/* ── Layout ──────────────────────────────────────────────────── */
+const GAP=68, X0=50;
+function bpos(i){
+  const h=parseFloat(svg.getAttribute('height'))||400;
+  return {x:X0+i*(BLOCK+GAP), y:h*0.37-BLOCK/2};
 }
 
-// ---- Render canvas blocks + wires ------------------------------
-function renderCanvas() {
-  layoutBlocks();
-  const hint = document.getElementById('drop-hint');
-  hint.classList.toggle('hidden', chain.length > 0);
+/* ── Render ──────────────────────────────────────────────────── */
+const svg=document.getElementById('schematic');
+const cvwrap=document.getElementById('cvwrap');
 
-  // Clear old blocks (keep wires svg)
-  canvasEl.querySelectorAll('.block').forEach(b => b.remove());
+function render(){
+  // Sync SVG size to container
+  const r=cvwrap.getBoundingClientRect();
+  svg.setAttribute('width',r.width);
+  svg.setAttribute('height',r.height);
+  // Clear
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
 
-  chain.forEach((block, i) => {
-    const lib = block.libEntry;
-    const sp  = stageParams(block);
-    const el  = document.createElement('div');
-    el.className = 'block' + (selectedId === block.id ? ' selected' : '');
-    el.id = 'blk-' + block.id;
-    el.style.left = block.x + 'px';
-    el.style.top  = block.y + 'px';
-    el.style.width = BLOCK_W + 'px';
+  document.getElementById('drop-hint').classList.toggle('hidden',chain.length>0);
 
-    const valLine = formatBlockVal(lib.category, sp);
+  // ── Wires (drawn below blocks so port dots appear on top)
+  const wL=mk('g'); svg.appendChild(wL);
+  for(let i=0;i<chain.length-1;i++){
+    const a=bpos(i),b=bpos(i+1);
+    const x1=a.x+BLOCK, y1=a.y+BLOCK/2;
+    const x2=b.x,       y2=b.y+BLOCK/2;
+    // Right-angle routing with stubs (matches wire_item.py STUB=12)
+    const mx1=x1+STUB, mx2=x2-STUB, my=(y1+y2)/2;
+    const d=y1===y2
+      ? `M${x1},${y1} H${x2}`
+      : `M${x1},${y1} H${mx1} V${my} H${mx2} V${y2} H${x2}`;
+    wL.appendChild(mk('path',{d,fill:'none',
+      stroke:'#212121','stroke-width':1.6,
+      'stroke-linejoin':'round','stroke-linecap':'round'}));
+    // Flow arrow at midpoint
+    const ax=(x1+x2)/2, ay=y1===y2?y1:my;
+    wL.appendChild(mk('polygon',{
+      points:`${ax-6},${ay-4} ${ax+6},${ay} ${ax-6},${ay+4}`,
+      fill:'#9e9e9e',opacity:'.7'}));
+  }
 
-    el.innerHTML = `
-      <div class="block-idx">${i+1}</div>
-      <div class="block-body" style="width:${BLOCK_W}px">
-        ${i > 0 ? '<div class="port-in"></div>' : ''}
-        ${i < chain.length-1 ? '<div class="port-out"></div>' : ''}
-        <button class="block-del" data-id="${block.id}" title="Remove">✕</button>
-        <div class="block-icon">${lib.icon}</div>
-        <div class="block-name">${block.overrides.name || lib.name}</div>
-        <div class="block-val">${valLine}</div>
-      </div>
-      <div class="block-label">${lib.real ? (lib.manufacturer||'') : 'Ideal'}</div>`;
+  // ── Blocks
+  const desigs=getDesigs();
+  const bL=mk('g'); svg.appendChild(bL);
 
-    // Drag to reorder (simplistic: drag removes + re-adds at new position)
-    let dragging = false, startX = 0, startI = i;
-    el.addEventListener('mousedown', ev => {
-      if (ev.target.classList.contains('block-del')) return;
-      dragging = true; startX = ev.clientX; startI = i;
-      selectBlock(block.id);
-      ev.preventDefault();
-    });
+  chain.forEach((block,i)=>{
+    const {x,y}=bpos(i), sel=selectedId===block.id;
+    const s=sp(block), cat=block.lib.cat;
+    const g=mk('g',{transform:`translate(${x},${y})`,cursor:'pointer'});
+    g.setAttribute('data-id',block.id);
 
-    // Click to select (handled by mousedown → selectBlock above)
-    el.addEventListener('click', ev => {
-      if (ev.target.classList.contains('block-del')) return;
-      selectBlock(block.id);
-    });
+    // Selection dashed border (colour #1565c0, 1.4px — from component_item.py)
+    if(sel){
+      g.appendChild(mk('rect',{x:-4,y:-4,width:BLOCK+8,height:BLOCK+8,rx:6,
+        fill:'rgba(21,101,192,.07)',stroke:'#1565c0','stroke-width':1.4,
+        'stroke-dasharray':'5 3'}));
+    }
 
-    canvasEl.appendChild(el);
+    // Symbol
+    g.appendChild(drawSym(cat));
+
+    // Port dots: white fill, dark border (matches PORT_RADIUS=4, port colors)
+    if(i>0)      g.appendChild(mk('circle',{cx:0,       cy:BLOCK/2, r:PORT_R, fill:'white',stroke:'#212121','stroke-width':1.4}));
+    if(i<chain.length-1) g.appendChild(mk('circle',{cx:BLOCK, cy:BLOCK/2, r:PORT_R, fill:'white',stroke:'#212121','stroke-width':1.4}));
+
+    // Designator label (8pt bold monospace below block — matches actual app)
+    txt(g.appendChild(mk('text',{x:BLOCK/2, y:BLOCK+13,
+      'text-anchor':'middle','font-size':9,'font-weight':'700',
+      fill:'#424242','font-family':'ui-monospace,SFMono-Regular,monospace'})),
+      desigs[i]);
+
+    // Component name (muted, smaller)
+    txt(g.appendChild(mk('text',{x:BLOCK/2, y:BLOCK+24,
+      'text-anchor':'middle','font-size':8,fill:'#607d8b',
+      'font-family':'-apple-system,BlinkMacSystemFont,Helvetica,sans-serif'})),
+      block.ov.name||block.lib.name);
+
+    // Key value line
+    txt(g.appendChild(mk('text',{x:BLOCK/2, y:BLOCK+34,
+      'text-anchor':'middle','font-size':8,fill:'#78909c',
+      'font-family':'-apple-system,BlinkMacSystemFont,Helvetica,sans-serif'})),
+      fmtVal(cat,s));
+
+    // Delete ×
+    const dg=mk('g',{transform:`translate(${BLOCK-6},-6)`,
+      opacity:sel?'1':'0',cursor:'pointer'});
+    dg.setAttribute('data-del',block.id);
+    dg.appendChild(mk('circle',{cx:0,cy:0,r:8,fill:'#424242',stroke:'#9e9e9e','stroke-width':1}));
+    txt(dg.appendChild(mk('text',{x:0,y:0,'text-anchor':'middle',
+      'dominant-baseline':'middle','font-size':9,fill:'#e0e0e0'})),'✕');
+    g.appendChild(dg);
+
+    g.addEventListener('mouseenter',()=>dg.setAttribute('opacity','1'));
+    g.addEventListener('mouseleave',()=>{ if(selectedId!==block.id) dg.setAttribute('opacity','0'); });
+    g.addEventListener('click',e=>{ e.stopPropagation(); selectBlock(block.id); });
+
+    bL.appendChild(g);
   });
 
-  // Wire delete buttons
-  canvasEl.querySelectorAll('.block-del').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      removeBlock(btn.dataset.id);
-    });
-  });
-
-  // Drag to reorder
-  attachDragReorder();
-
-  drawWires();
+  // Delete handlers
+  svg.querySelectorAll('[data-del]').forEach(el=>
+    el.addEventListener('click',e=>{ e.stopPropagation(); removeBlock(el.getAttribute('data-del')); })
+  );
+  // Deselect on canvas click
+  svg.addEventListener('click',()=>{ if(selectedId){selectedId=null;hideInsp();render();} });
 }
 
-function formatBlockVal(cat, sp) {
-  if (cat === 'amplifier') return `G=${fmt1(sp.gainDb)} dB · NF=${fmt1(sp.nfDb)} dB`;
-  if (cat === 'attenuator') return `Loss=${fmt1(-sp.gainDb)} dB`;
-  if (cat === 'filter')     return `Loss=${fmt1(-sp.gainDb)} dB`;
-  if (cat === 'mixer')      return `Loss=${fmt1(-sp.gainDb)} dB · NF=${fmt1(sp.nfDb)} dB`;
+function fmtVal(cat, s) {
+  if(cat==='amplifier') return `G=${f1(s.gain)} dB  NF=${f1(s.nf)} dB`;
+  if(cat==='attenuator') return `${f1(-s.gain)} dB`;
+  if(cat==='filter') return `IL=${f1(-s.gain)} dB`;
+  if(cat==='mixer') return `CL=${f1(-s.gain)} dB  NF=${f1(s.nf)} dB`;
   return '';
 }
 
-// ---- Drag-to-reorder blocks ------------------------------------
-function attachDragReorder() {
-  let dragSrc = null;
-  canvasEl.querySelectorAll('.block').forEach(el => {
-    el.addEventListener('dragstart', e => {
-      dragSrc = el.id.replace('blk-','');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('blockId', dragSrc);
-    });
-    el.setAttribute('draggable', true);
-    el.addEventListener('dragover', e => { e.preventDefault(); });
-    el.addEventListener('drop', e => {
-      e.stopPropagation();
-      const targetId = el.id.replace('blk-','');
-      if (dragSrc && dragSrc !== targetId) {
-        const srcI   = chain.findIndex(b => b.id === dragSrc);
-        const tgtI   = chain.findIndex(b => b.id === targetId);
-        const [moved] = chain.splice(srcI, 1);
-        chain.splice(tgtI, 0, moved);
-        renderCanvas();
-        updateResults();
-      }
+/* ── Palette ─────────────────────────────────────────────────── */
+function buildPalette(){
+  const list=document.getElementById('pal-list');
+  list.innerHTML='';
+  [['Ideal',true],['Real Components',false]].forEach(([label,isIdeal])=>{
+    const h=document.createElement('div');
+    h.className='pal-h'; h.textContent=label;
+    list.appendChild(h);
+    LIB.filter(l=>isIdeal?l.ideal:!l.ideal).forEach(lib=>{
+      const el=document.createElement('div');
+      el.className='pal-item'; el.draggable=true; el.dataset.lid=lib.id;
+      const c=CAT[lib.cat];
+      el.innerHTML=`
+        <div class="pal-badge" style="background:${c.fill};color:${c.ink}">
+          ${lib.cat==='amplifier'?'▷':lib.cat==='mixer'?'×':lib.cat==='filter'?'⊡':'Z'}
+        </div>
+        <div>
+          <div class="pal-name">${lib.name}</div>
+          <div class="pal-kpi">${lib.sub}</div>
+        </div>`;
+      el.addEventListener('dragstart',e=>{
+        e.dataTransfer.setData('lid',lib.id);
+        e.dataTransfer.effectAllowed='copy';
+      });
+      list.appendChild(el);
     });
   });
 }
 
-// ---- Remove a block -------------------------------------------
-function removeBlock(id) {
-  chain = chain.filter(b => b.id !== id);
-  if (selectedId === id) { selectedId = null; hideInspector(); }
-  renderCanvas();
-  updateResults();
-}
-
-// ---- Draw SVG wires -------------------------------------------
-function drawWires() {
-  const svg = document.getElementById('wires');
-  svg.innerHTML = '';
-
-  for (let i = 0; i < chain.length - 1; i++) {
-    const a = chain[i], b = chain[i+1];
-    const ax = a.x + BLOCK_W;   // right edge of block body
-    const ay = a.y + 52;        // vertical center of block-body (approx)
-    const bx = b.x;
-    const by = b.y + 52;
-
-    // Animated dashed line with flow direction
-    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1', ax); line.setAttribute('y1', ay);
-    line.setAttribute('x2', bx); line.setAttribute('y2', by);
-    line.setAttribute('stroke', '#60b0f0');
-    line.setAttribute('stroke-width', '2');
-    line.setAttribute('stroke-dasharray', '6 4');
-    line.setAttribute('opacity', '0.7');
-
-    const anim = document.createElementNS('http://www.w3.org/2000/svg','animateTransform');
-    anim.setAttribute('attributeName','transform');
-    anim.setAttribute('type','translate');
-    anim.setAttribute('from','0 0');
-    anim.setAttribute('to','10 0');
-    anim.setAttribute('dur','0.6s');
-    anim.setAttribute('repeatCount','indefinite');
-    line.appendChild(anim);
-
-    // Arrowhead
-    const dx = bx-ax, dy = by-ay;
-    const len = Math.sqrt(dx*dx+dy*dy) || 1;
-    const ux = dx/len, uy = dy/len;
-    const mx = ax + dx*0.5, my = ay + dy*0.5;
-    const arrow = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-    const sz = 7;
-    const px = [-sz*ux+sz*0.5*uy, -sz*ux-sz*0.5*uy, 0];
-    const py = [-sz*uy-sz*0.5*ux, -sz*uy+sz*0.5*ux, 0];
-    const pts = [0,1,2].map(k=>`${mx+px[k]},${my+py[k]}`).join(' ');
-    arrow.setAttribute('points', pts);
-    arrow.setAttribute('fill','#60b0f0');
-    arrow.setAttribute('opacity','0.85');
-
-    svg.appendChild(line);
-    svg.appendChild(arrow);
-  }
-}
-
-// ---- Inspector ------------------------------------------------
-const inspector = document.getElementById('inspector');
-
-function selectBlock(id) {
-  selectedId = id;
-  renderCanvas();
-  openInspector(id);
-}
-
-function openInspector(id) {
-  const block = chain.find(b => b.id === id);
-  if (!block) return;
-  const lib = block.libEntry;
-  const sp  = stageParams(block);
-  const cat = lib.category;
-
-  inspector.style.display = 'block';
-  document.getElementById('insp-title').textContent = lib.name;
-
-  // Position near the block
-  const blkEl = document.getElementById('blk-' + id);
-  if (blkEl) {
-    const wrect = canvasWrap.getBoundingClientRect();
-    const brect = blkEl.getBoundingClientRect();
-    let top  = brect.top - wrect.top + 10;
-    let left = brect.right - wrect.left + 10;
-    if (left + 230 > wrect.width) left = brect.left - wrect.left - 230;
-    if (top + 260 > wrect.height) top = wrect.height - 270;
-    inspector.style.top  = Math.max(8, top) + 'px';
-    inspector.style.left = Math.max(8, left) + 'px';
-  }
-
-  const fields = document.getElementById('insp-fields');
-  fields.innerHTML = '';
-
-  function addField(label, key, val, min, max, step) {
-    const div = document.createElement('div');
-    div.className = 'field';
-    div.innerHTML = `<label>${label}</label>
-      <input type="number" data-key="${key}" value="${val.toFixed(2)}" min="${min}" max="${max}" step="${step}"/>`;
-    div.querySelector('input').addEventListener('input', e => {
-      block.overrides[key] = parseFloat(e.target.value);
-      renderCanvas();
-      updateResults();
-    });
-    fields.appendChild(div);
-  }
-
-  // Name override
-  const nameDiv = document.createElement('div');
-  nameDiv.className = 'field';
-  nameDiv.innerHTML = `<label>Label</label>
-    <input type="text" data-key="name" value="${block.overrides.name || ''}"/>`;
-  nameDiv.querySelector('input').addEventListener('input', e => {
-    block.overrides.name = e.target.value;
-    renderCanvas();
+document.getElementById('pal-search').addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  document.querySelectorAll('.pal-item').forEach(el=>{
+    const match=!q||el.textContent.toLowerCase().includes(q);
+    el.style.display=match?'':'none';
   });
-  fields.appendChild(nameDiv);
-
-  if (cat === 'amplifier') {
-    addField('Gain (dB)', 'gain_db', sp.gainDb, -30, 60, 0.5);
-    addField('Noise Figure (dB)', 'nf_db', sp.nfDb, 0, 30, 0.1);
-    addField('P1dB out (dBm)', 'p1db_out', sp.p1dbOutDbm ?? 20, -20, 50, 0.5);
-  } else if (cat === 'attenuator' || cat === 'filter') {
-    addField('Loss (dB)', 'loss_db', -sp.gainDb, 0, 60, 0.5);
-  } else if (cat === 'mixer') {
-    addField('Conversion Loss (dB)', 'conv_loss_db', -sp.gainDb, 0, 20, 0.5);
-    addField('Noise Figure (dB)', 'nf_db', sp.nfDb, 0, 30, 0.1);
-    addField('IIP3 / P1dB in (dBm)', 'p1db_in', sp.p1dbInDbm ?? 1, -30, 30, 0.5);
-  }
-
-  // Show real component note
-  if (lib.real) {
-    const note = document.createElement('p');
-    note.style.cssText = 'font-size:10px;color:var(--fg-dim);margin-top:10px;line-height:1.5;';
-    note.textContent = `${lib.manufacturer ? lib.manufacturer + ' · ' : ''}${lib.sub}. Values sampled at ${freqGhz} GHz. Edit above to override.`;
-    fields.appendChild(note);
-  }
-}
-
-function hideInspector() {
-  inspector.style.display = 'none';
-}
-document.getElementById('insp-close').addEventListener('click', () => {
-  selectedId = null; hideInspector(); renderCanvas();
-});
-canvasWrap.addEventListener('click', e => {
-  if (!e.target.closest('.block') && !e.target.closest('#inspector')) {
-    selectedId = null; hideInspector(); renderCanvas();
-  }
 });
 
-// ---- Results table --------------------------------------------
-function updateResults() {
-  const rows = calcCascade();
-  const tbody = document.getElementById('results-body');
-  const empty = document.getElementById('table-empty');
-  const tbl   = document.getElementById('results-table');
+/* ── Drag-drop onto canvas ────────────────────────────────────── */
+cvwrap.addEventListener('dragover',e=>e.preventDefault());
+cvwrap.addEventListener('drop',e=>{
+  e.preventDefault();
+  const id=e.dataTransfer.getData('lid');
+  if(!id) return;
+  const lib=LIB.find(l=>l.id===id);
+  if(lib) addBlock(lib);
+});
 
-  if (rows.length === 0) {
-    tbl.style.display = 'none';
-    empty.style.display = 'block';
-    document.getElementById('sum-gain').textContent = '—';
-    document.getElementById('sum-nf').textContent   = '—';
-    document.getElementById('sum-p1db').textContent = '—';
-    document.getElementById('sum-gain').className   = 'val-na';
-    document.getElementById('sum-nf').className     = 'val-na';
-    document.getElementById('sum-p1db').className   = 'val-na';
+function addBlock(lib){
+  chain.push({id:'b'+(nextId++), lib, ov:{}});
+  render(); updateTable();
+  selectBlock(chain[chain.length-1].id);
+}
+function removeBlock(id){
+  chain=chain.filter(b=>b.id!==id);
+  if(selectedId===id){selectedId=null;hideInsp();}
+  render(); updateTable();
+}
+
+/* ── Inspector ───────────────────────────────────────────────── */
+const insp=document.getElementById('insp');
+function selectBlock(id){selectedId=id; render(); openInsp(id);}
+
+function openInsp(id){
+  const block=chain.find(b=>b.id===id);
+  if(!block) return;
+  const L=block.lib, s=sp(block), cat=L.cat;
+  const desigs=getDesigs(), desig=desigs[chain.indexOf(block)];
+
+  insp.style.display='block';
+  document.getElementById('insp-title').textContent=L.name;
+  document.getElementById('insp-sub').textContent=desig+(L.mfr?' · '+L.mfr:'');
+
+  // Position near block, prefer right side
+  const i=chain.indexOf(block), pos=bpos(i);
+  const sw=parseFloat(svg.getAttribute('width'))||800;
+  const sh=parseFloat(svg.getAttribute('height'))||400;
+  let left=pos.x+BLOCK+14, top=pos.y-10;
+  if(left+216>sw) left=pos.x-220;
+  if(top+290>sh) top=sh-290;
+  insp.style.left=Math.max(4,left)+'px';
+  insp.style.top =Math.max(4,top )+'px';
+
+  const fields=document.getElementById('insp-fields');
+  fields.innerHTML='';
+
+  const addF=(label,key,val,min,max,step)=>{
+    const d=document.createElement('div'); d.className='ifield';
+    d.innerHTML=`<label>${label}</label>
+      <input type="number" value="${(+val).toFixed(2)}" min="${min}" max="${max}" step="${step}"/>`;
+    d.querySelector('input').addEventListener('input',ev=>{
+      block.ov[key]=parseFloat(ev.target.value);
+      render(); updateTable();
+    });
+    fields.appendChild(d);
+  };
+
+  // Label override
+  const nd=document.createElement('div'); nd.className='ifield';
+  nd.innerHTML=`<label>Label</label><input type="text" value="${block.ov.name||''}"/>`;
+  nd.querySelector('input').addEventListener('input',ev=>{block.ov.name=ev.target.value; render();});
+  fields.appendChild(nd);
+
+  if(cat==='amplifier'){
+    addF('Gain (dB)',        'gain_db',   s.gain, -40, 80, 0.5);
+    addF('Noise Figure (dB)','nf_db',    s.nf,     0, 30, 0.1);
+    addF('P1dB out (dBm)',   'p1db_out', s.p1out??20,-30,60, 0.5);
+  } else if(cat==='attenuator'||cat==='filter'){
+    addF((cat==='filter'?'Insertion':'Attenuation')+' Loss (dB)','loss_db',-s.gain,0,60,0.5);
+  } else if(cat==='mixer'){
+    addF('Conv. Loss (dB)', 'conv_loss_db', -s.gain,  0,20,0.5);
+    addF('Noise Figure (dB)','nf_db',        s.nf,    0,30,0.1);
+    addF('P1dB in (dBm)',   'p1db_in',  s.p1in??1, -30,30,0.5);
+  }
+
+  if(L.gain_t||L.nf_t||L.loss_t){
+    const n=document.createElement('p'); n.className='inote';
+    n.textContent=`${L.sub}. Values interpolated at ${freqGhz} GHz. Edit fields to override.`;
+    fields.appendChild(n);
+  }
+}
+function hideInsp(){insp.style.display='none';}
+document.getElementById('insp-close').addEventListener('click',()=>{selectedId=null;hideInsp();render();});
+
+/* ── Results table ───────────────────────────────────────────── */
+function updateTable(){
+  const rows=calcCascade();
+  const tbody=document.getElementById('res-body');
+  const empty=document.getElementById('tbl-empty');
+  const tbl  =document.getElementById('res-tbl');
+  document.getElementById('rh-freq').textContent=freqGhz+' GHz';
+
+  if(!rows.length){
+    tbl.style.display='none'; empty.style.display='block';
+    ['sum-gain','sum-nf','sum-p1db'].forEach(id=>{
+      const el=document.getElementById(id); el.textContent='—'; el.className='cv-na';
+    });
     return;
   }
-  tbl.style.display = '';
-  empty.style.display = 'none';
+  tbl.style.display=''; empty.style.display='none';
+  tbody.innerHTML='';
 
-  tbody.innerHTML = '';
-  rows.forEach(r => {
-    const tr = document.createElement('tr');
-    const p1Cell = r.p1dbOutDbm !== null
-      ? `<td class="td-p1db">${fmt1(r.p1dbOutDbm)}</td>`
-      : `<td class="td-na">—</td>`;
-    const hdCell = r.pinToP1db !== null
-      ? `<td class="${r.pinToP1db < 3 ? 'td-p1db' : ''}" title="Headroom to P1dB at output">${fmt1(r.pinToP1db)}</td>`
-      : `<td class="td-na">—</td>`;
-    tr.innerHTML = `
-      <td>${r.idx}</td>
-      <td>${r.overrideName || r.name}</td>
-      <td class="${r.gainDb >= 0 ? 'td-gain' : 'td-p1db'}">${fmt1(r.gainDb)}</td>
-      <td class="${r.cumGainDb >= 0 ? 'td-gain' : 'td-p1db'}">${fmt1(r.cumGainDb)}</td>
-      <td class="td-nf">${fmt1(r.nfDb)}</td>
-      <td class="td-nf">${fmt1(r.cascNfDb)}</td>
-      ${p1Cell}${hdCell}`;
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    const gc=r.gain>=0?'cv-gain':'cv-warn';
+    const p1c=r.p1out!=null?'cv-p1db':'cv-na';
+    tr.innerHTML=`
+      <td class="td-desig">${r.desig}</td>
+      <td>${r.name}</td>
+      <td class="col-g ${gc}">${f1(r.gain)}</td>
+      <td class="${r.hdroom!=null&&r.hdroom<3?'cv-warn':''}">${f1(r.sig)}</td>
+      <td class="col-nf cv-nf">${f1(r.cascNF)}</td>
+      <td class="cv-na">${f1(r.noiseDbHz)}</td>
+      <td class="${p1c}">${r.p1out!=null?f1(r.p1out):'—'}</td>`;
     tbody.appendChild(tr);
   });
 
-  // Summary row
-  const last = rows[rows.length - 1];
-  const sumTr = document.createElement('tr');
-  sumTr.className = 'row-total';
-  const sumP1db = last.p1dbOutDbm;
-  sumTr.innerHTML = `
+  // System row
+  const L=rows[rows.length-1];
+  const sys=document.createElement('tr'); sys.className='row-sys';
+  sys.innerHTML=`
     <td></td><td>System (cascaded)</td>
-    <td class="${last.cumGainDb >= 0 ? 'td-gain' : 'td-p1db'}">${fmt1(last.cumGainDb)}</td>
-    <td></td>
-    <td class="td-nf">${fmt1(last.cascNfDb)}</td>
-    <td></td>
-    ${sumP1db !== null ? `<td class="td-p1db">${fmt1(sumP1db)}</td>` : '<td class="td-na">—</td>'}
-    <td></td>`;
-  tbody.appendChild(sumTr);
+    <td class="col-g ${L.cumG>=0?'cv-gain':'cv-warn'}">${f1(L.cumG)}</td>
+    <td>${f1(L.sig)}</td>
+    <td class="col-nf cv-nf">${f1(L.cascNF)}</td>
+    <td class="cv-na">${f1(L.noiseDbHz)}</td>
+    <td class="${L.p1out!=null?'cv-p1db':'cv-na'}">${L.p1out!=null?f1(L.p1out):'—'}</td>`;
+  tbody.appendChild(sys);
 
-  // Top-bar summary
-  const sg = document.getElementById('sum-gain');
-  const sn = document.getElementById('sum-nf');
-  const sp1= document.getElementById('sum-p1db');
-  sg.textContent = fmt1(last.cumGainDb) + ' dB';
-  sg.className   = last.cumGainDb >= 0 ? 'val-gain' : 'val-p1db';
-  sn.textContent = fmt1(last.cascNfDb) + ' dB';
-  sn.className   = 'val-nf';
-  if (sumP1db !== null) {
-    sp1.textContent = fmt1(sumP1db) + ' dBm';
-    sp1.className   = 'val-p1db';
-  } else {
-    sp1.textContent = '—';
-    sp1.className   = 'val-na';
-  }
+  const sg=document.getElementById('sum-gain');
+  const sn=document.getElementById('sum-nf');
+  const sp1=document.getElementById('sum-p1db');
+  sg.textContent=f1(L.cumG)+' dB';  sg.className=L.cumG>=0?'cv-gain':'cv-warn';
+  sn.textContent=f1(L.cascNF)+' dB'; sn.className='cv-nf';
+  if(L.p1out!=null){sp1.textContent=f1(L.p1out)+' dBm';sp1.className='cv-p1db';}
+  else{sp1.textContent='—';sp1.className='cv-na';}
 }
 
-// ---- Frequency input ------------------------------------------
-document.getElementById('freq-in').addEventListener('input', e => {
-  const v = parseFloat(e.target.value);
-  if (!isNaN(v) && v > 0) {
-    freqGhz = v;
-    renderCanvas();
-    updateResults();
-    if (selectedId) openInspector(selectedId);
-  }
+/* ── Controls ────────────────────────────────────────────────── */
+document.getElementById('freq-in').addEventListener('input',e=>{
+  const v=parseFloat(e.target.value);
+  if(!isNaN(v)&&v>0){ freqGhz=v; render(); updateTable(); if(selectedId) openInsp(selectedId); }
 });
-
-// ---- Clear chain ----------------------------------------------
-document.getElementById('clear-btn').addEventListener('click', () => {
-  chain = []; selectedId = null; hideInspector();
-  renderCanvas(); updateResults();
+document.getElementById('pin-in').addEventListener('input',e=>{
+  const v=parseFloat(e.target.value); if(!isNaN(v)){ pinDbm=v; updateTable(); }
 });
+document.getElementById('clear-btn').addEventListener('click',()=>{
+  chain=[];selectedId=null;hideInsp();render();updateTable();
+});
+window.addEventListener('resize',()=>{ render(); updateTable(); });
 
-// ---- Window resize: re-layout + redraw wires ------------------
-window.addEventListener('resize', () => { renderCanvas(); updateResults(); });
-
-// ---- Init starter chain (LNA → Attenuator → Mixer) -----------
-function loadStarterChain() {
-  const lna   = LIBRARY.find(l => l.id === 'ka-lna');
-  const atten = LIBRARY.find(l => l.id === 'ideal-atten');
-  const amp   = LIBRARY.find(l => l.id === 'mc-zx60');
-  const filt  = LIBRARY.find(l => l.id === 'ideal-filter');
-
-  // Default freq for starter is 2.4 GHz — ZX60 range
-  freqGhz = 2.4;
-  document.getElementById('freq-in').value = '2.4';
-
-  [
-    { lib: amp,   ov: {} },
-    { lib: filt,  ov: { loss_db:1.5 } },
-    { lib: atten, ov: { loss_db:6 } },
-  ].forEach(({ lib, ov }) => {
-    chain.push({ id:'b'+(nextId++), libEntry:lib, overrides:ov, x:0, y:0 });
-  });
-  renderCanvas();
-  updateResults();
+/* ── Starter chain ───────────────────────────────────────────── */
+function loadStarter(){
+  [['mc-zx60',{}],['filter',{loss_db:1.5}],['atten',{loss_db:6}]]
+    .forEach(([id,ov])=>{
+      const lib=LIB.find(l=>l.id===id);
+      if(lib) chain.push({id:'b'+(nextId++),lib,ov});
+    });
 }
 
-// ---- Boot ----------------------------------------------------
+/* ── Boot ────────────────────────────────────────────────────── */
 buildPalette();
-loadStarterChain();
+loadStarter();
+requestAnimationFrame(()=>requestAnimationFrame(()=>{ render(); updateTable(); }));
 </script>
 </body>
 </html>
