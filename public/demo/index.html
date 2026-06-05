@@ -468,16 +468,18 @@ const CAT={
 };
 
 /* ── Ports per category (relative to 64×64 block) ──────────── */
-/* kind: 'in' (sink) | 'out' (source). sub: 'rf' | 'lo' */
+/* kind: 'in' (sink) | 'out' (source). sub: 'rf' | 'lo'.
+   d = outward normal (which way the wire leaves/enters the port). */
 function portsOf(cat){
   switch(cat){
-    case 'source':    return [{name:'OUT',kind:'out',sub:'rf',x:BW,y:BH/2}];
-    case 'lo_source': return [{name:'OUT',kind:'out',sub:'lo',x:BW,y:BH/2}];
-    case 'mixer':     return [{name:'RF',kind:'in',sub:'rf',x:0,y:BH/2},
-                              {name:'LO',kind:'in',sub:'lo',x:BW/2,y:BH},
-                              {name:'IF',kind:'out',sub:'rf',x:BW,y:BH/2}];
-    default:          return [{name:'IN',kind:'in',sub:'rf',x:0,y:BH/2},
-                              {name:'OUT',kind:'out',sub:'rf',x:BW,y:BH/2}];
+    case 'source':    return [{name:'OUT',kind:'out',sub:'rf',x:BW,y:BH/2,d:[1,0]}];
+    // LO source feeds up into the mixer's LO port (placed below the mixer)
+    case 'lo_source': return [{name:'OUT',kind:'out',sub:'lo',x:BW/2,y:0,d:[0,-1]}];
+    case 'mixer':     return [{name:'RF',kind:'in',sub:'rf',x:0,y:BH/2,d:[-1,0]},
+                              {name:'LO',kind:'in',sub:'lo',x:BW/2,y:BH,d:[0,1]},
+                              {name:'IF',kind:'out',sub:'rf',x:BW,y:BH/2,d:[1,0]}];
+    default:          return [{name:'IN',kind:'in',sub:'rf',x:0,y:BH/2,d:[-1,0]},
+                              {name:'OUT',kind:'out',sub:'rf',x:BW,y:BH/2,d:[1,0]}];
   }
 }
 
@@ -519,7 +521,7 @@ const svg=document.getElementById('schematic');
 const nodeById=id=>nodes.find(n=>n.id===id);
 function snapGrid(v){return Math.round(v/GRID)*GRID;}
 function sceneXY(clientX,clientY){const r=svg.getBoundingClientRect();return{x:(clientX-r.left)/zoom,y:(clientY-r.top)/zoom};}
-function portPos(node,portName){const p=portsOf(node.lib.cat).find(p=>p.name===portName);return p?{x:node.x+p.x,y:node.y+p.y,sub:p.sub}:null;}
+function portPos(node,portName){const p=portsOf(node.lib.cat).find(p=>p.name===portName);return p?{x:node.x+p.x,y:node.y+p.y,sub:p.sub,d:p.d}:null;}
 function allPorts(){const out=[];nodes.forEach(n=>portsOf(n.lib.cat).forEach(p=>out.push({node:n.id,name:p.name,kind:p.kind,sub:p.sub,x:n.x+p.x,y:n.y+p.y})));return out;}
 function getDesigs(){const c={};const m={};nodes.forEach(n=>{const px=CAT[n.lib.cat]?.prefix||'U';c[px]=(c[px]||0)+1;m[n.id]=px+c[px];});return m;}
 
@@ -589,29 +591,57 @@ function calcCascade(){
   return{rows,path};
 }
 
-/* ── SVG symbols ───────────────────────────────────────────── */
-function drawSym(cat){const g=mk('g');switch(cat){
-  case 'source':
-    g.appendChild(mk('circle',{cx:32,cy:32,r:28,fill:'#fff9e6',stroke:'#424242','stroke-width':1.5}));
-    g.appendChild(mk('path',{d:'M14,32 Q20,22 26,32 Q32,42 38,32 Q44,22 50,32',fill:'none',stroke:'#795500','stroke-width':2,'stroke-linecap':'round'}));break;
-  case 'lo_source':
-    g.appendChild(mk('circle',{cx:32,cy:32,r:28,fill:'#fff3e0',stroke:'#bf360c','stroke-width':1.5}));
-    tt(g.appendChild(mk('text',{x:32,y:27,'text-anchor':'middle','dominant-baseline':'middle','font-size':9,'font-weight':'bold',fill:'#bf360c','font-family':'ui-monospace,monospace'})),'LO');
-    g.appendChild(mk('path',{d:'M16,38 Q22,30 28,38 Q34,46 40,38 Q46,30 48,38',fill:'none',stroke:'#e64a19','stroke-width':1.8,'stroke-linecap':'round'}));break;
-  case 'amplifier':
-    g.appendChild(mk('polygon',{points:'4,4 4,60 60,32',fill:'#fff3e0',stroke:'#212121','stroke-width':1.5,'stroke-linejoin':'round'}));break;
-  case 'attenuator':
-    g.appendChild(mk('polyline',{points:'0,32 9,32 14,20 22,44 30,20 38,44 46,20 55,32 64,32',fill:'none',stroke:'#212121','stroke-width':1.5,'stroke-linejoin':'round','stroke-linecap':'round'}));break;
-  case 'filter':
-    g.appendChild(mk('rect',{x:8,y:18,width:48,height:28,rx:2,fill:'#f0f0f0',stroke:'#212121','stroke-width':1.5}));
-    tt(g.appendChild(mk('text',{x:32,y:32,'text-anchor':'middle','dominant-baseline':'middle','font-size':9,'font-weight':'bold',fill:'#424242','font-family':'ui-monospace,monospace'})),'BPF');break;
-  case 'mixer':
-    g.appendChild(mk('circle',{cx:32,cy:32,r:26,fill:'#ffcdd2',stroke:'#b71c1c','stroke-width':1.5}));
-    g.appendChild(mk('line',{x1:14,y1:14,x2:50,y2:50,stroke:'#b71c1c','stroke-width':2.2}));
-    g.appendChild(mk('line',{x1:50,y1:14,x2:14,y2:50,stroke:'#b71c1c','stroke-width':2.2}));
-    tt(g.appendChild(mk('text',{x:7,y:27,'font-size':7,fill:'#7f0000','font-weight':'bold','font-family':'ui-monospace,monospace'})),'RF');
-    tt(g.appendChild(mk('text',{x:42,y:27,'font-size':7,fill:'#7f0000','font-weight':'bold','font-family':'ui-monospace,monospace'})),'IF');
-    tt(g.appendChild(mk('text',{x:26,y:58,'font-size':7,fill:'#7f0000','font-weight':'bold','font-family':'ui-monospace,monospace'})),'LO');break;
+/* ── SVG symbols — geometry ported 1:1 from symbols.py ─────────
+   Block rect is 0,0 → 64,64. Colours/strokes/shapes match the
+   actual desktop app glyphs exactly. */
+const polyPath=pts=>'M'+pts.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join(' L');
+function drawSym(cat){const g=mk('g');const CX=32,CY=32,R=32;switch(cat){
+  case 'source':{
+    // _source: green circle (#e8f5e9), one-period sine across the middle
+    g.appendChild(mk('ellipse',{cx:CX,cy:CY,rx:R-0.9,ry:R-0.9,fill:'#e8f5e9',stroke:'#212121','stroke-width':1.8}));
+    const w=R*1.3,h=R*0.45,x0=CX-w/2,n=30,pts=[];
+    for(let i=0;i<=n;i++){const t=i/n;pts.push([x0+t*w, CY-Math.sin(t*2*Math.PI)*h]);}
+    g.appendChild(mk('path',{d:polyPath(pts),fill:'none',stroke:'#212121','stroke-width':1.6,'stroke-linejoin':'round','stroke-linecap':'round'}));break;
+  }
+  case 'lo_source':{
+    // _lo_source: #fff3e0 circle, orange stroke, "LO" text. Output at bottom.
+    g.appendChild(mk('ellipse',{cx:CX,cy:CY,rx:R-0.9,ry:R-0.9,fill:'#fff3e0',stroke:'#ef6c00','stroke-width':1.8}));
+    tt(g.appendChild(mk('text',{x:CX,y:CY,'text-anchor':'middle','dominant-baseline':'central','font-size':14,'font-weight':'bold',fill:'#ef6c00','font-family':'-apple-system,sans-serif'})),'LO');break;
+  }
+  case 'amplifier':{
+    // _amplifier: triangle, base on left edge (full height*0.85), apex right-center
+    const hh=CY*0.85; // 0.85 of half-height
+    g.appendChild(mk('polygon',{points:`0,${(CY-hh).toFixed(1)} 0,${(CY+hh).toFixed(1)} 64,${CY}`,
+      fill:'#fff3e0',stroke:'#212121','stroke-width':1.8,'stroke-linejoin':'round'}));break;
+  }
+  case 'attenuator':{
+    // _attenuator: filled box (#dbeaf7) with a horizontal zigzag resistor inside
+    g.appendChild(mk('rect',{x:0,y:0,width:64,height:64,fill:'#dbeaf7',stroke:'#212121','stroke-width':1.6}));
+    const il=6.4,it=20.48,iw=51.2,ih=23.04;          // inner rect (0.10/0.32/0.80/0.36)
+    const cy=it+ih/2,amp=ih*0.30,left=il,right=il+iw,step=iw/4,pts=[[left,cy]];
+    for(let i=0;i<4;i++){pts.push([left+step*(i+0.5), cy+(i%2===0?amp:-amp)]);}
+    pts.push([right,cy]);
+    g.appendChild(mk('path',{d:polyPath(pts),fill:'none',stroke:'#212121','stroke-width':1.6,'stroke-linejoin':'round','stroke-linecap':'round'}));break;
+  }
+  case 'filter':{
+    // _filter: box (height 0.65) #e3f2fd with a 3-hump frequency-response curve
+    const bh=64*0.65,bt=CY-bh/2;
+    g.appendChild(mk('rect',{x:0,y:bt,width:64,height:bh,fill:'#e3f2fd',stroke:'#212121','stroke-width':1.6}));
+    const w=64-8,h=bh-8,x0=4,y0=bt+bh-4,n=26,pts=[];
+    for(let i=0;i<=n;i++){const t=i/n,v=0.5*(1+Math.sin(2*Math.PI*(t*1.5-0.25)));pts.push([x0+t*w, y0-v*h*0.7]);}
+    g.appendChild(mk('path',{d:polyPath(pts),fill:'none',stroke:'#212121','stroke-width':1.6,'stroke-linejoin':'round','stroke-linecap':'round'}));break;
+  }
+  case 'mixer':{
+    // _mixer: full-rect circle (#ffcdd2, #b71c1c), heavy X, RF/IF/LO tags
+    g.appendChild(mk('ellipse',{cx:CX,cy:CY,rx:R-0.9,ry:R-0.9,fill:'#ffcdd2',stroke:'#b71c1c','stroke-width':1.8}));
+    const arm=R*0.78,a=arm*Math.SQRT1_2;
+    g.appendChild(mk('line',{x1:CX-a,y1:CY-a,x2:CX+a,y2:CY+a,stroke:'#b71c1c','stroke-width':2.2}));
+    g.appendChild(mk('line',{x1:CX-a,y1:CY+a,x2:CX+a,y2:CY-a,stroke:'#b71c1c','stroke-width':2.2}));
+    const tr=R*0.55;
+    tt(g.appendChild(mk('text',{x:CX-tr,y:CY,'text-anchor':'middle','dominant-baseline':'central','font-size':6,'font-weight':'bold',fill:'#7f0000','font-family':'-apple-system,sans-serif'})),'RF');
+    tt(g.appendChild(mk('text',{x:CX+tr,y:CY,'text-anchor':'middle','dominant-baseline':'central','font-size':6,'font-weight':'bold',fill:'#7f0000','font-family':'-apple-system,sans-serif'})),'IF');
+    tt(g.appendChild(mk('text',{x:CX,y:CY+tr,'text-anchor':'middle','dominant-baseline':'central','font-size':6,'font-weight':'bold',fill:'#bf360c','font-family':'-apple-system,sans-serif'})),'LO');break;
+  }
 }return g;}
 function fmtVal(cat,s){
   if(cat==='source')return `Pout=${f1(s.outDbm)} dBm`;
@@ -621,18 +651,30 @@ function fmtVal(cat,s){
   if(cat==='filter')return `IL=${f1(-s.gain)} dB`;
   if(cat==='mixer')return `CL=${f1(-s.gain)} dB  NF=${f1(s.nf)} dB`;return '';}
 
-/* ── Wire routing (right-angle elbow) ──────────────────────── */
+/* ── Wire routing — orthogonal (mirrors wire_item.py) ────────
+   STUB=12 straight segment leaving each port, then right-angle
+   segments connecting the two stub ends. */
 function wirePath(from,to){
-  const stub=14;
-  // exit dir from output: right. lo_source out: right.
-  const p0={x:from.x,y:from.y};
-  const exit={x:p0.x+stub,y:p0.y};
-  // entry dir into input port: rf in (left side)→approach from left; lo in (bottom)→approach from below
-  let entry;
-  if(to.sub==='lo'){entry={x:to.x,y:to.y+stub};} // come up from below
-  else{entry={x:to.x-stub,y:to.y};}              // come in from left
-  const midx=(exit.x+entry.x)/2;
-  return `M${p0.x},${p0.y} H${exit.x} L${midx},${exit.y} L${midx},${entry.y} L${entry.x},${entry.y} L${to.x},${to.y}`;
+  const STUB=12, PAD=20;
+  const ad=from.d||[1,0], bd=to.d||[-1,0];
+  const a={x:from.x,y:from.y}, b={x:to.x,y:to.y};
+  const ao={x:a.x+ad[0]*STUB, y:a.y+ad[1]*STUB};
+  const bo={x:b.x+bd[0]*STUB, y:b.y+bd[1]*STUB};
+  const sameDir=ad[0]===bd[0]&&ad[1]===bd[1];
+  const pts=[a,ao];
+  if(ad[1]===0){ // a exits horizontally
+    let cx;
+    if(sameDir) cx = ad[0]>0 ? Math.max(ao.x,bo.x)+PAD : Math.min(ao.x,bo.x)-PAD;  // push past both
+    else cx=(ao.x+bo.x)/2;                                                          // midpoint Z
+    pts.push({x:cx,y:ao.y},{x:cx,y:bo.y});
+  } else {       // a exits vertically
+    let cy;
+    if(sameDir) cy = ad[1]>0 ? Math.max(ao.y,bo.y)+PAD : Math.min(ao.y,bo.y)-PAD;
+    else cy=(ao.y+bo.y)/2;
+    pts.push({x:ao.x,y:cy},{x:bo.x,y:cy});
+  }
+  pts.push(bo,b);
+  return 'M'+pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' L');
 }
 
 /* ── Render ────────────────────────────────────────────────── */
@@ -652,21 +694,19 @@ function render(){
     const fn=nodeById(w.from.node),tn=nodeById(w.to.node);if(!fn||!tn)return;
     const fp=portPos(fn,w.from.port),tp=portPos(tn,w.to.port);if(!fp||!tp)return;
     const isLO=fp.sub==='lo'||tp.sub==='lo';
-    const d=wirePath({x:fp.x,y:fp.y,sub:fp.sub},{x:tp.x,y:tp.y,sub:tp.sub});
+    const d=wirePath(fp,tp);
     const seld=sel&&sel.type==='wire'&&sel.id===w.id;
     // hit (wide invisible)
     const hit=mk('path',{d,fill:'none',stroke:'transparent','stroke-width':12,'data-wire':w.id,style:'cursor:pointer'});
     hit.addEventListener('click',e=>{e.stopPropagation();selectWire(w.id);});
     root.appendChild(hit);
-    // visible
+    // selection glow underneath (matches wire_item.py: #1565c0 width 4)
+    if(seld)root.appendChild(mk('path',{d,fill:'none',stroke:'#1565c0','stroke-width':4,'stroke-linejoin':'round','stroke-linecap':'round','pointer-events':'none'}));
+    // visible wire: RF solid black, LO orange dashed (1.6px) — exact app pens
     root.appendChild(mk('path',{d,fill:'none',
-      stroke:seld?'#1565c0':(isLO?'#ef6c00':'#212121'),
-      'stroke-width':seld?2.6:1.6,
-      'stroke-dasharray':isLO?'5 3':'none','stroke-linejoin':'round','stroke-linecap':'round',
+      stroke:isLO?'#ef6c00':'#212121','stroke-width':1.6,
+      'stroke-dasharray':isLO?'4 3':'none','stroke-linejoin':'round','stroke-linecap':'round',
       'pointer-events':'none'}));
-    // flow arrow at midpoint of straight section
-    const mx=(fp.x+tp.x)/2,my=(fp.y+tp.y)/2;
-    if(!isLO)root.appendChild(mk('polygon',{points:`${mx-5},${my-3} ${mx+5},${my} ${mx-5},${my+3}`,fill:'#bdbdbd',opacity:'.85','pointer-events':'none'}));
   });
 
   // ── Wire-drag preview
@@ -688,7 +728,7 @@ function render(){
     // ports (visible dot + wide invisible hit)
     portsOf(cat).forEach(p=>{
       const isLO=p.sub==='lo';
-      g.appendChild(mk('circle',{cx:p.x,cy:p.y,r:PR,fill:'white',stroke:isLO?'#ef6c00':'#424242','stroke-width':1.4,'pointer-events':'none'}));
+      g.appendChild(mk('circle',{cx:p.x,cy:p.y,r:PR,fill:'#ffffff',stroke:isLO?'#ef6c00':'#212121','stroke-width':1.4,'pointer-events':'none'}));
       const hit=mk('circle',{cx:p.x,cy:p.y,r:10,fill:'transparent','data-port':node.id+'|'+p.name,class:'port-hit'});
       hit.addEventListener('mousedown',e=>{e.stopPropagation();startWire(e,node.id,p.name);});
       g.appendChild(hit);
