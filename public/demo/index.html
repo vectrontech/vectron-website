@@ -4,184 +4,143 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>RFTrueLink — Interactive Demo</title>
-<meta name="description" content="Try RFTrueLink in your browser. Build RF chains, see cascaded gain, noise figure, and P1dB update in real time."/>
+<meta name="description" content="Try RFTrueLink in your browser. Build RF chains with sources, amplifiers, mixers and more. See cascaded gain, noise figure, and P1dB update in real time."/>
 <style>
 :root{
-  --chrome:     #16202e;
-  --chrome2:    #1e2a3a;
-  --chrome3:    #263347;
-  --border:     rgba(255,255,255,.08);
-  --border2:    rgba(255,255,255,.14);
-  --fg:         #dde4f0;
-  --fg-mute:    #7e8fa8;
-  --fg-dim:     #4e5e78;
-  --accent:     #1976d2;
-  --canvas-bg:  #fafafa;       /* light canvas — matches actual app */
-  --wire:       #212121;       /* black wires — matches actual app */
-  --sel-color:  #1565c0;       /* selection blue */
-  --green:      #43a047;
-  --cyan:       #5b9bd5;
-  --amber:      #f5a524;
-  --red:        #e53935;
-  --nav-h:      46px;
-  --pal-w:      218px;
-  --res-h:      205px;
+  --chrome:#16202e;--chrome2:#1e2a3a;--chrome3:#263347;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);
+  --fg:#dde4f0;--fg-mute:#7e8fa8;--fg-dim:#4e5e78;
+  --accent:#1976d2;--canvas:#fafafa;--wire:#212121;--sel:#1565c0;
+  --green:#43a047;--cyan:#5b9bd5;--amber:#f5a524;--red:#e53935;--orange:#fb8c00;
+  --nav-h:46px;--pal-w:222px;--res-h:210px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;
-  background:var(--chrome);color:var(--fg);
+html,body{height:100%;overflow:hidden;background:var(--chrome);color:var(--fg);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,sans-serif;
   font-size:12px;line-height:1.4;-webkit-font-smoothing:antialiased;}
 button{font:inherit;cursor:pointer;border:0;background:none;color:inherit;}
 input,select{font:inherit;color:inherit;}
 ::selection{background:var(--accent);color:#fff;}
 
-/* ── App shell ──────────────────────────────────────────────── */
 #app{display:grid;grid-template-rows:var(--nav-h) 1fr var(--res-h);height:100vh;overflow:hidden;}
 
-/* ── Toolbar ────────────────────────────────────────────────── */
-#toolbar{
-  background:#0d1520;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:8px;padding:0 14px;z-index:20;
-}
-.logo{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;
-  letter-spacing:-.025em;margin-right:4px;}
+/* ── Toolbar ─────────────────────────────────────────────────── */
+#tb{background:#0d1520;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;padding:0 14px;z-index:20;}
+.logo{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;letter-spacing:-.025em;margin-right:4px;}
 .logo svg{width:24px;height:24px;flex-shrink:0;}
-.logo-demo{font-size:10px;font-weight:400;color:var(--fg-dim);margin-top:1px;}
+.logo-d{font-size:10px;font-weight:400;color:var(--fg-dim);margin-top:1px;}
 .sep{width:1px;height:22px;background:var(--border2);flex-shrink:0;}
-.tb-lbl{font-size:11px;color:var(--fg-mute);}
-.tb-inp{
-  width:68px;padding:3px 7px;
-  background:var(--chrome2);border:1px solid var(--border2);
-  border-radius:4px;color:var(--fg);font-size:12px;
-}
-.tb-inp:focus{outline:none;border-color:var(--accent);}
-.tb-btn{
-  padding:4px 10px;border-radius:4px;font-size:11px;
-  border:1px solid var(--border2);color:var(--fg-mute);transition:all .12s;
-}
+.tl{font-size:11px;color:var(--fg-mute);}
+.ti{width:68px;padding:3px 7px;background:var(--chrome2);border:1px solid var(--border2);
+  border-radius:4px;color:var(--fg);font-size:12px;}
+.ti:focus{outline:none;border-color:var(--accent);}
+.tb-btn{padding:4px 10px;border-radius:4px;font-size:11px;border:1px solid var(--border2);
+  color:var(--fg-mute);transition:all .12s;}
 .tb-btn:hover{border-color:var(--red);color:var(--red);}
-.cta{
-  margin-left:auto;padding:5px 14px;border-radius:20px;
-  font-size:12px;font-weight:600;background:var(--accent);color:#fff;
-  text-decoration:none;display:inline-flex;align-items:center;gap:5px;
-  transition:background .12s;white-space:nowrap;
-}
+.cta{margin-left:auto;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  background:var(--accent);color:#fff;text-decoration:none;display:inline-flex;
+  align-items:center;gap:5px;transition:background .12s;white-space:nowrap;}
 .cta:hover{background:#1565c0;color:#fff;}
 
-/* ── Main ───────────────────────────────────────────────────── */
+/* ── Main ────────────────────────────────────────────────────── */
 #main{display:grid;grid-template-columns:var(--pal-w) 1fr;overflow:hidden;}
 
-/* ── Palette ────────────────────────────────────────────────── */
-#pal{
-  background:var(--chrome2);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden;
-}
-#pal-search-row{padding:10px 10px 5px;flex-shrink:0;}
-#pal-search{
-  width:100%;padding:5px 8px;background:var(--chrome3);
-  border:1px solid var(--border2);border-radius:4px;
-  color:var(--fg);font-size:11px;
-}
-#pal-search:focus{outline:none;border-color:var(--accent);}
-#pal-search::placeholder{color:var(--fg-dim);}
+/* ── Palette ─────────────────────────────────────────────────── */
+#pal{background:var(--chrome2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;}
+#pal-sr{padding:10px 10px 5px;flex-shrink:0;}
+#pal-s{width:100%;padding:5px 8px;background:var(--chrome3);border:1px solid var(--border2);
+  border-radius:4px;color:var(--fg);font-size:11px;}
+#pal-s:focus{outline:none;border-color:var(--accent);}
+#pal-s::placeholder{color:var(--fg-dim);}
 #pal-list{flex:1;overflow-y:auto;padding:0 6px 8px;}
-.pal-h{font-size:10px;text-transform:uppercase;letter-spacing:.12em;
-  color:var(--fg-dim);font-weight:600;padding:10px 4px 4px;}
-.pal-item{
-  display:flex;align-items:center;gap:8px;
-  padding:7px 8px;border-radius:5px;margin-bottom:2px;
-  border:1px solid transparent;cursor:grab;
-  transition:all .12s;user-select:none;
-}
-.pal-item:hover{background:rgba(255,255,255,.05);border-color:var(--border);}
-.pal-item:active{cursor:grabbing;}
-.pal-badge{
-  width:32px;height:32px;border-radius:4px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;
-}
-.pal-name{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pal-kpi{font-size:10px;color:var(--fg-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.ph{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--fg-dim);
+  font-weight:600;padding:10px 4px 4px;}
+.pi{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:5px;
+  margin-bottom:2px;border:1px solid transparent;cursor:grab;transition:all .12s;user-select:none;}
+.pi:hover{background:rgba(255,255,255,.05);border-color:var(--border);}
+.pi:active{cursor:grabbing;}
+.pb{width:32px;height:32px;border-radius:4px;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.pn{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pk{font-size:10px;color:var(--fg-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
 
-/* ── Canvas ─────────────────────────────────────────────────── */
-#cvwrap{
-  position:relative;overflow:hidden;
-  background:var(--canvas-bg);  /* LIGHT — matches actual RFTrueLink */
-}
+/* ── Canvas (light — matches actual app) ─────────────────────── */
+#cvw{position:relative;overflow:hidden;background:var(--canvas);}
 #schematic{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
-#drop-hint{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:10px;
-  pointer-events:none;transition:opacity .2s;color:#bdbdbd;
-}
-#drop-hint.hidden{opacity:0;}
-#drop-hint .dh-icon{font-size:40px;opacity:.45;}
-#drop-hint p{font-size:12px;text-align:center;max-width:200px;line-height:1.6;}
 
-/* ── Inspector ──────────────────────────────────────────────── */
-#insp{
-  position:absolute;z-index:30;display:none;
-  background:var(--chrome2);border:1px solid var(--border2);
-  border-radius:8px;padding:14px;width:210px;
-  box-shadow:0 8px 28px rgba(0,0,0,.5);
+/* Drop insert indicator */
+.drop-line{pointer-events:none;}
+
+#hint{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+  pointer-events:none;transition:opacity .2s;color:#bdbdbd;}
+#hint.hidden{opacity:0;}
+#hint .hi{font-size:38px;opacity:.4;}
+#hint p{font-size:12px;text-align:center;max-width:210px;line-height:1.6;}
+
+/* Drag ghost */
+#drag-ghost{
+  position:fixed;pointer-events:none;z-index:999;
+  display:none;opacity:.7;
 }
-#insp-close{
-  position:absolute;top:8px;right:8px;width:20px;height:20px;
-  border-radius:50%;background:rgba(255,255,255,.06);
-  font-size:10px;display:grid;place-items:center;color:var(--fg-mute);
-}
-#insp-close:hover{background:rgba(255,255,255,.12);color:var(--fg);}
-#insp-title{font-size:13px;font-weight:700;margin-bottom:2px;}
-#insp-sub{font-size:10px;color:var(--fg-dim);margin-bottom:11px;}
-.ifield{margin-bottom:9px;}
-.ifield label{font-size:10px;color:var(--fg-mute);display:block;margin-bottom:3px;}
-.ifield input{
-  width:100%;padding:4px 7px;background:var(--chrome3);
-  border:1px solid var(--border2);border-radius:4px;font-size:12px;color:var(--fg);
-}
-.ifield input:focus{outline:none;border-color:var(--accent);}
+
+/* ── Inspector ───────────────────────────────────────────────── */
+#insp{position:absolute;z-index:30;display:none;background:var(--chrome2);
+  border:1px solid var(--border2);border-radius:8px;padding:14px;width:216px;
+  box-shadow:0 8px 28px rgba(0,0,0,.55);}
+#ic{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;
+  background:rgba(255,255,255,.06);font-size:10px;display:grid;place-items:center;color:var(--fg-mute);}
+#ic:hover{background:rgba(255,255,255,.12);color:var(--fg);}
+#it{font-size:13px;font-weight:700;margin-bottom:2px;}
+#is{font-size:10px;color:var(--fg-dim);margin-bottom:11px;}
+.if{margin-bottom:9px;}
+.if label{font-size:10px;color:var(--fg-mute);display:block;margin-bottom:3px;}
+.if input,.if select{width:100%;padding:4px 7px;background:var(--chrome3);
+  border:1px solid var(--border2);border-radius:4px;font-size:12px;color:var(--fg);}
+.if input:focus,.if select:focus{outline:none;border-color:var(--accent);}
 .inote{font-size:10px;color:var(--fg-dim);margin-top:10px;line-height:1.5;}
 
 /* ── Results ─────────────────────────────────────────────────── */
-#results{
-  border-top:1px solid var(--border);background:var(--chrome);
-  display:flex;flex-direction:column;overflow:hidden;
-}
-#res-hdr{display:flex;align-items:center;padding:7px 14px 0;flex-shrink:0;gap:10px;}
-.rh-title{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--fg-dim);font-weight:600;}
-#res-sum{display:flex;gap:16px;margin-left:auto;}
-.rsm{display:flex;flex-direction:column;align-items:flex-end;}
-.rsm span:first-child{font-size:9px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em;}
-.rsm span:last-child{font-size:13px;font-weight:700;}
+#res{border-top:1px solid var(--border);background:var(--chrome);
+  display:flex;flex-direction:column;overflow:hidden;}
+#rh{display:flex;align-items:center;padding:7px 14px 0;flex-shrink:0;gap:10px;}
+.rht{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--fg-dim);font-weight:600;}
+#rsum{display:flex;gap:14px;margin-left:auto;}
+.rm{display:flex;flex-direction:column;align-items:flex-end;}
+.rm span:first-child{font-size:9px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em;}
+.rm span:last-child{font-size:13px;font-weight:700;}
+#rw{overflow:auto;flex:1;padding:4px 14px 10px;}
+#rt{border-collapse:collapse;width:100%;font-size:11px;min-width:720px;}
+#rt th{position:sticky;top:0;z-index:1;background:var(--chrome);
+  padding:4px 10px;color:var(--fg-dim);font-size:9.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.09em;text-align:right;
+  border-bottom:1px solid var(--border2);white-space:nowrap;}
+#rt th:nth-child(-n+2){text-align:left;}
+#rt td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.03);text-align:right;}
+#rt td:nth-child(-n+2){text-align:left;}
+/* Column tinting — from actual app */
+.cg{background:#19253a!important;}.cnf{background:#182437!important;}
+tr.rsys{background:rgba(255,255,255,.04);font-weight:700;}
+tr.rsys td:nth-child(2){font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-dim);}
+tr.rsrc td{color:var(--fg-mute);font-style:italic;}
+.tdg{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;font-weight:700;letter-spacing:.04em;}
+.vg{color:#66bb6a;}.vn{color:#5b9bd5;}.vp{color:var(--amber);}
+.vw{color:#ffa726;}.vd{color:var(--fg-dim);}
+#te{padding:14px;text-align:center;color:var(--fg-dim);display:none;}
 
-#res-wrap{overflow:auto;flex:1;padding:4px 14px 10px;}
-#res-tbl{border-collapse:collapse;width:100%;font-size:11px;min-width:700px;}
-#res-tbl th{
-  position:sticky;top:0;z-index:1;background:var(--chrome);
-  padding:4px 10px;color:var(--fg-dim);font-size:9.5px;
-  font-weight:600;text-transform:uppercase;letter-spacing:.09em;
-  text-align:right;border-bottom:1px solid var(--border2);white-space:nowrap;
-}
-#res-tbl th:nth-child(-n+2){text-align:left;}
-#res-tbl td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.03);text-align:right;}
-#res-tbl td:nth-child(-n+2){text-align:left;}
-/* Column tinting — matches actual RFTrueLink app */
-.col-g{background:#19253a!important;}
-.col-nf{background:#182437!important;}
-tr.row-sys{background:rgba(255,255,255,.04);font-weight:700;}
-tr.row-sys td:nth-child(2){font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-dim);}
-.td-desig{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;font-weight:700;letter-spacing:.04em;}
-.cv-gain{color:#66bb6a;}.cv-nf{color:#5b9bd5;}.cv-p1db{color:var(--amber);}
-.cv-warn{color:#ffa726;}.cv-na{color:var(--fg-dim);}
-#tbl-empty{padding:14px;text-align:center;color:var(--fg-dim);display:none;}
+/* Scrollbar slim */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
 </style>
 </head>
 <body>
 <div id="app">
 
 <!-- TOOLBAR -->
-<div id="toolbar">
+<div id="tb">
   <div class="logo">
     <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -200,202 +159,234 @@ tr.row-sys td:nth-child(2){font-size:9px;text-transform:uppercase;letter-spacing
       <circle cx="400" cy="256" r="36" fill="#eceff1" stroke="#263238" stroke-width="4"/>
       <circle cx="400" cy="256" r="13" fill="#263238"/>
     </svg>
-    RFTrueLink <span class="logo-demo">demo</span>
+    RFTrueLink <span class="logo-d">demo</span>
   </div>
 
   <div class="sep"></div>
-  <span class="tb-lbl">Freq</span>
-  <input id="freq-in" class="tb-inp" type="number" min=".001" max="110" step=".1" value="2.4"/>
-  <span class="tb-lbl">GHz</span>
+  <span class="tl">Freq</span>
+  <input id="freq" class="ti" type="number" min=".001" max="110" step=".1" value="2.4"/>
+  <span class="tl">GHz</span>
 
-  <div class="sep"></div>
-  <span class="tb-lbl">Pin</span>
-  <input id="pin-in" class="tb-inp" type="number" min="-120" max="30" step="1" value="-40"/>
-  <span class="tb-lbl">dBm</span>
-
-  <button class="tb-btn" id="clear-btn">Clear</button>
+  <button class="tb-btn" id="clr">Clear</button>
   <a class="cta" href="/RFtrueLink/" target="_blank" rel="noopener">↗ Get the full app</a>
 </div>
 
 <!-- MAIN -->
 <div id="main">
-
-  <!-- PALETTE -->
   <div id="pal">
-    <div id="pal-search-row">
-      <input id="pal-search" type="text" placeholder="🔍 Search components…"/>
-    </div>
+    <div id="pal-sr"><input id="pal-s" type="text" placeholder="🔍 Search components…"/></div>
     <div id="pal-list"></div>
   </div>
 
-  <!-- CANVAS (light background, SVG schematic) -->
-  <div id="cvwrap">
-    <div id="drop-hint">
-      <div class="dh-icon">⛓</div>
-      <p>Drag components from the library to build your RF chain</p>
-    </div>
+  <div id="cvw">
+    <div id="hint"><div class="hi">⛓</div><p>Drag components from the library to build your RF chain</p></div>
     <svg id="schematic" xmlns="http://www.w3.org/2000/svg"></svg>
-    <!-- Inspector panel -->
     <div id="insp">
-      <button id="insp-close">✕</button>
-      <div id="insp-title"></div>
-      <div id="insp-sub"></div>
-      <div id="insp-fields"></div>
+      <button id="ic">✕</button>
+      <div id="it"></div>
+      <div id="is"></div>
+      <div id="if"></div>
     </div>
   </div>
-
 </div>
 
 <!-- RESULTS -->
-<div id="results">
-  <div id="res-hdr">
-    <span class="rh-title">Link Budget — <span id="rh-freq">2.4 GHz</span></span>
-    <div id="res-sum">
-      <div class="rsm"><span>Total Gain</span><span class="cv-na" id="sum-gain">—</span></div>
-      <div class="rsm"><span>Casc. NF</span><span class="cv-na" id="sum-nf">—</span></div>
-      <div class="rsm"><span>Output P1dB</span><span class="cv-na" id="sum-p1db">—</span></div>
+<div id="res">
+  <div id="rh">
+    <span class="rht">Link Budget — <span id="rf">2.4 GHz</span></span>
+    <div id="rsum">
+      <div class="rm"><span>Total Gain</span><span class="vd" id="sg">—</span></div>
+      <div class="rm"><span>Casc. NF</span><span class="vd" id="sn">—</span></div>
+      <div class="rm"><span>Output P1dB</span><span class="vd" id="sp">—</span></div>
     </div>
   </div>
-  <div id="res-wrap">
-    <div id="tbl-empty">Add components above to see cascaded calculations</div>
-    <table id="res-tbl">
-      <thead>
-        <tr>
-          <th>Desig.</th>
-          <th>Component</th>
-          <th class="col-g">Gain [dB]</th>
-          <th>Signal [dBm]</th>
-          <th class="col-nf">Casc. NF [dB]</th>
-          <th>Noise [dBm/Hz]</th>
-          <th>P1dB out [dBm]</th>
-        </tr>
-      </thead>
-      <tbody id="res-body"></tbody>
+  <div id="rw">
+    <div id="te">Add components to see cascaded calculations</div>
+    <table id="rt">
+      <thead><tr>
+        <th>Desig.</th><th>Component</th>
+        <th class="cg">Gain [dB]</th>
+        <th>Signal [dBm]</th>
+        <th class="cnf">Casc. NF [dB]</th>
+        <th>Noise [dBm/Hz]</th>
+        <th>P1dB out [dBm]</th>
+      </tr></thead>
+      <tbody id="rb"></tbody>
     </table>
   </div>
 </div>
 
-</div><!-- /app -->
+<!-- Drag ghost (follows cursor during canvas reorder) -->
+<div id="drag-ghost"></div>
+
+</div>
 <script>
 'use strict';
-/* ============================================================
+/* ================================================================
    RFTrueLink Web Demo
-   Cascade math ported from src/linkbudget/calc/cascade.py
-   SVG symbols match actual desktop app (symbols.py)
-   ============================================================ */
-const NS = 'http://www.w3.org/2000/svg';
-const mk = (tag, a={}) => {
-  const el = document.createElementNS(NS, tag);
-  for (const [k,v] of Object.entries(a)) el.setAttribute(k, String(v));
-  return el;
-};
-const txt = (el, s) => { el.textContent = s; return el; };
-const f1 = v => (v==null||isNaN(v)) ? '—' : v.toFixed(1);
+   Cascade: Friis NF + noise density, ported from cascade.py
+   Symbols: matched to actual symbols.py (triangle, zigzag, etc.)
+   ================================================================ */
+const NS='http://www.w3.org/2000/svg';
+const mk=(t,a={})=>{const e=document.createElementNS(NS,t);for(const[k,v]of Object.entries(a))e.setAttribute(k,String(v));return e;};
+const tt=(e,s)=>{e.textContent=s;return e;};
+const f1=v=>(v==null||isNaN(v))?'—':v.toFixed(1);
+const f2=v=>(v==null||isNaN(v))?'—':v.toFixed(2);
 
-/* ── Library ─────────────────────────────────────────────────── */
-/* Category badge colors from library_kpi.py CATEGORY_FILLS_HEX */
-const CAT = {
-  amplifier: { fill:'#EFE6D9', ink:'#5d4037', prefix:'A'  },
-  attenuator:{ fill:'#E3E3E3', ink:'#424242', prefix:'AT' },
-  filter:    { fill:'#E3E3E3', ink:'#424242', prefix:'F'  },
-  mixer:     { fill:'#F5D6C6', ink:'#bf360c', prefix:'M'  },
+/* ── Category metadata ─────────────────────────────────────────── */
+const CAT={
+  source:    {fill:'#FFF4CC',ink:'#795500',prefix:'S', badge:'S'},
+  lo_source: {fill:'#FFE0B2',ink:'#bf360c',prefix:'LO',badge:'LO'},
+  amplifier: {fill:'#EFE6D9',ink:'#5d4037',prefix:'A', badge:'▷'},
+  attenuator:{fill:'#E3E3E3',ink:'#424242',prefix:'AT',badge:'Z'},
+  filter:    {fill:'#E3E3E3',ink:'#424242',prefix:'F', badge:'⊡'},
+  mixer:     {fill:'#F5D6C6',ink:'#bf360c',prefix:'M', badge:'×'},
 };
 
-const LIB = [
-  // ── Ideal ──
-  { id:'amp',    name:'Amplifier',   cat:'amplifier',  ideal:true,
-    sub:'Ideal · configurable',
-    p:{ gain_db:20, nf_db:3, p1db_out:20 } },
-  { id:'atten',  name:'Attenuator',  cat:'attenuator', ideal:true,
-    sub:'Ideal · configurable',
-    p:{ loss_db:10 } },
-  { id:'filter', name:'Filter (BPF)',cat:'filter',     ideal:true,
-    sub:'Ideal · configurable',
-    p:{ loss_db:1 } },
-  { id:'mixer',  name:'Mixer',       cat:'mixer',      ideal:true,
-    sub:'Ideal · configurable',
-    p:{ conv_loss_db:7, nf_db:7, p1db_in:1 } },
-  // ── Real ──
-  { id:'mc-zx60', name:'ZX60-4016E-S+', cat:'amplifier',
-    mfr:'Mini-Circuits', sub:'Mini-Circuits · 0.02–4 GHz',
-    gain_t: [[.02,19.93],[.1,20.14],[.5,19.94],[1,19.54],[1.5,18.96],[2,18.24],[2.5,17.42],[3,16.51],[3.5,15.68],[4,14.93]],
-    nf_t:   [[.02,3.78],[.1,3.51],[.5,3.73],[1,3.82],[2,3.97],[3,4.09],[4,4.45]],
-    p1_t:   [[.02,17.64],[.5,17.94],[2,17.68],[3,16.20],[4,14.35]],
-    p:{ gain_db:20, nf_db:3.9, p1db_out:17.5 } },
-  { id:'ka-lna',  name:'Ka-band LNA', cat:'amplifier',
-    sub:'Generic · 26–40 GHz',
-    gain_t: [[26,30],[30,32],[34,31],[40,28]],
-    p:{ gain_db:31, nf_db:2.5, p1db_out:15 } },
-  { id:'mc-bwk2', name:'BW-K2-2W44+', cat:'attenuator',
-    mfr:'Mini-Circuits', sub:'Mini-Circuits · DC–40 GHz · 2 dB',
-    loss_t: [[.01,1.63],[1,1.67],[5,1.73],[10,1.79],[15,1.84],[18,1.92],[20,1.94],[26.5,1.99],[30,2.10],[40,2.53]],
-    p:{ loss_db:2 } },
-  { id:'marki',   name:'Marki ML1-0220', cat:'mixer',
-    mfr:'Marki Microwave', sub:'Marki · 2–20 GHz',
-    p:{ conv_loss_db:7, nf_db:7, p1db_in:1 } },
+/* ── Library ───────────────────────────────────────────────────── */
+const LIB=[
+  /* Sources */
+  {id:'src-ideal', name:'Signal Source',  cat:'source',  ideal:true,
+   sub:'Ideal · configurable output power',
+   p:{out_dbm:0}},
+  {id:'pna-n5247', name:'PNA-X N5247B',   cat:'source',
+   mfr:'Keysight', sub:'Keysight · 10 MHz–67 GHz VNA',
+   out_t:[[.01,11],[2,10],[10,8],[18,5],[26.5,2],[40,0],[50,-3],[67,-8]],
+   p:{out_dbm:10}},
+  /* LO Sources */
+  {id:'lo-ideal',  name:'LO Source',      cat:'lo_source',ideal:true,
+   sub:'Ideal · configurable LO output',
+   p:{out_dbm:13, lo_freq_ghz:10}},
+  {id:'uxg-n5193', name:'UXG N5193A (LO)',cat:'lo_source',
+   mfr:'Keysight', sub:'Keysight · 10 MHz–40 GHz',
+   out_t:[[.01,17],[2,17],[10,16],[18,14],[26.5,12],[40,9]],
+   p:{out_dbm:16, lo_freq_ghz:10}},
+  /* Amplifiers */
+  {id:'amp',       name:'Amplifier',       cat:'amplifier',ideal:true,
+   sub:'Ideal · configurable',
+   p:{gain_db:20, nf_db:3, p1db_out:20}},
+  {id:'mc-zx60',   name:'ZX60-4016E-S+',  cat:'amplifier',
+   mfr:'Mini-Circuits', sub:'Mini-Circuits · 0.02–4 GHz',
+   gain_t:[[.02,19.93],[.1,20.14],[.5,19.94],[1,19.54],[1.5,18.96],[2,18.24],[2.5,17.42],[3,16.51],[3.5,15.68],[4,14.93]],
+   nf_t:  [[.02,3.78],[.1,3.51],[.5,3.73],[1,3.82],[2,3.97],[3,4.09],[4,4.45]],
+   p1_t:  [[.02,17.64],[.5,17.94],[2,17.68],[3,16.20],[4,14.35]],
+   p:{gain_db:20,nf_db:3.9,p1db_out:17.5}},
+  {id:'ka-lna',    name:'Ka-band LNA',     cat:'amplifier',
+   sub:'Generic · 26–40 GHz',
+   gain_t:[[26,30],[30,32],[34,31],[40,28]],
+   p:{gain_db:31,nf_db:2.5,p1db_out:15}},
+  /* Attenuators */
+  {id:'atten',     name:'Attenuator',      cat:'attenuator',ideal:true,
+   sub:'Ideal · configurable',
+   p:{loss_db:10}},
+  {id:'mc-bwk2',   name:'BW-K2-2W44+',    cat:'attenuator',
+   mfr:'Mini-Circuits', sub:'Mini-Circuits · DC–40 GHz · 2 dB',
+   loss_t:[[.01,1.63],[1,1.67],[5,1.73],[10,1.79],[15,1.84],[18,1.92],[20,1.94],[26.5,1.99],[30,2.10],[40,2.53]],
+   p:{loss_db:2}},
+  /* Filters */
+  {id:'filter',    name:'Filter (BPF)',    cat:'filter',   ideal:true,
+   sub:'Ideal · configurable',
+   p:{loss_db:1}},
+  /* Mixers */
+  {id:'mixer',     name:'Mixer',           cat:'mixer',    ideal:true,
+   sub:'Ideal · configurable',
+   p:{conv_loss_db:7,nf_db:7,p1db_in:1}},
+  {id:'marki',     name:'Marki ML1-0220',  cat:'mixer',
+   mfr:'Marki Microwave', sub:'Marki · 2–20 GHz',
+   p:{conv_loss_db:7,nf_db:7,p1db_in:1}},
 ];
 
-/* ── State ───────────────────────────────────────────────────── */
-let chain = [], selectedId = null, nextId = 1;
-let freqGhz = 2.4, pinDbm = -40;
+/* ── State ──────────────────────────────────────────────────────── */
+let chain=[], selId=null, nxtId=1, freqGhz=2.4;
 
-/* ── Interpolation (np.interp equivalent) ─────────────────────── */
-function interp(x, t) {
-  if (!t||!t.length) return null;
-  if (x<=t[0][0]) return t[0][1];
-  if (x>=t[t.length-1][0]) return t[t.length-1][1];
-  for (let i=0;i<t.length-1;i++){
+/* ── Interp ─────────────────────────────────────────────────────── */
+function interp(x,t){
+  if(!t||!t.length)return null;
+  if(x<=t[0][0])return t[0][1];
+  if(x>=t[t.length-1][0])return t[t.length-1][1];
+  for(let i=0;i<t.length-1;i++){
     const[x0,y0]=t[i],[x1,y1]=t[i+1];
-    if(x>=x0&&x<=x1) return y0+(y1-y0)*(x-x0)/(x1-x0);
+    if(x>=x0&&x<=x1)return y0+(y1-y0)*(x-x0)/(x1-x0);
   }
   return t[t.length-1][1];
 }
 
-/* ── Stage parameters at current freq ────────────────────────── */
-function sp(block) {
-  const L=block.lib, o=block.ov, f=freqGhz, c=L.cat;
-  let gain=0, nf=0, p1out=null, p1in=null;
-  if (c==='amplifier') {
-    gain  = o.gain_db  ?? (L.gain_t ? interp(f,L.gain_t) : L.p.gain_db);
-    nf    = o.nf_db    ?? (L.nf_t   ? interp(f,L.nf_t)   : L.p.nf_db);
-    p1out = o.p1db_out ?? (L.p1_t   ? interp(f,L.p1_t)   : L.p.p1db_out);
-  } else if (c==='attenuator'||c==='filter') {
-    const loss = o.loss_db ?? (L.loss_t ? interp(f,L.loss_t) : L.p.loss_db);
+/* ── Stage params at freq ───────────────────────────────────────── */
+function sp(b){
+  const L=b.lib,o=b.ov,f=freqGhz,c=L.cat;
+  // source / lo_source: provide output power, no cascade contribution
+  if(c==='source'||c==='lo_source'){
+    const out=o.out_dbm??(L.out_t?interp(f,L.out_t):L.p.out_dbm);
+    const loF=o.lo_freq_ghz??L.p.lo_freq_ghz??null;
+    return{isSource:true,isLO:c==='lo_source',outDbm:out,loFreqGhz:loF,gain:0,nf:0,p1out:null,p1in:null};
+  }
+  let gain=0,nf=0,p1out=null,p1in=null;
+  if(c==='amplifier'){
+    gain  =o.gain_db??(L.gain_t?interp(f,L.gain_t):L.p.gain_db);
+    nf    =o.nf_db  ??(L.nf_t  ?interp(f,L.nf_t)  :L.p.nf_db);
+    p1out =o.p1db_out??(L.p1_t ?interp(f,L.p1_t)  :L.p.p1db_out);
+  } else if(c==='attenuator'||c==='filter'){
+    const loss=o.loss_db??(L.loss_t?interp(f,L.loss_t):L.p.loss_db);
     gain=-loss; nf=loss;
-  } else if (c==='mixer') {
-    const cl = o.conv_loss_db ?? L.p.conv_loss_db;
+  } else if(c==='mixer'){
+    const cl=o.conv_loss_db??L.p.conv_loss_db;
     gain=-cl; nf=o.nf_db??L.p.nf_db;
-    p1in =o.p1db_in??L.p.p1db_in;
+    p1in=o.p1db_in??L.p.p1db_in;
     p1out=p1in+gain;
   }
-  return {gain,nf,p1out,p1in};
+  return{isSource:false,isLO:false,gain,nf,p1out,p1in};
 }
 
-/* ── Cascade (Friis NF + noise density from cascade.py) ─────── */
-const KTB = Math.pow(10,-17.4); // 10^(-174/10) mW/Hz
-function calcCascade() {
-  if(!chain.length) return [];
-  const desigs=getDesigs(), rows=[];
-  let cumG=0, nfLin=null, gRun=1, sig=pinDbm, noiseL=KTB;
+/* ── Cascade (Friis NF + noise density) ────────────────────────── */
+const KTB=Math.pow(10,-17.4);
+function calcCascade(){
+  if(!chain.length)return[];
+  const desigs=getDesigs(),rows=[];
+  let pinDbm=null,cumG=0,nfLin=null,gRun=1,noiseL=KTB;
+
   chain.forEach((b,i)=>{
-    const s=sp(b), gL=Math.pow(10,s.gain/10), nL=Math.pow(10,s.nf/10);
-    cumG+=s.gain; sig+=s.gain;
-    // Friis NF (cascade.py lines 94-151)
-    nfLin = nfLin==null ? nL : nfLin+(nL-1)/gRun;
+    const s=sp(b);
+    const desc=b.ov.name||b.lib.name;
+
+    if(s.isSource&&!s.isLO){
+      // Source sets input power — doesn't add to cascade NF
+      pinDbm=s.outDbm;
+      rows.push({desig:desigs[i],name:desc,isSource:true,
+        outDbm:s.outDbm,gain:null,cumG:null,sig:s.outDbm,
+        nf:null,cascNF:null,noiseDbHz:null,p1out:null});
+      return;
+    }
+    if(s.isLO){
+      // LO source shown as annotation row only
+      rows.push({desig:desigs[i],name:desc,isLO:true,
+        outDbm:s.outDbm,loFreq:s.loFreqGhz,
+        gain:null,cumG:null,sig:null,nf:null,cascNF:null,noiseDbHz:null,p1out:null});
+      return;
+    }
+
+    const gL=Math.pow(10,s.gain/10), nL=Math.pow(10,s.nf/10);
+    cumG+=s.gain;
+    if(pinDbm!==null) pinDbm+=s.gain; // track signal
+
+    // Friis
+    nfLin=nfLin==null?nL:nfLin+(nL-1)/gRun;
     gRun*=gL;
     const cascNF=10*Math.log10(nfLin);
-    // Noise density (cascade.py lines 291-318)
-    const neff=Math.max(noiseL, nL*KTB);
-    const nout=Math.max(KTB, neff*gL);
-    const noiseDbHz=10*Math.log10(nout);
+
+    // Noise density
+    const neff=Math.max(noiseL,nL*KTB);
+    const nout=Math.max(KTB,neff*gL);
     noiseL=nout;
-    const hdroom=s.p1out!=null ? s.p1out-sig : null;
-    rows.push({desig:desigs[i], name:b.ov.name||b.lib.name,
-      gain:s.gain, cumG, sig, nf:s.nf, cascNF, noiseDbHz,
-      p1out:s.p1out, hdroom});
+    const noiseDbHz=10*Math.log10(nout);
+
+    const hdroom=s.p1out!=null&&pinDbm!=null?s.p1out-pinDbm:null;
+    rows.push({desig:desigs[i],name:desc,isSource:false,isLO:false,
+      gain:s.gain,cumG,sig:pinDbm,
+      nf:s.nf,cascNF,noiseDbHz,p1out:s.p1out,hdroom});
   });
   return rows;
 }
+
 function getDesigs(){
   const cnt={};
   return chain.map(b=>{
@@ -404,361 +395,511 @@ function getDesigs(){
   });
 }
 
-/* ── SVG Symbols (matching symbols.py in actual app) ─────────── */
-const BLOCK=64, PORT_R=4, STUB=12;
+/* ── SVG Schematic Symbols ─────────────────────────────────────── */
+const BW=64,BH=64,PR=4,STUB=12,GAP=72,X0=48;
 
-function drawSym(cat) {
+function drawSym(cat){
   const g=mk('g');
-  if(cat==='amplifier'){
-    // Filled triangle pointing right — exact match to actual app (symbols.py)
-    g.appendChild(mk('polygon',{
-      points:'4,4 4,60 60,32',
-      fill:'#fff3e0',stroke:'#212121','stroke-width':1.5,'stroke-linejoin':'round'
-    }));
-  } else if(cat==='attenuator'){
-    // Horizontal zigzag resistor — attenuator glyph from symbols.py
-    g.appendChild(mk('polyline',{
-      points:'0,32 9,32 14,20 22,44 30,20 38,44 46,20 55,32 64,32',
-      fill:'none',stroke:'#212121','stroke-width':1.5,
-      'stroke-linejoin':'round','stroke-linecap':'round'
-    }));
-  } else if(cat==='filter'){
-    // Box with BPF label
-    g.appendChild(mk('rect',{x:8,y:18,width:48,height:28,rx:2,
-      fill:'#f0f0f0',stroke:'#212121','stroke-width':1.5}));
-    txt(g.appendChild(mk('text',{x:32,y:32,
-      'text-anchor':'middle','dominant-baseline':'middle',
-      'font-size':9,'font-weight':'bold',fill:'#424242',
-      'font-family':'ui-monospace,monospace'})),'BPF');
-  } else if(cat==='mixer'){
-    // Circle with × — exact match to actual app
-    g.appendChild(mk('circle',{cx:32,cy:32,r:26,
-      fill:'#ffcdd2',stroke:'#b71c1c','stroke-width':1.5}));
-    g.appendChild(mk('line',{x1:14,y1:14,x2:50,y2:50,stroke:'#b71c1c','stroke-width':2.2}));
-    g.appendChild(mk('line',{x1:50,y1:14,x2:14,y2:50,stroke:'#b71c1c','stroke-width':2.2}));
+  switch(cat){
+    case 'source':{
+      // Circle with right-arrow (signal generator symbol)
+      g.appendChild(mk('circle',{cx:32,cy:32,r:28,fill:'#fff9e6',stroke:'#424242','stroke-width':1.5}));
+      // Sine wave inside
+      g.appendChild(mk('path',{
+        d:'M14,32 Q20,22 26,32 Q32,42 38,32 Q44,22 50,32',
+        fill:'none',stroke:'#795500','stroke-width':2,'stroke-linecap':'round'
+      }));
+      break;
+    }
+    case 'lo_source':{
+      // Smaller circle with "LO" label
+      g.appendChild(mk('circle',{cx:32,cy:32,r:28,fill:'#fff3e0',stroke:'#bf360c','stroke-width':1.5}));
+      tt(g.appendChild(mk('text',{x:32,y:28,'text-anchor':'middle','dominant-baseline':'middle',
+        'font-size':9,'font-weight':'bold',fill:'#bf360c',
+        'font-family':'ui-monospace,monospace'})),'LO');
+      // Sine wave
+      g.appendChild(mk('path',{
+        d:'M16,38 Q22,30 28,38 Q34,46 40,38 Q46,30 48,38',
+        fill:'none',stroke:'#e64a19','stroke-width':1.8,'stroke-linecap':'round'
+      }));
+      break;
+    }
+    case 'amplifier':{
+      // Filled triangle — exact from symbols.py
+      g.appendChild(mk('polygon',{
+        points:'4,4 4,60 60,32',
+        fill:'#fff3e0',stroke:'#212121','stroke-width':1.5,'stroke-linejoin':'round'
+      }));
+      break;
+    }
+    case 'attenuator':{
+      // Horizontal zigzag resistor — from symbols.py
+      g.appendChild(mk('polyline',{
+        points:'0,32 9,32 14,20 22,44 30,20 38,44 46,20 55,32 64,32',
+        fill:'none',stroke:'#212121','stroke-width':1.5,
+        'stroke-linejoin':'round','stroke-linecap':'round'
+      }));
+      break;
+    }
+    case 'filter':{
+      g.appendChild(mk('rect',{x:8,y:18,width:48,height:28,rx:2,
+        fill:'#f0f0f0',stroke:'#212121','stroke-width':1.5}));
+      tt(g.appendChild(mk('text',{x:32,y:32,'text-anchor':'middle','dominant-baseline':'middle',
+        'font-size':9,'font-weight':'bold',fill:'#424242',
+        'font-family':'ui-monospace,monospace'})),'BPF');
+      break;
+    }
+    case 'mixer':{
+      // Circle with × — exact from symbols.py
+      g.appendChild(mk('circle',{cx:32,cy:32,r:26,fill:'#ffcdd2',stroke:'#b71c1c','stroke-width':1.5}));
+      g.appendChild(mk('line',{x1:14,y1:14,x2:50,y2:50,stroke:'#b71c1c','stroke-width':2.2}));
+      g.appendChild(mk('line',{x1:50,y1:14,x2:14,y2:50,stroke:'#b71c1c','stroke-width':2.2}));
+      // Port labels RF / IF
+      tt(g.appendChild(mk('text',{x:8,y:28,'font-size':7,fill:'#7f0000','font-weight':'bold','font-family':'ui-monospace,monospace'})),'RF');
+      tt(g.appendChild(mk('text',{x:40,y:56,'font-size':7,fill:'#7f0000','font-weight':'bold','font-family':'ui-monospace,monospace'})),'IF');
+      break;
+    }
   }
   return g;
 }
 
-/* ── Layout ──────────────────────────────────────────────────── */
-const GAP=68, X0=50;
-function bpos(i){
-  const h=parseFloat(svg.getAttribute('height'))||400;
-  return {x:X0+i*(BLOCK+GAP), y:h*0.37-BLOCK/2};
+function fmtVal(cat,s){
+  if(cat==='source')    return `Pout=${f1(s.outDbm)} dBm`;
+  if(cat==='lo_source') return `PLO=${f1(s.outDbm)} dBm  f=${f1(s.loFreqGhz)} GHz`;
+  if(cat==='amplifier') return `G=${f1(s.gain)} dB  NF=${f1(s.nf)} dB`;
+  if(cat==='attenuator')return `${f1(-s.gain)} dB`;
+  if(cat==='filter')    return `IL=${f1(-s.gain)} dB`;
+  if(cat==='mixer')     return `CL=${f1(-s.gain)} dB  NF=${f1(s.nf)} dB`;
+  return '';
 }
 
-/* ── Render ──────────────────────────────────────────────────── */
+/* ── Block position ─────────────────────────────────────────────── */
+function bpos(i){
+  const h=parseFloat(svg.getAttribute('height'))||400;
+  return{x:X0+i*(BW+GAP), y:h*0.36-BH/2};
+}
+
+/* ── Render ──────────────────────────────────────────────────────── */
 const svg=document.getElementById('schematic');
-const cvwrap=document.getElementById('cvwrap');
+const cvw=document.getElementById('cvw');
 
 function render(){
-  // Sync SVG size to container
-  const r=cvwrap.getBoundingClientRect();
+  const r=cvw.getBoundingClientRect();
   svg.setAttribute('width',r.width);
   svg.setAttribute('height',r.height);
-  // Clear
-  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  while(svg.firstChild)svg.removeChild(svg.firstChild);
 
-  document.getElementById('drop-hint').classList.toggle('hidden',chain.length>0);
+  document.getElementById('hint').classList.toggle('hidden',chain.length>0);
 
-  // ── Wires (drawn below blocks so port dots appear on top)
-  const wL=mk('g'); svg.appendChild(wL);
+  // ── Wires
+  const wL=mk('g');svg.appendChild(wL);
   for(let i=0;i<chain.length-1;i++){
     const a=bpos(i),b=bpos(i+1);
-    const x1=a.x+BLOCK, y1=a.y+BLOCK/2;
-    const x2=b.x,       y2=b.y+BLOCK/2;
-    // Right-angle routing with stubs (matches wire_item.py STUB=12)
-    const mx1=x1+STUB, mx2=x2-STUB, my=(y1+y2)/2;
-    const d=y1===y2
-      ? `M${x1},${y1} H${x2}`
-      : `M${x1},${y1} H${mx1} V${my} H${mx2} V${y2} H${x2}`;
-    wL.appendChild(mk('path',{d,fill:'none',
-      stroke:'#212121','stroke-width':1.6,
-      'stroke-linejoin':'round','stroke-linecap':'round'}));
-    // Flow arrow at midpoint
-    const ax=(x1+x2)/2, ay=y1===y2?y1:my;
+    const catA=chain[i].lib.cat,catB=chain[i+1].lib.cat;
+    // Skip wire from/to LO sources (they connect to mixer LO port, shown separately)
+    if(catA==='lo_source') continue;
+
+    const x1=a.x+BW,y1=a.y+BH/2;
+    const x2=b.x,  y2=b.y+BH/2;
+    // LO source wire colour = orange; normal = black
+    const wireStroke=catB==='mixer'&&i>0?'#212121':'#212121';
+    const mx1=x1+STUB,mx2=x2-STUB,my=(y1+y2)/2;
+    const d=Math.abs(y1-y2)<1?`M${x1},${y1} H${x2}`
+      :`M${x1},${y1} H${mx1} V${my} H${mx2} V${y2} H${x2}`;
+    wL.appendChild(mk('path',{d,fill:'none',stroke:wireStroke,
+      'stroke-width':1.6,'stroke-linejoin':'round','stroke-linecap':'round'}));
+    // Flow arrow
+    const ax=(x1+x2)/2,ay=Math.abs(y1-y2)<1?y1:my;
     wL.appendChild(mk('polygon',{
       points:`${ax-6},${ay-4} ${ax+6},${ay} ${ax-6},${ay+4}`,
-      fill:'#9e9e9e',opacity:'.7'}));
+      fill:'#9e9e9e',opacity:'.65'}));
+  }
+
+  // ── LO wire (vertical, from lo_source to nearest mixer)
+  let loIdx=null,mxIdx=null;
+  chain.forEach((b,i)=>{
+    if(b.lib.cat==='lo_source')loIdx=i;
+    if(b.lib.cat==='mixer'&&mxIdx===null&&loIdx!==null)mxIdx=i;
+  });
+  if(loIdx!=null&&mxIdx!=null){
+    const lp=bpos(loIdx),mp=bpos(mxIdx);
+    const lx=lp.x+BW/2, ly=lp.y+BH;     // bottom of LO source
+    const mx=mp.x+BW/2, my2=mp.y+BH;    // bottom of mixer
+    // Draw L-shaped orange wire: down from LO, across to below mixer, up to mixer bottom
+    wL.appendChild(mk('path',{
+      d:`M${lx},${ly} V${ly+24} H${mx} V${my2}`,
+      fill:'none',stroke:'#ef6c00','stroke-width':1.6,
+      'stroke-dasharray':'5 3','stroke-linejoin':'round','stroke-linecap':'round'}));
+    tt(wL.appendChild(mk('text',{x:(lx+mx)/2,y:ly+18,
+      'text-anchor':'middle','font-size':8,fill:'#ef6c00',
+      'font-family':'ui-monospace,monospace'})),'LO');
+  }
+
+  // ── Drop insert indicator
+  if(dragState.active&&dragState.insertAt!=null){
+    const ip=dragState.insertAt;
+    const xline=ip>=chain.length
+      ?(chain.length>0?bpos(chain.length-1).x+BW+GAP/2:X0)
+      :bpos(ip).x-GAP/2;
+    const hh=parseFloat(svg.getAttribute('height'))||400;
+    wL.appendChild(mk('line',{x1:xline,y1:20,x2:xline,y2:hh-20,
+      stroke:'#1565c0','stroke-width':2,'stroke-dasharray':'4 3',opacity:'.8'}));
   }
 
   // ── Blocks
-  const desigs=getDesigs();
-  const bL=mk('g'); svg.appendChild(bL);
-
+  const desigs=getDesigs(),bL=mk('g');svg.appendChild(bL);
   chain.forEach((block,i)=>{
-    const {x,y}=bpos(i), sel=selectedId===block.id;
-    const s=sp(block), cat=block.lib.cat;
-    const g=mk('g',{transform:`translate(${x},${y})`,cursor:'pointer'});
+    const{x,y}=bpos(i),sel=selId===block.id,cat=block.lib.cat;
+    const s=sp(block);
+    const g=mk('g',{transform:`translate(${x},${y})`,cursor:'grab'});
     g.setAttribute('data-id',block.id);
 
-    // Selection dashed border (colour #1565c0, 1.4px — from component_item.py)
     if(sel){
-      g.appendChild(mk('rect',{x:-4,y:-4,width:BLOCK+8,height:BLOCK+8,rx:6,
-        fill:'rgba(21,101,192,.07)',stroke:'#1565c0','stroke-width':1.4,
-        'stroke-dasharray':'5 3'}));
+      g.appendChild(mk('rect',{x:-4,y:-4,width:BW+8,height:BH+8,rx:6,
+        fill:'rgba(21,101,192,.08)',stroke:'#1565c0','stroke-width':1.4,'stroke-dasharray':'5 3'}));
     }
 
     // Symbol
     g.appendChild(drawSym(cat));
 
-    // Port dots: white fill, dark border (matches PORT_RADIUS=4, port colors)
-    if(i>0)      g.appendChild(mk('circle',{cx:0,       cy:BLOCK/2, r:PORT_R, fill:'white',stroke:'#212121','stroke-width':1.4}));
-    if(i<chain.length-1) g.appendChild(mk('circle',{cx:BLOCK, cy:BLOCK/2, r:PORT_R, fill:'white',stroke:'#212121','stroke-width':1.4}));
+    // Port dots: left (input) and right (output)
+    // Sources: only right port. LO: only right port (shown differently).
+    const isFirst=i===0||(i>0&&chain.slice(0,i).every(b=>b.lib.cat==='lo_source'));
+    const showIn=i>0&&cat!=='source'&&cat!=='lo_source';
+    const showOut=i<chain.length-1&&cat!=='lo_source';
+    if(showIn)  g.appendChild(mk('circle',{cx:0,    cy:BH/2,r:PR,fill:'white',stroke:'#212121','stroke-width':1.4}));
+    if(showOut) g.appendChild(mk('circle',{cx:BW,   cy:BH/2,r:PR,fill:'white',stroke:'#212121','stroke-width':1.4}));
+    // LO source gets a bottom port
+    if(cat==='lo_source') g.appendChild(mk('circle',{cx:BW/2,cy:BH,r:PR,fill:'white',stroke:'#ef6c00','stroke-width':1.4}));
 
-    // Designator label (8pt bold monospace below block — matches actual app)
-    txt(g.appendChild(mk('text',{x:BLOCK/2, y:BLOCK+13,
-      'text-anchor':'middle','font-size':9,'font-weight':'700',
-      fill:'#424242','font-family':'ui-monospace,SFMono-Regular,monospace'})),
-      desigs[i]);
+    // Designator
+    tt(g.appendChild(mk('text',{x:BW/2,y:BH+13,'text-anchor':'middle',
+      'font-size':9,'font-weight':'700',fill:'#424242',
+      'font-family':'ui-monospace,SFMono-Regular,monospace'})),desigs[i]);
 
-    // Component name (muted, smaller)
-    txt(g.appendChild(mk('text',{x:BLOCK/2, y:BLOCK+24,
-      'text-anchor':'middle','font-size':8,fill:'#607d8b',
-      'font-family':'-apple-system,BlinkMacSystemFont,Helvetica,sans-serif'})),
+    // Name
+    tt(g.appendChild(mk('text',{x:BW/2,y:BH+24,'text-anchor':'middle',
+      'font-size':8,fill:'#607d8b',
+      'font-family':'-apple-system,BlinkMacSystemFont,sans-serif'})),
       block.ov.name||block.lib.name);
 
-    // Key value line
-    txt(g.appendChild(mk('text',{x:BLOCK/2, y:BLOCK+34,
-      'text-anchor':'middle','font-size':8,fill:'#78909c',
-      'font-family':'-apple-system,BlinkMacSystemFont,Helvetica,sans-serif'})),
+    // Value
+    tt(g.appendChild(mk('text',{x:BW/2,y:BH+34,'text-anchor':'middle',
+      'font-size':8,fill:'#78909c',
+      'font-family':'-apple-system,BlinkMacSystemFont,sans-serif'})),
       fmtVal(cat,s));
 
-    // Delete ×
-    const dg=mk('g',{transform:`translate(${BLOCK-6},-6)`,
+    // Delete button
+    const dg=mk('g',{transform:`translate(${BW-6},-6)`,
       opacity:sel?'1':'0',cursor:'pointer'});
     dg.setAttribute('data-del',block.id);
     dg.appendChild(mk('circle',{cx:0,cy:0,r:8,fill:'#424242',stroke:'#9e9e9e','stroke-width':1}));
-    txt(dg.appendChild(mk('text',{x:0,y:0,'text-anchor':'middle',
-      'dominant-baseline':'middle','font-size':9,fill:'#e0e0e0'})),'✕');
+    tt(dg.appendChild(mk('text',{x:0,y:0,'text-anchor':'middle','dominant-baseline':'middle',
+      'font-size':9,fill:'#e0e0e0'})),'✕');
     g.appendChild(dg);
 
     g.addEventListener('mouseenter',()=>dg.setAttribute('opacity','1'));
-    g.addEventListener('mouseleave',()=>{ if(selectedId!==block.id) dg.setAttribute('opacity','0'); });
-    g.addEventListener('click',e=>{ e.stopPropagation(); selectBlock(block.id); });
+    g.addEventListener('mouseleave',()=>{if(selId!==block.id)dg.setAttribute('opacity','0');});
+    g.addEventListener('click',e=>{e.stopPropagation();selBlock(block.id);});
+    // Mousedown for canvas drag-to-reorder
+    g.addEventListener('mousedown',e=>{if(!e.target.closest('[data-del]'))startCanvasDrag(e,block.id);});
 
     bL.appendChild(g);
   });
 
   // Delete handlers
   svg.querySelectorAll('[data-del]').forEach(el=>
-    el.addEventListener('click',e=>{ e.stopPropagation(); removeBlock(el.getAttribute('data-del')); })
+    el.addEventListener('click',e=>{e.stopPropagation();removeBlock(el.getAttribute('data-del'));})
   );
-  // Deselect on canvas click
-  svg.addEventListener('click',()=>{ if(selectedId){selectedId=null;hideInsp();render();} });
+  svg.addEventListener('click',()=>{if(selId){selId=null;hideInsp();render();}});
 }
 
-function fmtVal(cat, s) {
-  if(cat==='amplifier') return `G=${f1(s.gain)} dB  NF=${f1(s.nf)} dB`;
-  if(cat==='attenuator') return `${f1(-s.gain)} dB`;
-  if(cat==='filter') return `IL=${f1(-s.gain)} dB`;
-  if(cat==='mixer') return `CL=${f1(-s.gain)} dB  NF=${f1(s.nf)} dB`;
-  return '';
+/* ── Canvas drag-to-reorder ─────────────────────────────────────── */
+const dragState={active:false,blockId:null,insertAt:null,startX:0,startY:0};
+const ghost=document.getElementById('drag-ghost');
+
+function startCanvasDrag(e,blockId){
+  if(e.button!==0)return;
+  dragState.active=false;
+  dragState.blockId=blockId;
+  dragState.startX=e.clientX;
+  dragState.startY=e.clientY;
+
+  // Build ghost SVG
+  const block=chain.find(b=>b.id===blockId);
+  if(!block)return;
+  const cat=block.lib.cat;
+  const ns='http://www.w3.org/2000/svg';
+  const gsvg=document.createElementNS(ns,'svg');
+  gsvg.setAttribute('width',BW); gsvg.setAttribute('height',BH);
+  gsvg.appendChild(drawSym(cat));
+  ghost.innerHTML='';
+  ghost.appendChild(gsvg);
+
+  const onMove=ev=>{
+    const dx=Math.abs(ev.clientX-dragState.startX),dy=Math.abs(ev.clientY-dragState.startY);
+    if(!dragState.active&&(dx>5||dy>5)){
+      dragState.active=true;
+      ghost.style.display='block';
+    }
+    if(!dragState.active)return;
+    ghost.style.left=(ev.clientX-BW/2)+'px';
+    ghost.style.top =(ev.clientY-BH/2)+'px';
+
+    // Compute insert position
+    const wr=cvw.getBoundingClientRect();
+    const relX=ev.clientX-wr.left;
+    let insertAt=chain.length;
+    for(let i=0;i<chain.length;i++){
+      const px=bpos(i).x+BW/2;
+      if(relX<px){insertAt=i;break;}
+    }
+    // Don't allow inserting at own position (no-op)
+    const srcI=chain.findIndex(b=>b.id===dragState.blockId);
+    if(insertAt===srcI||insertAt===srcI+1) dragState.insertAt=null;
+    else dragState.insertAt=insertAt;
+    render();
+  };
+  const onUp=ev=>{
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+    ghost.style.display='none';
+    if(dragState.active&&dragState.insertAt!=null){
+      const srcI=chain.findIndex(b=>b.id===dragState.blockId);
+      const[moved]=chain.splice(srcI,1);
+      let tgt=dragState.insertAt;
+      if(srcI<tgt)tgt--;
+      chain.splice(tgt,0,moved);
+    }
+    dragState.active=false;
+    dragState.insertAt=null;
+    render();updateTable();
+  };
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
 }
 
-/* ── Palette ─────────────────────────────────────────────────── */
+/* ── Block management ────────────────────────────────────────────── */
+function addBlock(lib){
+  chain.push({id:'b'+(nxtId++),lib,ov:{}});
+  render();updateTable();
+  selBlock(chain[chain.length-1].id);
+}
+function removeBlock(id){
+  chain=chain.filter(b=>b.id!==id);
+  if(selId===id){selId=null;hideInsp();}
+  render();updateTable();
+}
+
+/* ── Inspector ───────────────────────────────────────────────────── */
+const insp=document.getElementById('insp');
+function selBlock(id){selId=id;render();openInsp(id);}
+
+function openInsp(id){
+  const b=chain.find(b=>b.id===id);if(!b)return;
+  const L=b.lib,s=sp(b),cat=L.cat;
+  const desigs=getDesigs(),desig=desigs[chain.indexOf(b)];
+
+  insp.style.display='block';
+  document.getElementById('it').textContent=L.name;
+  document.getElementById('is').textContent=desig+(L.mfr?' · '+L.mfr:'');
+
+  // Position
+  const i=chain.indexOf(b),pos=bpos(i);
+  const sw=parseFloat(svg.getAttribute('width'))||800;
+  const sh=parseFloat(svg.getAttribute('height'))||400;
+  let left=pos.x+BW+14,top=pos.y-10;
+  if(left+220>sw)left=pos.x-224;
+  if(top+310>sh)top=sh-310;
+  insp.style.left=Math.max(4,left)+'px';
+  insp.style.top =Math.max(4,top )+'px';
+
+  const fields=document.getElementById('if');
+  fields.innerHTML='';
+
+  const addNum=(label,key,val,min,max,step)=>{
+    const d=document.createElement('div');d.className='if';
+    d.innerHTML=`<label>${label}</label>
+      <input type="number" value="${(+val).toFixed(2)}" min="${min}" max="${max}" step="${step}"/>`;
+    d.querySelector('input').addEventListener('input',ev=>{
+      b.ov[key]=parseFloat(ev.target.value);render();updateTable();
+    });
+    fields.appendChild(d);
+  };
+  const addTxt=(label,key,val)=>{
+    const d=document.createElement('div');d.className='if';
+    d.innerHTML=`<label>${label}</label><input type="text" value="${val||''}"/>`;
+    d.querySelector('input').addEventListener('input',ev=>{b.ov[key]=ev.target.value;render();});
+    fields.appendChild(d);
+  };
+
+  addTxt('Label',    'name', b.ov.name);
+
+  if(cat==='source'){
+    addNum('Output Power (dBm)',    'out_dbm',  s.outDbm,   -80,30,0.5);
+  } else if(cat==='lo_source'){
+    addNum('LO Output Power (dBm)','out_dbm',  s.outDbm,   -20,30,0.5);
+    addNum('LO Frequency (GHz)',   'lo_freq_ghz',s.loFreqGhz??10, .01,110,.1);
+  } else if(cat==='amplifier'){
+    addNum('Gain (dB)',          'gain_db',  s.gain,   -40,80,0.5);
+    addNum('Noise Figure (dB)',  'nf_db',    s.nf,      0, 30,0.1);
+    addNum('P1dB out (dBm)',     'p1db_out', s.p1out??20,-30,60,0.5);
+  } else if(cat==='attenuator'||cat==='filter'){
+    addNum((cat==='filter'?'Insertion':'Attenuation')+' Loss (dB)',
+      'loss_db', -s.gain, 0, 60, 0.5);
+  } else if(cat==='mixer'){
+    addNum('Conv. Loss (dB)',    'conv_loss_db', -s.gain,  0, 20,0.5);
+    addNum('Noise Figure (dB)', 'nf_db',         s.nf,    0, 30,0.1);
+    addNum('P1dB in (dBm)',     'p1db_in',  s.p1in??1, -30,30,0.5);
+  }
+
+  if(L.gain_t||L.nf_t||L.loss_t||L.out_t){
+    const n=document.createElement('p');n.className='inote';
+    n.textContent=`${L.sub}. Values interpolated at ${freqGhz} GHz from datasheet. Edit to override.`;
+    fields.appendChild(n);
+  }
+}
+function hideInsp(){insp.style.display='none';}
+document.getElementById('ic').addEventListener('click',()=>{selId=null;hideInsp();render();});
+
+/* ── Palette ─────────────────────────────────────────────────────── */
 function buildPalette(){
   const list=document.getElementById('pal-list');
   list.innerHTML='';
-  [['Ideal',true],['Real Components',false]].forEach(([label,isIdeal])=>{
-    const h=document.createElement('div');
-    h.className='pal-h'; h.textContent=label;
+  const sections=[
+    {label:'Sources',    filter:l=>['source','lo_source'].includes(l.cat)&&l.ideal},
+    {label:'Real Sources',filter:l=>['source','lo_source'].includes(l.cat)&&!l.ideal},
+    {label:'Ideal',      filter:l=>!['source','lo_source'].includes(l.cat)&&l.ideal},
+    {label:'Real Components',filter:l=>!['source','lo_source'].includes(l.cat)&&!l.ideal},
+  ];
+  sections.forEach(sec=>{
+    const items=LIB.filter(sec.filter);
+    if(!items.length)return;
+    const h=document.createElement('div');h.className='ph';h.textContent=sec.label;
     list.appendChild(h);
-    LIB.filter(l=>isIdeal?l.ideal:!l.ideal).forEach(lib=>{
-      const el=document.createElement('div');
-      el.className='pal-item'; el.draggable=true; el.dataset.lid=lib.id;
+    items.forEach(lib=>{
       const c=CAT[lib.cat];
-      el.innerHTML=`
-        <div class="pal-badge" style="background:${c.fill};color:${c.ink}">
-          ${lib.cat==='amplifier'?'▷':lib.cat==='mixer'?'×':lib.cat==='filter'?'⊡':'Z'}
-        </div>
-        <div>
-          <div class="pal-name">${lib.name}</div>
-          <div class="pal-kpi">${lib.sub}</div>
-        </div>`;
+      const el=document.createElement('div');
+      el.className='pi';el.draggable=true;el.dataset.lid=lib.id;
+      el.innerHTML=`<div class="pb" style="background:${c.fill};color:${c.ink}">${c.badge}</div>
+        <div><div class="pn">${lib.name}</div><div class="pk">${lib.sub}</div></div>`;
       el.addEventListener('dragstart',e=>{
-        e.dataTransfer.setData('lid',lib.id);
-        e.dataTransfer.effectAllowed='copy';
+        e.dataTransfer.setData('lid',lib.id);e.dataTransfer.effectAllowed='copy';
       });
       list.appendChild(el);
     });
   });
 }
 
-document.getElementById('pal-search').addEventListener('input',e=>{
+document.getElementById('pal-s').addEventListener('input',e=>{
   const q=e.target.value.toLowerCase();
-  document.querySelectorAll('.pal-item').forEach(el=>{
-    const match=!q||el.textContent.toLowerCase().includes(q);
-    el.style.display=match?'':'none';
+  document.querySelectorAll('.pi').forEach(el=>{
+    el.style.display=!q||el.textContent.toLowerCase().includes(q)?'':'none';
+  });
+  document.querySelectorAll('.ph').forEach(h=>{
+    let sib=h.nextElementSibling,vis=false;
+    while(sib&&!sib.classList.contains('ph')){if(sib.style.display!=='none')vis=true;sib=sib.nextElementSibling;}
+    h.style.display=vis?'':'none';
   });
 });
 
-/* ── Drag-drop onto canvas ────────────────────────────────────── */
-cvwrap.addEventListener('dragover',e=>e.preventDefault());
-cvwrap.addEventListener('drop',e=>{
+/* ── Drag from palette onto canvas ────────────────────────────────── */
+cvw.addEventListener('dragover',e=>e.preventDefault());
+cvw.addEventListener('drop',e=>{
   e.preventDefault();
-  const id=e.dataTransfer.getData('lid');
-  if(!id) return;
-  const lib=LIB.find(l=>l.id===id);
-  if(lib) addBlock(lib);
+  const id=e.dataTransfer.getData('lid');if(!id)return;
+  const lib=LIB.find(l=>l.id===id);if(lib)addBlock(lib);
 });
 
-function addBlock(lib){
-  chain.push({id:'b'+(nextId++), lib, ov:{}});
-  render(); updateTable();
-  selectBlock(chain[chain.length-1].id);
-}
-function removeBlock(id){
-  chain=chain.filter(b=>b.id!==id);
-  if(selectedId===id){selectedId=null;hideInsp();}
-  render(); updateTable();
-}
-
-/* ── Inspector ───────────────────────────────────────────────── */
-const insp=document.getElementById('insp');
-function selectBlock(id){selectedId=id; render(); openInsp(id);}
-
-function openInsp(id){
-  const block=chain.find(b=>b.id===id);
-  if(!block) return;
-  const L=block.lib, s=sp(block), cat=L.cat;
-  const desigs=getDesigs(), desig=desigs[chain.indexOf(block)];
-
-  insp.style.display='block';
-  document.getElementById('insp-title').textContent=L.name;
-  document.getElementById('insp-sub').textContent=desig+(L.mfr?' · '+L.mfr:'');
-
-  // Position near block, prefer right side
-  const i=chain.indexOf(block), pos=bpos(i);
-  const sw=parseFloat(svg.getAttribute('width'))||800;
-  const sh=parseFloat(svg.getAttribute('height'))||400;
-  let left=pos.x+BLOCK+14, top=pos.y-10;
-  if(left+216>sw) left=pos.x-220;
-  if(top+290>sh) top=sh-290;
-  insp.style.left=Math.max(4,left)+'px';
-  insp.style.top =Math.max(4,top )+'px';
-
-  const fields=document.getElementById('insp-fields');
-  fields.innerHTML='';
-
-  const addF=(label,key,val,min,max,step)=>{
-    const d=document.createElement('div'); d.className='ifield';
-    d.innerHTML=`<label>${label}</label>
-      <input type="number" value="${(+val).toFixed(2)}" min="${min}" max="${max}" step="${step}"/>`;
-    d.querySelector('input').addEventListener('input',ev=>{
-      block.ov[key]=parseFloat(ev.target.value);
-      render(); updateTable();
-    });
-    fields.appendChild(d);
-  };
-
-  // Label override
-  const nd=document.createElement('div'); nd.className='ifield';
-  nd.innerHTML=`<label>Label</label><input type="text" value="${block.ov.name||''}"/>`;
-  nd.querySelector('input').addEventListener('input',ev=>{block.ov.name=ev.target.value; render();});
-  fields.appendChild(nd);
-
-  if(cat==='amplifier'){
-    addF('Gain (dB)',        'gain_db',   s.gain, -40, 80, 0.5);
-    addF('Noise Figure (dB)','nf_db',    s.nf,     0, 30, 0.1);
-    addF('P1dB out (dBm)',   'p1db_out', s.p1out??20,-30,60, 0.5);
-  } else if(cat==='attenuator'||cat==='filter'){
-    addF((cat==='filter'?'Insertion':'Attenuation')+' Loss (dB)','loss_db',-s.gain,0,60,0.5);
-  } else if(cat==='mixer'){
-    addF('Conv. Loss (dB)', 'conv_loss_db', -s.gain,  0,20,0.5);
-    addF('Noise Figure (dB)','nf_db',        s.nf,    0,30,0.1);
-    addF('P1dB in (dBm)',   'p1db_in',  s.p1in??1, -30,30,0.5);
-  }
-
-  if(L.gain_t||L.nf_t||L.loss_t){
-    const n=document.createElement('p'); n.className='inote';
-    n.textContent=`${L.sub}. Values interpolated at ${freqGhz} GHz. Edit fields to override.`;
-    fields.appendChild(n);
-  }
-}
-function hideInsp(){insp.style.display='none';}
-document.getElementById('insp-close').addEventListener('click',()=>{selectedId=null;hideInsp();render();});
-
-/* ── Results table ───────────────────────────────────────────── */
+/* ── Results table ───────────────────────────────────────────────── */
 function updateTable(){
   const rows=calcCascade();
-  const tbody=document.getElementById('res-body');
-  const empty=document.getElementById('tbl-empty');
-  const tbl  =document.getElementById('res-tbl');
-  document.getElementById('rh-freq').textContent=freqGhz+' GHz';
+  const tbody=document.getElementById('rb');
+  const empty=document.getElementById('te');
+  const tbl  =document.getElementById('rt');
+  document.getElementById('rf').textContent=freqGhz+' GHz';
 
-  if(!rows.length){
-    tbl.style.display='none'; empty.style.display='block';
-    ['sum-gain','sum-nf','sum-p1db'].forEach(id=>{
-      const el=document.getElementById(id); el.textContent='—'; el.className='cv-na';
-    });
+  // Find last non-source/non-LO row for summary
+  const cascRows=rows.filter(r=>!r.isSource&&!r.isLO&&r.cascNF!=null);
+
+  if(!cascRows.length){
+    tbl.style.display='none';empty.style.display='block';
+    ['sg','sn','sp'].forEach(id=>{const el=document.getElementById(id);el.textContent='—';el.className='vd';});
     return;
   }
-  tbl.style.display=''; empty.style.display='none';
+  tbl.style.display='';empty.style.display='none';
   tbody.innerHTML='';
 
   rows.forEach(r=>{
     const tr=document.createElement('tr');
-    const gc=r.gain>=0?'cv-gain':'cv-warn';
-    const p1c=r.p1out!=null?'cv-p1db':'cv-na';
-    tr.innerHTML=`
-      <td class="td-desig">${r.desig}</td>
-      <td>${r.name}</td>
-      <td class="col-g ${gc}">${f1(r.gain)}</td>
-      <td class="${r.hdroom!=null&&r.hdroom<3?'cv-warn':''}">${f1(r.sig)}</td>
-      <td class="col-nf cv-nf">${f1(r.cascNF)}</td>
-      <td class="cv-na">${f1(r.noiseDbHz)}</td>
-      <td class="${p1c}">${r.p1out!=null?f1(r.p1out):'—'}</td>`;
+    if(r.isSource){
+      tr.className='rsrc';
+      tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td>
+        <td class="cg vd">—</td><td class="vg">${f1(r.outDbm)} dBm</td>
+        <td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;
+    } else if(r.isLO){
+      tr.className='rsrc';
+      tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td>
+        <td class="cg vd">—</td><td class="vd">${f1(r.outDbm)} dBm (LO)</td>
+        <td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;
+    } else {
+      const gc=r.gain>=0?'vg':'vw';
+      const pc=r.p1out!=null?'vp':'vd';
+      tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td>
+        <td class="cg ${gc}">${f1(r.gain)}</td>
+        <td class="${r.hdroom!=null&&r.hdroom<3?'vw':''}">${f1(r.sig)}</td>
+        <td class="cnf vn">${f1(r.cascNF)}</td>
+        <td class="vd">${f1(r.noiseDbHz)}</td>
+        <td class="${pc}">${r.p1out!=null?f1(r.p1out):'—'}</td>`;
+    }
     tbody.appendChild(tr);
   });
 
   // System row
-  const L=rows[rows.length-1];
-  const sys=document.createElement('tr'); sys.className='row-sys';
-  sys.innerHTML=`
-    <td></td><td>System (cascaded)</td>
-    <td class="col-g ${L.cumG>=0?'cv-gain':'cv-warn'}">${f1(L.cumG)}</td>
+  const L=cascRows[cascRows.length-1];
+  const sys=document.createElement('tr');sys.className='rsys';
+  sys.innerHTML=`<td></td><td>System (cascaded)</td>
+    <td class="cg ${L.cumG>=0?'vg':'vw'}">${f1(L.cumG)}</td>
     <td>${f1(L.sig)}</td>
-    <td class="col-nf cv-nf">${f1(L.cascNF)}</td>
-    <td class="cv-na">${f1(L.noiseDbHz)}</td>
-    <td class="${L.p1out!=null?'cv-p1db':'cv-na'}">${L.p1out!=null?f1(L.p1out):'—'}</td>`;
+    <td class="cnf vn">${f1(L.cascNF)}</td>
+    <td class="vd">${f1(L.noiseDbHz)}</td>
+    <td class="${L.p1out!=null?'vp':'vd'}">${L.p1out!=null?f1(L.p1out):'—'}</td>`;
   tbody.appendChild(sys);
 
-  const sg=document.getElementById('sum-gain');
-  const sn=document.getElementById('sum-nf');
-  const sp1=document.getElementById('sum-p1db');
-  sg.textContent=f1(L.cumG)+' dB';  sg.className=L.cumG>=0?'cv-gain':'cv-warn';
-  sn.textContent=f1(L.cascNF)+' dB'; sn.className='cv-nf';
-  if(L.p1out!=null){sp1.textContent=f1(L.p1out)+' dBm';sp1.className='cv-p1db';}
-  else{sp1.textContent='—';sp1.className='cv-na';}
+  const sg=document.getElementById('sg'),sn=document.getElementById('sn'),sp2=document.getElementById('sp');
+  sg.textContent=f1(L.cumG)+' dB';  sg.className=L.cumG>=0?'vg':'vw';
+  sn.textContent=f1(L.cascNF)+' dB';sn.className='vn';
+  if(L.p1out!=null){sp2.textContent=f1(L.p1out)+' dBm';sp2.className='vp';}
+  else{sp2.textContent='—';sp2.className='vd';}
 }
 
-/* ── Controls ────────────────────────────────────────────────── */
-document.getElementById('freq-in').addEventListener('input',e=>{
+/* ── Controls ────────────────────────────────────────────────────── */
+document.getElementById('freq').addEventListener('input',e=>{
   const v=parseFloat(e.target.value);
-  if(!isNaN(v)&&v>0){ freqGhz=v; render(); updateTable(); if(selectedId) openInsp(selectedId); }
+  if(!isNaN(v)&&v>0){freqGhz=v;render();updateTable();if(selId)openInsp(selId);}
 });
-document.getElementById('pin-in').addEventListener('input',e=>{
-  const v=parseFloat(e.target.value); if(!isNaN(v)){ pinDbm=v; updateTable(); }
+document.getElementById('clr').addEventListener('click',()=>{
+  chain=[];selId=null;hideInsp();render();updateTable();
 });
-document.getElementById('clear-btn').addEventListener('click',()=>{
-  chain=[];selectedId=null;hideInsp();render();updateTable();
-});
-window.addEventListener('resize',()=>{ render(); updateTable(); });
+window.addEventListener('resize',()=>{render();updateTable();});
 
-/* ── Starter chain ───────────────────────────────────────────── */
+/* ── Starter chain ───────────────────────────────────────────────── */
 function loadStarter(){
-  [['mc-zx60',{}],['filter',{loss_db:1.5}],['atten',{loss_db:6}]]
-    .forEach(([id,ov])=>{
-      const lib=LIB.find(l=>l.id===id);
-      if(lib) chain.push({id:'b'+(nextId++),lib,ov});
-    });
+  [
+    ['src-ideal',{out_dbm:-40}],
+    ['mc-zx60',  {}],
+    ['filter',   {loss_db:1.5}],
+    ['atten',    {loss_db:6}],
+  ].forEach(([id,ov])=>{
+    const lib=LIB.find(l=>l.id===id);
+    if(lib)chain.push({id:'b'+(nxtId++),lib,ov});
+  });
 }
 
-/* ── Boot ────────────────────────────────────────────────────── */
+/* ── Boot ────────────────────────────────────────────────────────── */
 buildPalette();
 loadStarter();
-requestAnimationFrame(()=>requestAnimationFrame(()=>{ render(); updateTable(); }));
+requestAnimationFrame(()=>requestAnimationFrame(()=>{render();updateTable();}));
 </script>
 </body>
 </html>
