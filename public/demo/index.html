@@ -331,7 +331,10 @@ tr.rsrc td{color:var(--text3);font-style:italic;}
     <div class="ptab locked" data-feat="LO distribution analysis">LO distribution</div>
     <div class="path-spacer"></div>
     <div class="path-controls">
-      <span id="res-freq-label">2.4 GHz</span>
+      <button class="sz-btn locked" id="band-btn" data-feat="Multi-frequency band sweep"
+        style="margin-right:6px;color:var(--amber);border-color:#ffcc80;background:#fff8e1;"
+        title="The full app sweeps across frequency bands">🔒 Single CW point — full app sweeps bands</button>
+      <span>CW</span>
       <input id="freq" type="number" min=".001" max="110" step=".1" value="2.4"
         style="width:68px;padding:2px 6px;background:#fff;border:1px solid var(--border);border-radius:3px;font-size:11px;"/>
       <span>GHz</span>
@@ -445,16 +448,22 @@ function sbMsg(m,dur=2600){const el=document.getElementById('sb-msg');el.textCon
   clearTimeout(sbMsg._t);sbMsg._t=setTimeout(()=>{el.textContent='RFTrueLink — Vectron Technologies LLC — Demo project';},dur);}
 
 /* ── Zoom ──────────────────────────────────────────────────── */
-let zoom=1;const ZL=[.25,.33,.5,.67,.75,.85,1,1.1,1.25,1.5,1.75,2];
+let zoom=1, panX=20, panY=20;   // pan offset — canvas is freely pannable
+const ZL=[.25,.33,.5,.67,.75,.85,1,1.1,1.25,1.5,1.75,2];
 function changeZoom(d){let i=ZL.findIndex(z=>Math.abs(z-zoom)<.01);i=Math.max(0,Math.min(ZL.length-1,i+d));setZoom(ZL[i]);}
 function setZoom(z){zoom=z;const p=Math.round(z*100)+'%';document.getElementById('ct-zoom').textContent=p;document.getElementById('sb-zoom').textContent=p;render();}
 function zoomFit(){
-  if(!nodes.length){setZoom(1);return;}
+  if(!nodes.length){zoom=1;panX=20;panY=20;setZoom(1);return;}
   let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
-  nodes.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+BW);maxY=Math.max(maxY,n.y+BH+30);});
+  nodes.forEach(n=>{const{w,h}=nodeDim(n);minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+w);maxY=Math.max(maxY,n.y+h+34);});
   const r=cvw.getBoundingClientRect();
-  const z=Math.min(1.5,(r.width-60)/(maxX-minX+60),(r.height-60)/(maxY-minY+60));
-  setZoom(Math.max(.25,Math.min(1.5,z)));
+  const z=Math.max(.25,Math.min(1.4,Math.min((r.width-80)/(maxX-minX),(r.height-80)/(maxY-minY))));
+  zoom=z;
+  // center the content
+  panX=(r.width-(maxX-minX)*z)/2-minX*z;
+  panY=(r.height-(maxY-minY)*z)/2-minY*z;
+  const p=Math.round(z*100)+'%';document.getElementById('ct-zoom').textContent=p;document.getElementById('sb-zoom').textContent=p;
+  render();
 }
 
 /* ── Category metadata ─────────────────────────────────────── */
@@ -465,23 +474,38 @@ const CAT={
   attenuator:{fill:'#E3E3E3',ink:'#424242',prefix:'AT',badge:'Z'},
   filter:{fill:'#E3E3E3',ink:'#424242',prefix:'F',badge:'⊡'},
   mixer:{fill:'#F5D6C6',ink:'#bf360c',prefix:'M',badge:'×'},
+  cable:{fill:'#DCE9F4',ink:'#1565c0',prefix:'W',badge:'∿'},
+  antenna:{fill:'#FCE4CC',ink:'#bf360c',prefix:'ANT',badge:'⊲'},
+  fspl:{fill:'#E1F5FE',ink:'#0277bd',prefix:'FS',badge:')'},
+  chassis:{fill:'#FFF4CC',ink:'#795500',prefix:'PNA',badge:'▤'},
 };
 
 /* ── Ports per category (relative to 64×64 block) ──────────── */
 /* kind: 'in' (sink) | 'out' (source). sub: 'rf' | 'lo'.
    d = outward normal (which way the wire leaves/enters the port). */
 function portsOf(cat){
+  const W=(cat==='chassis')?132:BW, H=(cat==='chassis')?100:BH;
   switch(cat){
-    case 'source':    return [{name:'OUT',kind:'out',sub:'rf',x:BW,y:BH/2,d:[1,0]}];
+    case 'source':    return [{name:'OUT',kind:'out',sub:'rf',x:W,y:H/2,d:[1,0]}];
     // LO source feeds up into the mixer's LO port (placed below the mixer)
-    case 'lo_source': return [{name:'OUT',kind:'out',sub:'lo',x:BW/2,y:0,d:[0,-1]}];
-    case 'mixer':     return [{name:'RF',kind:'in',sub:'rf',x:0,y:BH/2,d:[-1,0]},
-                              {name:'LO',kind:'in',sub:'lo',x:BW/2,y:BH,d:[0,1]},
-                              {name:'IF',kind:'out',sub:'rf',x:BW,y:BH/2,d:[1,0]}];
-    default:          return [{name:'IN',kind:'in',sub:'rf',x:0,y:BH/2,d:[-1,0]},
-                              {name:'OUT',kind:'out',sub:'rf',x:BW,y:BH/2,d:[1,0]}];
+    case 'lo_source': return [{name:'OUT',kind:'out',sub:'lo',x:W/2,y:0,d:[0,-1]}];
+    case 'mixer':     return [{name:'RF',kind:'in',sub:'rf',x:0,y:H/2,d:[-1,0]},
+                              {name:'LO',kind:'in',sub:'lo',x:W/2,y:H,d:[0,1]},
+                              {name:'IF',kind:'out',sub:'rf',x:W,y:H/2,d:[1,0]}];
+    case 'antenna':   return [{name:'IN',kind:'in',sub:'rf',x:0,y:H/2,d:[-1,0]},
+                              {name:'AIR',kind:'out',sub:'air',x:W,y:H/2,d:[1,0]}];
+    case 'fspl':      return [{name:'IN',kind:'in',sub:'air',x:0,y:H/2,d:[-1,0]},
+                              {name:'OUT',kind:'out',sub:'air',x:W,y:H/2,d:[1,0]}];
+    case 'chassis':   // 4-port PNA — ports on the right edge, evenly spaced
+                      return [1,2,3,4].map((n,i)=>({name:'P'+n,kind:'out',sub:'rf',
+                                x:W,y:H/5*(i+1),d:[1,0]}));
+    default:          return [{name:'IN',kind:'in',sub:'rf',x:0,y:H/2,d:[-1,0]},
+                              {name:'OUT',kind:'out',sub:'rf',x:W,y:H/2,d:[1,0]}];
   }
 }
+/* Per-category block dimensions (most are 64×64; PNA chassis is larger). */
+function dimOf(cat){ if(cat==='chassis') return {w:132,h:100}; return {w:BW,h:BH}; }
+function nodeDim(node){ return dimOf(node.lib.cat); }
 
 /* ── Library ──────────────────────────────────────────────── */
 const LIB=[
@@ -502,8 +526,21 @@ const LIB=[
   {id:'mc-bwk2',name:'BW-K2-2W44+',cat:'attenuator',mfr:'Mini-Circuits',sub:'Mini-Circuits · DC–40 GHz · 2 dB',kpi:'DC–40 GHz · 2 dB typ',
    loss_t:[[.01,1.63],[1,1.67],[5,1.73],[10,1.79],[15,1.84],[18,1.92],[20,1.94],[26.5,1.99],[30,2.10],[40,2.53]],p:{loss_db:2}},
   {id:'filter',name:'Filter (BPF)',cat:'filter',ideal:true,sub:'Ideal · configurable insertion loss',kpi:'IL = 1 dB',p:{loss_db:1}},
-  {id:'mixer',name:'Mixer',cat:'mixer',ideal:true,sub:'Ideal · configurable',kpi:'CL=7 dB · NF=7 dB',p:{conv_loss_db:7,nf_db:7,p1db_in:1}},
-  {id:'marki',name:'Marki ML1-0220',cat:'mixer',mfr:'Marki Microwave',sub:'Marki · 2–20 GHz',kpi:'2–20 GHz · CL=7 dB · NF=7 dB',p:{conv_loss_db:7,nf_db:7,p1db_in:1}},
+  {id:'mixer',name:'Mixer',cat:'mixer',ideal:true,sub:'Ideal · configurable',kpi:'CL=7 dB · NF=7 dB · LO 13 dBm',p:{conv_loss_db:7,nf_db:7,p1db_in:1,lo_req_dbm:13}},
+  {id:'marki',name:'Marki ML1-0220',cat:'mixer',mfr:'Marki Microwave',sub:'Marki · 2–20 GHz',kpi:'2–20 GHz · CL=7 dB · LO 10–13 dBm',p:{conv_loss_db:7,nf_db:7,p1db_in:1,lo_req_dbm:13}},
+  /* Cables — contribute conductive loss (thermal, so NF = loss) */
+  {id:'cable-ideal',name:'Cable (ideal)',cat:'cable',ideal:true,sub:'Ideal · configurable loss',kpi:'0 dB',p:{loss_db:0,length_m:1}},
+  {id:'cbl-mwx051',name:'Junkosha MWX051',cat:'cable',mfr:'Junkosha',sub:'Junkosha · phase-stable · DC–50 GHz',kpi:'≈0.6·√f dB/m',
+   loss_eq:f=>0.0095*f+0.587*Math.sqrt(f)+0.02, p:{length_m:1}},
+  /* Antennas — contribute +gain_dbi (no added thermal noise) */
+  {id:'ant-ideal',name:'Antenna',cat:'antenna',ideal:true,sub:'Ideal · configurable gain',kpi:'0 dBi',p:{gain_dbi:0}},
+  {id:'sgh-2-18',name:'SGH 2–18 GHz',cat:'antenna',sub:'Standard gain horn',kpi:'2–18 GHz · 8–20 dBi',
+   gain_t:[[2,8],[6,12],[12,16],[18,20]], p:{gain_dbi:12}},
+  /* Free-space path — FSPL between two antennas */
+  {id:'fspl',name:'Free-space path',cat:'fspl',ideal:true,sub:'FSPL · configurable range',kpi:'FSPL over range R',p:{range_m:10}},
+  /* Multi-port PNA chassis — 4 source ports */
+  {id:'pna-chassis',name:'PNA-X (4-port)',cat:'chassis',mfr:'Keysight',sub:'Keysight · 4-port VNA · 10 MHz–67 GHz',kpi:'4 ports · src+receiver',
+   out_t:[[.01,11],[2,10],[10,8],[18,5],[26.5,2],[40,0],[50,-3],[67,-8]],p:{out_dbm:10,nf_db:28}},
 ];
 
 /* ── State: free-form node graph ───────────────────────────── */
@@ -520,7 +557,7 @@ const svg=document.getElementById('schematic');
 /* ── Helpers ───────────────────────────────────────────────── */
 const nodeById=id=>nodes.find(n=>n.id===id);
 function snapGrid(v){return Math.round(v/GRID)*GRID;}
-function sceneXY(clientX,clientY){const r=svg.getBoundingClientRect();return{x:(clientX-r.left)/zoom,y:(clientY-r.top)/zoom};}
+function sceneXY(clientX,clientY){const r=svg.getBoundingClientRect();return{x:(clientX-r.left-panX)/zoom,y:(clientY-r.top-panY)/zoom};}
 function portPos(node,portName){const p=portsOf(node.lib.cat).find(p=>p.name===portName);return p?{x:node.x+p.x,y:node.y+p.y,sub:p.sub,d:p.d}:null;}
 function allPorts(){const out=[];nodes.forEach(n=>portsOf(n.lib.cat).forEach(p=>out.push({node:n.id,name:p.name,kind:p.kind,sub:p.sub,x:n.x+p.x,y:n.y+p.y})));return out;}
 function getDesigs(){const c={};const m={};nodes.forEach(n=>{const px=CAT[n.lib.cat]?.prefix||'U';c[px]=(c[px]||0)+1;m[n.id]=px+c[px];});return m;}
@@ -528,36 +565,50 @@ function getDesigs(){const c={};const m={};nodes.forEach(n=>{const px=CAT[n.lib.
 /* ── Interp + stage params ─────────────────────────────────── */
 function interp(x,t){if(!t||!t.length)return null;if(x<=t[0][0])return t[0][1];if(x>=t[t.length-1][0])return t[t.length-1][1];
   for(let i=0;i<t.length-1;i++){const[x0,y0]=t[i],[x1,y1]=t[i+1];if(x>=x0&&x<=x1)return y0+(y1-y0)*(x-x0)/(x1-x0);}return t[t.length-1][1];}
+// FSPL_dB = 20log10(f_GHz) + 20log10(R_m) + 32.45  (from calc/ota.py)
+function fsplDb(fGhz,rangeM){return 20*Math.log10(Math.max(1e-6,fGhz))+20*Math.log10(Math.max(1e-6,rangeM))+32.45;}
 function sp(b){const L=b.lib,o=b.ov,f=freqGhz,c=L.cat;
-  if(c==='source'||c==='lo_source')return{isSource:true,isLO:c==='lo_source',
+  if(c==='source'||c==='lo_source'||c==='chassis')return{isSource:true,isLO:c==='lo_source',
     outDbm:o.out_dbm??(L.out_t?interp(f,L.out_t):L.p.out_dbm),loFreqGhz:o.lo_freq_ghz??L.p.lo_freq_ghz??null,gain:0,nf:0,p1out:null};
-  let gain=0,nf=0,p1out=null,p1in=null;
+  let gain=0,nf=0,p1out=null,p1in=null,note=null;
   if(c==='amplifier'){gain=o.gain_db??(L.gain_t?interp(f,L.gain_t):L.p.gain_db);nf=o.nf_db??(L.nf_t?interp(f,L.nf_t):L.p.nf_db);p1out=o.p1db_out??(L.p1_t?interp(f,L.p1_t):L.p.p1db_out);}
   else if(c==='attenuator'||c==='filter'){const loss=o.loss_db??(L.loss_t?interp(f,L.loss_t):L.p.loss_db);gain=-loss;nf=loss;}
   else if(c==='mixer'){const cl=o.conv_loss_db??L.p.conv_loss_db;gain=-cl;nf=o.nf_db??L.p.nf_db;p1in=o.p1db_in??L.p.p1db_in;p1out=p1in+gain;}
-  return{isSource:false,isLO:false,gain,nf,p1out,p1in};
+  else if(c==='cable'){const len=o.length_m??L.p.length_m??1;
+    const perM=L.loss_eq?L.loss_eq(f):(o.loss_db!=null?o.loss_db/len:(L.p.loss_db??0)/Math.max(.0001,len));
+    const loss=L.loss_eq?perM*len:(o.loss_db??L.p.loss_db??0);
+    gain=-loss;nf=loss;note=L.loss_eq?`${len} m · ${(loss).toFixed(2)} dB`:null;}
+  else if(c==='antenna'){gain=o.gain_dbi??(L.gain_t?interp(f,L.gain_t):L.p.gain_dbi);nf=0;}  // gain, no thermal noise
+  else if(c==='fspl'){const R=o.range_m??L.p.range_m??10;gain=-fsplDb(f,R);nf=0;note=`R=${R} m`;}
+  return{isSource:false,isLO:false,gain,nf,p1out,p1in,note};
 }
 
-/* ── Path discovery: walk RF wires source → end ────────────── */
-function rfOut(node){const c=node.lib.cat;if(c==='mixer')return'IF';if(c==='lo_source')return null;return'OUT';}
+/* ── Path discovery: walk the signal (non-LO) wires source → end ─ */
+// Returns the wire leaving any signal output port (rf or air, not LO).
+function sigOutWire(nodeId){
+  return wires.find(w=>{
+    if(w.from.node!==nodeId)return false;
+    const fn=nodeById(nodeId),p=portsOf(fn.lib.cat).find(p=>p.name===w.from.port);
+    return p&&p.kind==='out'&&p.sub!=='lo';
+  });
+}
+function hasSigIn(nodeId){
+  return wires.some(w=>{
+    if(w.to.node!==nodeId)return false;
+    const tn=nodeById(nodeId),p=portsOf(tn.lib.cat).find(p=>p.name===w.to.port);
+    return p&&p.kind==='in'&&p.sub!=='lo';
+  });
+}
 function discoverPath(){
   if(!nodes.length)return[];
-  // start: a source; else a node with rf-out wire but no rf-in wire
-  let start=nodes.find(n=>n.lib.cat==='source');
-  if(!start){
-    start=nodes.find(n=>{
-      const op=rfOut(n);if(!op)return false;
-      const hasOut=wires.some(w=>w.from.node===n.id&&w.from.port===op);
-      const hasIn=wires.some(w=>w.to.node===n.id&&(w.to.port==='IN'||w.to.port==='RF'));
-      return hasOut&&!hasIn;
-    });
-  }
+  // start: a source/chassis with no incoming signal; else any head node
+  let start=nodes.find(n=>(n.lib.cat==='source'||n.lib.cat==='chassis')&&!hasSigIn(n.id))
+        || nodes.find(n=>sigOutWire(n.id)&&!hasSigIn(n.id)&&n.lib.cat!=='lo_source');
   if(!start)return[];
   const path=[start];const seen={[start.id]:1};let cur=start;
   while(true){
-    const op=rfOut(cur);if(!op)break;
-    const w=wires.find(w=>w.from.node===cur.id&&w.from.port===op);
-    if(!w)break;const nx=nodeById(w.to.node);if(!nx||seen[nx.id])break;
+    const w=sigOutWire(cur.id);if(!w)break;
+    const nx=nodeById(w.to.node);if(!nx||seen[nx.id])break;
     path.push(nx);seen[nx.id]=1;cur=nx;
   }
   return path;
@@ -583,10 +634,15 @@ function calcCascade(){
     const cascNF=10*Math.log10(nfLin);
     const neff=Math.max(noiseL,nL*KTB),nout=Math.max(KTB,neff*gL);noiseL=nout;
     rows.push({desig:dg,name:desc,gain:s.gain,cumG,sig:pin,nf:s.nf,cascNF,
-      noiseDbHz:10*Math.log10(nout),p1out:s.p1out,hdroom:s.p1out!=null&&pin!=null?s.p1out-pin:null});
-    // LO info row after a mixer
+      noiseDbHz:10*Math.log10(nout),p1out:s.p1out,hdroom:s.p1out!=null&&pin!=null?s.p1out-pin:null,note:s.note});
+    // LO info row after a mixer — with delivered-vs-required drive check
     if(node.lib.cat==='mixer'){const lo=loSourceFor(node.id);
-      if(lo){const ls=sp(lo);rows.push({desig:desigs[lo.id],name:lo.ov.name||lo.lib.name,isLO:true,outDbm:ls.outDbm,loFreq:ls.loFreqGhz});}}
+      if(lo){const ls=sp(lo);
+        const req=node.ov.lo_req_dbm??node.lib.p.lo_req_dbm??null;
+        const delivered=ls.outDbm; // (ideal LO path; cable loss on the LO wire is ignored in the demo)
+        const ok=req==null||delivered>=req;
+        rows.push({desig:desigs[lo.id],name:lo.ov.name||lo.lib.name,isLO:true,
+          outDbm:delivered,loFreq:ls.loFreqGhz,loReq:req,loOk:ok});}}
   });
   return{rows,path};
 }
@@ -642,14 +698,63 @@ function drawSym(cat){const g=mk('g');const CX=32,CY=32,R=32;switch(cat){
     tt(g.appendChild(mk('text',{x:CX+tr,y:CY,'text-anchor':'middle','dominant-baseline':'central','font-size':6,'font-weight':'bold',fill:'#7f0000','font-family':'-apple-system,sans-serif'})),'IF');
     tt(g.appendChild(mk('text',{x:CX,y:CY+tr,'text-anchor':'middle','dominant-baseline':'central','font-size':6,'font-weight':'bold',fill:'#bf360c','font-family':'-apple-system,sans-serif'})),'LO');break;
   }
+  case 'cable':{
+    // _cable: two parallel lines with end-cap connectors
+    const cy=CY;
+    g.appendChild(mk('rect',{x:0,y:cy-4,width:8,height:8,fill:'#9e9e9e',stroke:'#424242','stroke-width':1.5}));
+    g.appendChild(mk('rect',{x:56,y:cy-4,width:8,height:8,fill:'#9e9e9e',stroke:'#424242','stroke-width':1.5}));
+    g.appendChild(mk('line',{x1:8,y1:cy-3,x2:56,y2:cy-3,stroke:'#424242','stroke-width':2}));
+    g.appendChild(mk('line',{x1:8,y1:cy+3,x2:56,y2:cy+3,stroke:'#424242','stroke-width':2}));
+    g.appendChild(mk('line',{x1:8,y1:cy,x2:56,y2:cy,stroke:'#212121','stroke-width':1}));break;
+  }
+  case 'antenna':{
+    // _antenna: horn pointing right (feed on left, radiates right)
+    g.appendChild(mk('polygon',{points:'4,28 4,36 18,42 18,22',fill:'#fffde7',stroke:'#212121','stroke-width':1.6,'stroke-linejoin':'round'}));
+    g.appendChild(mk('polygon',{points:'18,22 18,42 56,56 56,8',fill:'#fffde7',stroke:'#212121','stroke-width':1.6,'stroke-linejoin':'round'}));
+    // radiation arcs
+    for(let k=1;k<=2;k++){const rr=6+k*5;
+      g.appendChild(mk('path',{d:`M ${58},${CY-rr} A ${rr} ${rr} 0 0 1 ${58},${CY+rr}`,fill:'none',stroke:'#bf360c','stroke-width':1,opacity:.6}));}
+    break;
+  }
+  case 'fspl':{
+    // free-space path: dashed bracket with radiating arcs (((  )))
+    for(let k=0;k<3;k++){const rr=8+k*8;
+      g.appendChild(mk('path',{d:`M ${20-k*2},${CY-rr} A ${rr} ${rr} 0 0 1 ${20-k*2},${CY+rr}`,fill:'none',stroke:'#0277bd','stroke-width':1.4,opacity:.85}));
+      g.appendChild(mk('path',{d:`M ${44+k*2},${CY-rr} A ${rr} ${rr} 0 0 0 ${44+k*2},${CY+rr}`,fill:'none',stroke:'#0277bd','stroke-width':1.4,opacity:.85}));}
+    tt(g.appendChild(mk('text',{x:CX,y:CY,'text-anchor':'middle','dominant-baseline':'central','font-size':7,fill:'#0277bd','font-family':'-apple-system,sans-serif'})),'~');break;
+  }
+  case 'chassis':{
+    // 4-port PNA rack instrument (132×100)
+    const W=132,H=100;
+    g.appendChild(mk('rect',{x:0,y:0,width:W,height:H,rx:6,fill:'#cfd8dc',stroke:'#37474f','stroke-width':1.8}));
+    g.appendChild(mk('rect',{x:4,y:4,width:W-8,height:H-8,rx:4,fill:'#eceff1',stroke:'#90a4ae','stroke-width':1}));
+    // screen (top-left) with a trace
+    const sw=W*0.42,sh=H*0.34;
+    g.appendChild(mk('rect',{x:10,y:10,width:sw,height:sh,rx:2,fill:'#0d1b2a',stroke:'#37474f','stroke-width':1}));
+    const tp=[];for(let i=0;i<=20;i++){const t=i/20;tp.push([10+4+t*(sw-8), 10+sh-4-Math.abs(Math.sin(t*Math.PI*1.5))*(sh-8)]);}
+    g.appendChild(mk('path',{d:polyPath(tp),fill:'none',stroke:'#26c6da','stroke-width':1.2}));
+    // title
+    tt(g.appendChild(mk('text',{x:10,y:10+sh+12,'font-size':8,'font-weight':'bold',fill:'#37474f','font-family':'-apple-system,sans-serif'})),'PNA-X');
+    // knob bottom-left
+    g.appendChild(mk('circle',{cx:24,cy:H-18,r:9,fill:'#b0bec5',stroke:'#37474f','stroke-width':1.2}));
+    g.appendChild(mk('circle',{cx:27,cy:H-21,r:1.6,fill:'#37474f'}));
+    // port labels on the right (the dots are drawn by render)
+    [1,2,3,4].forEach((n,i)=>{const py=H/5*(i+1);
+      tt(g.appendChild(mk('text',{x:W-13,y:py,'text-anchor':'end','dominant-baseline':'central','font-size':7,'font-weight':'bold',fill:'#37474f','font-family':'ui-monospace,monospace'})),'P'+n);});break;
+  }
 }return g;}
 function fmtVal(cat,s){
   if(cat==='source')return `Pout=${f1(s.outDbm)} dBm`;
+  if(cat==='chassis')return `Pout=${f1(s.outDbm)} dBm · NF=28 dB`;
   if(cat==='lo_source')return `PLO=${f1(s.outDbm)} dBm`;
   if(cat==='amplifier')return `G=${f1(s.gain)} dB  NF=${f1(s.nf)} dB`;
   if(cat==='attenuator')return `${f1(-s.gain)} dB`;
   if(cat==='filter')return `IL=${f1(-s.gain)} dB`;
-  if(cat==='mixer')return `CL=${f1(-s.gain)} dB  NF=${f1(s.nf)} dB`;return '';}
+  if(cat==='mixer')return `CL=${f1(-s.gain)} dB  NF=${f1(s.nf)} dB`;
+  if(cat==='cable')return s.note?`${s.note}`:`${f1(-s.gain)} dB`;
+  if(cat==='antenna')return `${f1(s.gain)} dBi`;
+  if(cat==='fspl')return `FSPL=${f1(-s.gain)} dB · ${s.note||''}`;
+  return '';}
 
 /* ── Wire routing — orthogonal (mirrors wire_item.py) ────────
    STUB=12 straight segment leaving each port, then right-angle
@@ -676,6 +781,18 @@ function wirePath(from,to){
   pts.push(bo,b);
   return 'M'+pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' L');
 }
+/* Route through user-placed waypoints (bends) with orthogonal elbows. */
+function wireD(fp,tp,wps){
+  if(!wps||!wps.length)return wirePath(fp,tp);
+  const STUB=12;
+  const ao={x:fp.x+fp.d[0]*STUB,y:fp.y+fp.d[1]*STUB};
+  const bo={x:tp.x+tp.d[0]*STUB,y:tp.y+tp.d[1]*STUB};
+  const seq=[fp,ao,...wps,bo,tp];
+  let d='M'+seq[0].x.toFixed(1)+','+seq[0].y.toFixed(1);
+  for(let i=1;i<seq.length;i++){const a=seq[i-1],b=seq[i];
+    d+=` L${b.x.toFixed(1)},${a.y.toFixed(1)} L${b.x.toFixed(1)},${b.y.toFixed(1)}`;}
+  return d;
+}
 
 /* ── Render ────────────────────────────────────────────────── */
 let wireDrag=null; // {fromPort:{node,name,kind,sub,x,y}, cursor:{x,y}, validTarget}
@@ -686,7 +803,12 @@ function render(){
   document.getElementById('hint').classList.toggle('hidden',nodes.length>0);
   svg.classList.toggle('wiring',!!wireDrag);
 
-  const root=mk('g',{transform:`scale(${zoom})`});svg.appendChild(root);
+  // Full-canvas background rect for panning (drag empty space to pan)
+  const bgRect=mk('rect',{x:0,y:0,width:r.width,height:r.height,fill:'transparent',style:'cursor:grab'});
+  bgRect.addEventListener('mousedown',startPan);
+  svg.appendChild(bgRect);
+
+  const root=mk('g',{transform:`translate(${panX},${panY}) scale(${zoom})`});svg.appendChild(root);
   const desigs=getDesigs();
 
   // ── Wires
@@ -694,48 +816,48 @@ function render(){
     const fn=nodeById(w.from.node),tn=nodeById(w.to.node);if(!fn||!tn)return;
     const fp=portPos(fn,w.from.port),tp=portPos(tn,w.to.port);if(!fp||!tp)return;
     const isLO=fp.sub==='lo'||tp.sub==='lo';
-    const d=wirePath(fp,tp);
+    const d=wireD(fp,tp,w.waypoints);
     const seld=sel&&sel.type==='wire'&&sel.id===w.id;
-    // hit (wide invisible)
+    // hit (wide invisible) — click to select, drag to add a bend
     const hit=mk('path',{d,fill:'none',stroke:'transparent','stroke-width':12,'data-wire':w.id,style:'cursor:pointer'});
-    hit.addEventListener('click',e=>{e.stopPropagation();selectWire(w.id);});
+    hit.addEventListener('mousedown',e=>{e.stopPropagation();startWireBody(e,w.id);});
     root.appendChild(hit);
-    // selection glow underneath (matches wire_item.py: #1565c0 width 4)
     if(seld)root.appendChild(mk('path',{d,fill:'none',stroke:'#1565c0','stroke-width':4,'stroke-linejoin':'round','stroke-linecap':'round','pointer-events':'none'}));
-    // visible wire: RF solid black, LO orange dashed (1.6px) — exact app pens
     root.appendChild(mk('path',{d,fill:'none',
       stroke:isLO?'#ef6c00':'#212121','stroke-width':1.6,
-      'stroke-dasharray':isLO?'4 3':'none','stroke-linejoin':'round','stroke-linecap':'round',
-      'pointer-events':'none'}));
+      'stroke-dasharray':isLO?'4 3':'none','stroke-linejoin':'round','stroke-linecap':'round','pointer-events':'none'}));
+    // waypoint handles (draggable) when selected
+    if(seld&&w.waypoints){w.waypoints.forEach((wp,idx)=>{
+      const h=mk('rect',{x:wp.x-4,y:wp.y-4,width:8,height:8,rx:1.5,fill:'#fff',stroke:'#1565c0','stroke-width':1.4,style:'cursor:move'});
+      h.addEventListener('mousedown',e=>{e.stopPropagation();startWaypoint(e,w.id,idx);});
+      h.addEventListener('dblclick',e=>{e.stopPropagation();pushUndo();w.waypoints.splice(idx,1);render();});
+      root.appendChild(h);
+    });}
   });
 
   // ── Wire-drag preview
-  if(wireDrag){
-    const f=wireDrag.fromPort,c=wireDrag.cursor;
-    root.appendChild(mk('line',{x1:f.x,y1:f.y,x2:c.x,y2:c.y,stroke:'#1565c0','stroke-width':2,'stroke-dasharray':'5 3','pointer-events':'none'}));
-  }
+  if(wireDrag){const f=wireDrag.fromPort,c=wireDrag.cursor;
+    root.appendChild(mk('line',{x1:f.x,y1:f.y,x2:c.x,y2:c.y,stroke:'#1565c0','stroke-width':2,'stroke-dasharray':'5 3','pointer-events':'none'}));}
 
   // ── Nodes
   nodes.forEach(node=>{
     const s=sp(node),cat=node.lib.cat,seld=sel&&sel.type==='node'&&sel.id===node.id;
+    const {w:W,h:H}=nodeDim(node);
     const g=mk('g',{transform:`translate(${node.x},${node.y})`,'data-node':node.id,style:'cursor:grab'});
-    if(seld)g.appendChild(mk('rect',{x:-4,y:-4,width:BW+8,height:BH+8,rx:6,fill:'rgba(21,101,192,.09)',stroke:'#1565c0','stroke-width':1.4,'stroke-dasharray':'5 3'}));
+    if(seld)g.appendChild(mk('rect',{x:-4,y:-4,width:W+8,height:H+8,rx:6,fill:'rgba(21,101,192,.09)',stroke:'#1565c0','stroke-width':1.4,'stroke-dasharray':'5 3'}));
     g.appendChild(drawSym(cat));
-    // labels
-    tt(g.appendChild(mk('text',{x:BW/2,y:BH+13,'text-anchor':'middle','font-size':9,'font-weight':'700',fill:'#212121','font-family':'ui-monospace,SFMono-Regular,monospace','pointer-events':'none'})),desigs[node.id]);
-    tt(g.appendChild(mk('text',{x:BW/2,y:BH+23,'text-anchor':'middle','font-size':8,fill:'#607d8b','font-family':'-apple-system,sans-serif','pointer-events':'none'})),node.ov.name||node.lib.name);
-    tt(g.appendChild(mk('text',{x:BW/2,y:BH+33,'text-anchor':'middle','font-size':7.5,fill:'#78909c','font-family':'-apple-system,sans-serif','pointer-events':'none'})),fmtVal(cat,s));
-    // ports (visible dot + wide invisible hit)
+    tt(g.appendChild(mk('text',{x:W/2,y:H+13,'text-anchor':'middle','font-size':9,'font-weight':'700',fill:'#212121','font-family':'ui-monospace,SFMono-Regular,monospace','pointer-events':'none'})),desigs[node.id]);
+    tt(g.appendChild(mk('text',{x:W/2,y:H+23,'text-anchor':'middle','font-size':8,fill:'#607d8b','font-family':'-apple-system,sans-serif','pointer-events':'none'})),node.ov.name||node.lib.name);
+    tt(g.appendChild(mk('text',{x:W/2,y:H+33,'text-anchor':'middle','font-size':7.5,fill:'#78909c','font-family':'-apple-system,sans-serif','pointer-events':'none'})),fmtVal(cat,s));
     portsOf(cat).forEach(p=>{
-      const isLO=p.sub==='lo';
-      g.appendChild(mk('circle',{cx:p.x,cy:p.y,r:PR,fill:'#ffffff',stroke:isLO?'#ef6c00':'#212121','stroke-width':1.4,'pointer-events':'none'}));
+      const dot=p.sub==='lo'?'#ef6c00':(p.sub==='air'?'#0277bd':'#212121');
+      g.appendChild(mk('circle',{cx:p.x,cy:p.y,r:PR,fill:'#ffffff',stroke:dot,'stroke-width':1.4,'pointer-events':'none'}));
       const hit=mk('circle',{cx:p.x,cy:p.y,r:10,fill:'transparent','data-port':node.id+'|'+p.name,class:'port-hit'});
       hit.addEventListener('mousedown',e=>{e.stopPropagation();startWire(e,node.id,p.name);});
       g.appendChild(hit);
     });
-    // delete (when selected)
     if(seld){
-      const dg=mk('g',{transform:`translate(${BW-6},-6)`,style:'cursor:pointer'});
+      const dg=mk('g',{transform:`translate(${W-6},-6)`,style:'cursor:pointer'});
       dg.appendChild(mk('circle',{cx:0,cy:0,r:8,fill:'#757575',stroke:'#bdbdbd','stroke-width':1}));
       tt(dg.appendChild(mk('text',{x:0,y:0,'text-anchor':'middle','dominant-baseline':'middle','font-size':9,fill:'#fff'})),'✕');
       dg.addEventListener('mousedown',e=>{e.stopPropagation();pushUndo();deleteNode(node.id);});
@@ -744,8 +866,6 @@ function render(){
     g.addEventListener('mousedown',e=>startNode(e,node.id));
     root.appendChild(g);
   });
-
-  svg.onclick=e=>{if(e.target===svg||e.target.tagName==='g'){deselect();}};
 }
 
 /* ── Node move + select ────────────────────────────────────── */
@@ -760,6 +880,45 @@ function startNode(e,id){
     if(moved){node.x=snapGrid(s.x-off.x);node.y=snapGrid(s.y-off.y);render();}};
   const onUp=()=>{document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);
     if(!moved)selectNode(id);else{render();updateTable();}};
+  document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
+}
+
+/* ── Pan (drag empty canvas) ───────────────────────────────── */
+function startPan(e){
+  if(e.button!==0)return;
+  const sx=e.clientX,sy=e.clientY,p0x=panX,p0y=panY;let moved=false;
+  const onMove=ev=>{const dx=ev.clientX-sx,dy=ev.clientY-sy;
+    if(!moved&&(Math.abs(dx)>3||Math.abs(dy)>3))moved=true;
+    if(moved){panX=p0x+dx;panY=p0y+dy;render();}};
+  const onUp=()=>{document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);
+    if(!moved&&sel){deselect();}};
+  document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
+}
+
+/* ── Wire bends (waypoints) ────────────────────────────────── */
+function startWireBody(e,wireId){
+  if(e.button!==0)return;
+  const w=wires.find(x=>x.id===wireId);if(!w)return;
+  if(sel&&sel.type==='wire'&&sel.id===wireId){
+    // already selected → drag the body to add a new bend at the grab point
+    pushUndo();
+    if(!w.waypoints)w.waypoints=[];
+    const pt=sceneXY(e.clientX,e.clientY);
+    const idx=w.waypoints.length;
+    w.waypoints.push({x:snapGrid(pt.x),y:snapGrid(pt.y)});
+    render();
+    startWaypoint(e,wireId,idx,true);
+  } else {
+    selectWire(wireId);
+  }
+}
+function startWaypoint(e,wireId,idx,already){
+  if(e.button!==0)return;
+  const w=wires.find(x=>x.id===wireId);if(!w||!w.waypoints)return;
+  if(!already)pushUndo();
+  const onMove=ev=>{const pt=sceneXY(ev.clientX,ev.clientY);
+    w.waypoints[idx]={x:snapGrid(pt.x),y:snapGrid(pt.y)};render();};
+  const onUp=()=>{document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);render();};
   document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
 }
 
@@ -794,7 +953,7 @@ function finishWire(cursor){
   // no duplicate
   if(wires.some(w=>w.from.node===out.node&&w.from.port===out.name&&w.to.node===inp.node&&w.to.port===inp.name))return;
   pushUndo();
-  wires.push({id:'w'+(nxtId++),from:{node:out.node,port:out.name},to:{node:inp.node,port:inp.name}});
+  wires.push({id:'w'+(nxtId++),from:{node:out.node,port:out.name},to:{node:inp.node,port:inp.name},waypoints:[]});
   const dg=getDesigs();
   sbMsg(`Connected ${dg[out.node]}.${out.name} → ${dg[inp.node]}.${inp.name}`);
 }
@@ -806,8 +965,8 @@ function deselect(){sel=null;render();renderInsp();}
 
 /* ── Add / delete ──────────────────────────────────────────── */
 function addNode(lib,x,y){
-  const id='n'+(nxtId++);
-  nodes.push({id,lib,ov:{},x:snapGrid(x-BW/2),y:snapGrid(y-BH/2)});
+  const id='n'+(nxtId++);const{w,h}=dimOf(lib.cat);
+  nodes.push({id,lib,ov:{},x:snapGrid(x-w/2),y:snapGrid(y-h/2)});
   render();updateTable();selectNode(id);
 }
 function deleteNode(id){
@@ -877,7 +1036,19 @@ function renderInsp(){
     if(L.gain_t){const n=document.createElement('p');n.className='inote';n.textContent=`${L.sub}. Interpolated at ${freqGhz} GHz.`;p.appendChild(n);}}
   else if(cat==='attenuator'||cat==='filter'){addF(p,(cat==='filter'?'Insertion':'Attenuation')+' loss (dB)','loss_db',-s.gain,0,60,.5,hint());
     if(L.loss_t){const n=document.createElement('p');n.className='inote';n.textContent=`${L.sub}. Interpolated at ${freqGhz} GHz.`;p.appendChild(n);}}
-  else if(cat==='mixer'){addF(p,'Conversion loss (dB)','conv_loss_db',-s.gain,0,20,.5,'(fixed)');addF(p,'Noise figure (dB)','nf_db',s.nf,0,30,.1,'(fixed)');addF(p,'Input P1dB (dBm)','p1db_in',s.p1in??1,-30,30,.5,'(fixed)');}
+  else if(cat==='mixer'){addF(p,'Conversion loss (dB)','conv_loss_db',-s.gain,0,20,.5,'(fixed)');addF(p,'Noise figure (dB)','nf_db',s.nf,0,30,.1,'(fixed)');addF(p,'Input P1dB (dBm)','p1db_in',s.p1in??1,-30,30,.5,'(fixed)');
+    addF(p,'Required LO drive (dBm)','lo_req_dbm',b.ov.lo_req_dbm??L.p.lo_req_dbm??13,-10,25,.5,'(min)');
+    const n=document.createElement('p');n.className='inote';n.textContent='Wire an LO source into the LO port — the table flags whether the delivered LO meets this drive level.';p.appendChild(n);}
+  else if(cat==='chassis'){addF(p,'Output power (dBm)','out_dbm',s.outDbm,-80,30,.5,hint());
+    const n=document.createElement('p');n.className='inote';n.textContent=`${L.sub}. 4 ports — wire any port (P1–P4) into a chain. Receiver NF 28 dB. Value interpolated at ${freqGhz} GHz.`;p.appendChild(n);}
+  else if(cat==='cable'){
+    if(L.loss_eq){addF(p,'Length (m)','length_m',b.ov.length_m??L.p.length_m??1,0,50,.1,'(× loss/m)');
+      const n=document.createElement('p');n.className='inote';n.textContent=`${L.sub}. Loss = ${(-s.gain).toFixed(2)} dB at ${freqGhz} GHz over ${b.ov.length_m??L.p.length_m??1} m.`;p.appendChild(n);}
+    else addF(p,'Loss (dB)','loss_db',-s.gain,0,40,.1,'(fixed)');}
+  else if(cat==='antenna'){addF(p,'Antenna gain (dBi)','gain_dbi',s.gain,-10,50,.5,hint());
+    if(L.gain_t){const n=document.createElement('p');n.className='inote';n.textContent=`${L.sub}. Gain interpolated at ${freqGhz} GHz. Pair two antennas with a free-space path to model the link.`;p.appendChild(n);}}
+  else if(cat==='fspl'){addF(p,'Range (m)','range_m',b.ov.range_m??L.p.range_m??10,.1,100000,1,'(user-set)');
+    const n=document.createElement('p');n.className='inote';n.textContent=`FSPL = 20·log₁₀(f) + 20·log₁₀(R) + 32.45 = ${(-s.gain).toFixed(1)} dB at ${freqGhz} GHz over ${b.ov.range_m??L.p.range_m??10} m.`;p.appendChild(n);}
 }
 
 /* ── Palette ───────────────────────────────────────────────── */
@@ -914,14 +1085,19 @@ cvw.addEventListener('drop',e=>{e.preventDefault();const id=e.dataTransfer.getDa
 function updateTable(){
   const{rows}=calcCascade();
   const tbody=document.getElementById('rb'),empty=document.getElementById('te'),tbl=document.getElementById('rt');
-  document.getElementById('res-freq-label').textContent=freqGhz+' GHz';
+  const rfl=document.getElementById('res-freq-label');if(rfl)rfl.textContent=freqGhz+' GHz';
+  const rhf=document.getElementById('rf');if(rhf)rhf.textContent=freqGhz+' GHz';
   const casc=rows.filter(r=>!r.isSource&&!r.isLO&&r.cascNF!=null);
   if(!casc.length){tbl.style.display='none';empty.style.display='block';
     empty.textContent=nodes.length?'Wire a Source through your components to compute the cascade.':'Drop a Source and wire components together to see the cascaded link budget.';return;}
   tbl.style.display='';empty.style.display='none';tbody.innerHTML='';
   rows.forEach(r=>{const tr=document.createElement('tr');
     if(r.isSource){tr.className='rsrc';tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg vd">—</td><td class="vg">${f1(r.outDbm)} dBm</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
-    else if(r.isLO){tr.className='rsrc';tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name} → LO</td><td class="cg vd">—</td><td class="vd">${f1(r.outDbm)} dBm</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
+    else if(r.isLO){tr.className='rsrc';
+      const drive = r.loReq!=null
+        ? `<span class="${r.loOk?'vg':'vw'}">${f1(r.outDbm)} dBm</span> <span class="vd">(need ${f1(r.loReq)})</span> ${r.loOk?'✓':'⚠ low'}`
+        : `${f1(r.outDbm)} dBm`;
+      tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name} → LO drive</td><td class="cg vd">—</td><td>${drive}</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
     else{const gc=r.gain>=0?'vg':'vw';tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg ${gc}">${f1(r.gain)}</td><td class="${r.hdroom!=null&&r.hdroom<3?'vw':''}">${f1(r.sig)}</td><td class="cnf vn">${f1(r.cascNF)}</td><td class="vd">${f1(r.noiseDbHz)}</td><td class="${r.p1out!=null?'vp':'vd'}">${r.p1out!=null?f1(r.p1out):'—'}</td>`;}
     tbody.appendChild(tr);});
   const L=casc[casc.length-1];const sys=document.createElement('tr');sys.className='rsys';
