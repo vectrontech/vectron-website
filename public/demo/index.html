@@ -867,10 +867,13 @@ function render(){
       tt(root.appendChild(mk('text',{x:mx,y:my-5,'text-anchor':'middle','font-size':7,'font-style':'italic',fill:'#0277bd','font-family':'-apple-system,sans-serif','pointer-events':'none'})),lbl);}
     // waypoint handles (draggable) when selected
     if(seld&&w.waypoints){w.waypoints.forEach((wp,idx)=>{
-      const h=mk('rect',{x:wp.x-4,y:wp.y-4,width:8,height:8,rx:1.5,fill:'#fff',stroke:'#1565c0','stroke-width':1.4,style:'cursor:move'});
-      h.addEventListener('mousedown',e=>{e.stopPropagation();startWaypoint(e,w.id,idx);});
-      h.addEventListener('dblclick',e=>{e.stopPropagation();pushUndo();w.waypoints.splice(idx,1);render();});
-      root.appendChild(h);
+      // visible square handle
+      root.appendChild(mk('rect',{x:wp.x-5,y:wp.y-5,width:10,height:10,rx:2,fill:'#fff',stroke:'#1565c0','stroke-width':1.6,'pointer-events':'none'}));
+      // generous invisible grab area so the bend is easy to catch
+      const hh=mk('circle',{cx:wp.x,cy:wp.y,r:13,fill:'transparent',style:'cursor:move'});
+      hh.addEventListener('mousedown',e=>{e.stopPropagation();startWaypoint(e,w.id,idx);});
+      hh.addEventListener('dblclick',e=>{e.stopPropagation();pushUndo();w.waypoints.splice(idx,1);render();updateTable();});
+      root.appendChild(hh);
     });}
   });
 
@@ -955,10 +958,14 @@ function startWireBody(e,wireId){
   if(e.button!==0)return;
   const w=wires.find(x=>x.id===wireId);if(!w)return;
   if(sel&&sel.type==='wire'&&sel.id===wireId){
-    // already selected → drag the body to add a new bend at the grab point
-    pushUndo();
     if(!w.waypoints)w.waypoints=[];
     const pt=sceneXY(e.clientX,e.clientY);
+    // If the grab is near an EXISTING bend, move that one instead of adding a new bend.
+    let near=-1,nd=16;
+    w.waypoints.forEach((wp,i)=>{const dd=Math.hypot(wp.x-pt.x,wp.y-pt.y);if(dd<nd){nd=dd;near=i;}});
+    if(near>=0){startWaypoint(e,wireId,near);return;}
+    // Otherwise add a new bend at the grab point and drag it.
+    pushUndo();
     const idx=w.waypoints.length;
     w.waypoints.push({x:snapGrid(pt.x),y:snapGrid(pt.y)});
     render();
