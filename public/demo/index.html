@@ -240,7 +240,8 @@ tr.rsrc td{color:var(--text3);font-style:italic;}
       <div class="md-item" data-action="redo">Redo<span class="md-shortcut">⌘⇧Z</span></div>
       <div class="md-sep"></div>
       <div class="md-item" data-action="delete-sel">Delete selection<span class="md-shortcut">⌫</span></div>
-      <div class="md-item locked" data-feat="Rotate component">Rotate 90° CW<span class="md-shortcut">R</span><span class="md-lock">🔒</span></div>
+      <div class="md-item" data-action="rot-cw">Rotate 90° CW<span class="md-shortcut">R</span></div>
+      <div class="md-item" data-action="rot-ccw">Rotate 90° CCW<span class="md-shortcut">⇧R</span></div>
       <div class="md-item locked" data-feat="Flip component">Flip horizontally<span class="md-shortcut">F</span><span class="md-lock">🔒</span></div>
       <div class="md-sep"></div>
       <div class="md-item locked" data-feat="Copy selection">Copy<span class="md-shortcut">⌘C</span><span class="md-lock">🔒</span></div>
@@ -438,6 +439,7 @@ document.querySelectorAll('[data-action]').forEach(el=>{
   el.addEventListener('click',e=>{e.stopPropagation();if(openMenu){openMenu.classList.remove('open');openMenu=null;}
     const a=el.dataset.action;
     if(a==='undo')doUndo();else if(a==='redo')doRedo();else if(a==='delete-sel')deleteSelected();
+    else if(a==='rot-cw')rotateSelected(90);else if(a==='rot-ccw')rotateSelected(-90);
     else if(a==='zoom-in')changeZoom(1);else if(a==='zoom-out')changeZoom(-1);
     else if(a==='zoom-100')setZoom(1);else if(a==='zoom-fit')zoomFit();
     else if(a==='recalc'){updateTable();sbMsg('Recalculated.');}
@@ -558,8 +560,14 @@ const svg=document.getElementById('schematic');
 const nodeById=id=>nodes.find(n=>n.id===id);
 function snapGrid(v){return Math.round(v/GRID)*GRID;}
 function sceneXY(clientX,clientY){const r=svg.getBoundingClientRect();return{x:(clientX-r.left-panX)/zoom,y:(clientY-r.top-panY)/zoom};}
-function portPos(node,portName){const p=portsOf(node.lib.cat).find(p=>p.name===portName);return p?{x:node.x+p.x,y:node.y+p.y,sub:p.sub,d:p.d}:null;}
-function allPorts(){const out=[];nodes.forEach(n=>portsOf(n.lib.cat).forEach(p=>out.push({node:n.id,name:p.name,kind:p.kind,sub:p.sub,x:n.x+p.x,y:n.y+p.y})));return out;}
+// Rotation (matches SVG rotate(rot,cx,cy) — clockwise, y-down).
+function rotPt(px,py,cx,cy,rot){const r=((rot||0))*Math.PI/180,c=Math.cos(r),s=Math.sin(r),dx=px-cx,dy=py-cy;return{x:cx+dx*c-dy*s,y:cy+dx*s+dy*c};}
+function rotDir(d,rot){const r=((rot||0))*Math.PI/180,c=Math.cos(r),s=Math.sin(r);return[Math.round(d[0]*c-d[1]*s),Math.round(d[0]*s+d[1]*c)];}
+function portPos(node,portName){
+  const{w,h}=nodeDim(node);const p=portsOf(node.lib.cat).find(p=>p.name===portName);if(!p)return null;
+  const rp=rotPt(p.x,p.y,w/2,h/2,node.rot);
+  return{x:node.x+rp.x,y:node.y+rp.y,sub:p.sub,d:rotDir(p.d,node.rot)};}
+function allPorts(){const out=[];nodes.forEach(n=>{const{w,h}=nodeDim(n);portsOf(n.lib.cat).forEach(p=>{const rp=rotPt(p.x,p.y,w/2,h/2,n.rot);out.push({node:n.id,name:p.name,kind:p.kind,sub:p.sub,x:n.x+rp.x,y:n.y+rp.y});});});return out;}
 function getDesigs(){const c={};const m={};nodes.forEach(n=>{const px=CAT[n.lib.cat]?.prefix||'U';c[px]=(c[px]||0)+1;m[n.id]=px+c[px];});return m;}
 
 /* ── Interp + stage params ─────────────────────────────────── */
@@ -618,28 +626,54 @@ function loSourceFor(mixerId){
   return w?nodeById(w.from.node):null;
 }
 
+/* ── Connector / cable types for wires (lossy connections) ──── */
+const CABLE_TYPES=[
+  {id:'ideal', name:'Ideal (lossless)', eq:null},
+  {id:'smacon',name:'SMA connector pair', eq:f=>0.03+0.015*Math.sqrt(f)},   // ~0.1 dB @ 18 GHz
+  {id:'mwx051',name:'Junkosha MWX051', eq:f=>0.0095*f+0.587*Math.sqrt(f)+0.02},
+  {id:'mwx021',name:'Junkosha MWX021', eq:f=>0.67*(0.038*f+0.371*Math.sqrt(f)+0.07)},
+  {id:'rg405', name:'RG-405 (.085 semi-rigid)', eq:f=>0.49*Math.sqrt(f)+0.02},
+];
+function wireCableType(w){return CABLE_TYPES.find(c=>c.id===(w.cable||'ideal'))||CABLE_TYPES[0];}
+function wireLoss(w,f){const ct=wireCableType(w);if(!ct.eq)return 0;
+  const len=(ct.id==='smacon')?1:(w.length_m??1);  // connector pair is a fixed fitting, not per-metre
+  return ct.eq(f)*len;}
+
 /* ── Cascade (Friis + noise density) ───────────────────────── */
 const KTB=Math.pow(10,-17.4);
 function calcCascade(){
   const path=discoverPath();if(!path.length)return{rows:[],path:[]};
   const desigs=getDesigs(),rows=[];
   let pin=null,cumG=0,nfLin=null,gRun=1,noiseL=KTB;
-  path.forEach(node=>{
-    const s=sp(node),desc=node.ov.name||node.lib.name,dg=desigs[node.id];
-    if(s.isSource&&!s.isLO){pin=s.outDbm;
-      rows.push({desig:dg,name:desc,isSource:true,outDbm:s.outDbm,sig:s.outDbm});return;}
-    const gL=Math.pow(10,s.gain/10),nL=Math.pow(10,s.nf/10);
-    cumG+=s.gain;if(pin!=null)pin+=s.gain;
+  // Apply a loss stage (Friis) — used for both components and lossy wires.
+  function applyLoss(gain,nf){
+    const gL=Math.pow(10,gain/10),nL=Math.pow(10,nf/10);
+    cumG+=gain;if(pin!=null)pin+=gain;
     nfLin=nfLin==null?nL:nfLin+(nL-1)/gRun;gRun*=gL;
     const cascNF=10*Math.log10(nfLin);
     const neff=Math.max(noiseL,nL*KTB),nout=Math.max(KTB,neff*gL);noiseL=nout;
-    rows.push({desig:dg,name:desc,gain:s.gain,cumG,sig:pin,nf:s.nf,cascNF,
-      noiseDbHz:10*Math.log10(nout),p1out:s.p1out,hdroom:s.p1out!=null&&pin!=null?s.p1out-pin:null,note:s.note});
-    // LO info row after a mixer — with delivered-vs-required drive check
+    return{cascNF,noiseDbHz:10*Math.log10(nout)};
+  }
+  path.forEach((node,i)=>{
+    // Lossy connector feeding this node (wire from previous node → here)
+    if(i>0){const w=sigOutWire(path[i-1].id);
+      if(w){const loss=wireLoss(w,freqGhz);
+        if(loss>0.001){const ct=wireCableType(w),m=applyLoss(-loss,loss);
+          rows.push({desig:'W'+i,name:ct.name+(ct.eq&&ct.id!=='smacon'?` · ${w.length_m??1} m`:''),isWire:true,
+            gain:-loss,cumG,sig:pin,nf:loss,cascNF:m.cascNF,noiseDbHz:m.noiseDbHz,p1out:null});}}}
+    const s=sp(node),desc=node.ov.name||node.lib.name,dg=desigs[node.id];
+    if(s.isSource&&!s.isLO){pin=s.outDbm;
+      rows.push({desig:dg,name:desc,isSource:true,outDbm:s.outDbm,sig:s.outDbm});return;}
+    const m=applyLoss(s.gain,s.nf);
+    rows.push({desig:dg,name:desc,gain:s.gain,cumG,sig:pin,nf:s.nf,cascNF:m.cascNF,
+      noiseDbHz:m.noiseDbHz,p1out:s.p1out,hdroom:s.p1out!=null&&pin!=null?s.p1out-pin:null,note:s.note});
+    // LO info row after a mixer — delivered-vs-required drive check
     if(node.lib.cat==='mixer'){const lo=loSourceFor(node.id);
       if(lo){const ls=sp(lo);
         const req=node.ov.lo_req_dbm??node.lib.p.lo_req_dbm??null;
-        const delivered=ls.outDbm; // (ideal LO path; cable loss on the LO wire is ignored in the demo)
+        const loW=wires.find(w=>w.to.node===node.id&&w.to.port==='LO');
+        const loLoss=loW?wireLoss(loW,ls.loFreqGhz??freqGhz):0;
+        const delivered=ls.outDbm-loLoss;
         const ok=req==null||delivered>=req;
         rows.push({desig:desigs[lo.id],name:lo.ov.name||lo.lib.name,isLO:true,
           outDbm:delivered,loFreq:ls.loFreqGhz,loReq:req,loOk:ok});}}
@@ -823,9 +857,14 @@ function render(){
     hit.addEventListener('mousedown',e=>{e.stopPropagation();startWireBody(e,w.id);});
     root.appendChild(hit);
     if(seld)root.appendChild(mk('path',{d,fill:'none',stroke:'#1565c0','stroke-width':4,'stroke-linejoin':'round','stroke-linecap':'round','pointer-events':'none'}));
+    const lossy=!isLO&&wireCableType(w).eq;
     root.appendChild(mk('path',{d,fill:'none',
-      stroke:isLO?'#ef6c00':'#212121','stroke-width':1.6,
+      stroke:isLO?'#ef6c00':(lossy?'#0277bd':'#212121'),'stroke-width':1.6,
       'stroke-dasharray':isLO?'4 3':'none','stroke-linejoin':'round','stroke-linecap':'round','pointer-events':'none'}));
+    // lossy-connector label (blue italic, like the app's cable annotations)
+    if(lossy){const ct=wireCableType(w),mx=(fp.x+tp.x)/2,my=(fp.y+tp.y)/2;
+      const lbl=ct.id==='smacon'?'SMA':`${ct.name.split(' ')[0]} ${w.length_m??1}m`;
+      tt(root.appendChild(mk('text',{x:mx,y:my-5,'text-anchor':'middle','font-size':7,'font-style':'italic',fill:'#0277bd','font-family':'-apple-system,sans-serif','pointer-events':'none'})),lbl);}
     // waypoint handles (draggable) when selected
     if(seld&&w.waypoints){w.waypoints.forEach((wp,idx)=>{
       const h=mk('rect',{x:wp.x-4,y:wp.y-4,width:8,height:8,rx:1.5,fill:'#fff',stroke:'#1565c0','stroke-width':1.4,style:'cursor:move'});
@@ -842,22 +881,38 @@ function render(){
   // ── Nodes
   nodes.forEach(node=>{
     const s=sp(node),cat=node.lib.cat,seld=sel&&sel.type==='node'&&sel.id===node.id;
-    const {w:W,h:H}=nodeDim(node);
+    const {w:W,h:H}=nodeDim(node);const rot=node.rot||0;
+    // Rotated bounding box (for labels / selection / delete)
+    const corners=[[0,0],[W,0],[W,H],[0,H]].map(([x,y])=>rotPt(x,y,W/2,H/2,rot));
+    const xs=corners.map(c=>c.x),ys=corners.map(c=>c.y);
+    const bx=Math.min(...xs),by=Math.min(...ys),bX=Math.max(...xs),bY=Math.max(...ys);
     const g=mk('g',{transform:`translate(${node.x},${node.y})`,'data-node':node.id,style:'cursor:grab'});
-    if(seld)g.appendChild(mk('rect',{x:-4,y:-4,width:W+8,height:H+8,rx:6,fill:'rgba(21,101,192,.09)',stroke:'#1565c0','stroke-width':1.4,'stroke-dasharray':'5 3'}));
-    g.appendChild(drawSym(cat));
-    tt(g.appendChild(mk('text',{x:W/2,y:H+13,'text-anchor':'middle','font-size':9,'font-weight':'700',fill:'#212121','font-family':'ui-monospace,SFMono-Regular,monospace','pointer-events':'none'})),desigs[node.id]);
-    tt(g.appendChild(mk('text',{x:W/2,y:H+23,'text-anchor':'middle','font-size':8,fill:'#607d8b','font-family':'-apple-system,sans-serif','pointer-events':'none'})),node.ov.name||node.lib.name);
-    tt(g.appendChild(mk('text',{x:W/2,y:H+33,'text-anchor':'middle','font-size':7.5,fill:'#78909c','font-family':'-apple-system,sans-serif','pointer-events':'none'})),fmtVal(cat,s));
+    if(seld)g.appendChild(mk('rect',{x:bx-4,y:by-4,width:(bX-bx)+8,height:(bY-by)+8,rx:6,fill:'rgba(21,101,192,.09)',stroke:'#1565c0','stroke-width':1.4,'stroke-dasharray':'5 3'}));
+    // Symbol rotated around its center; labels stay upright below the bbox
+    const symG=mk('g',{transform:`rotate(${rot} ${W/2} ${H/2})`});
+    symG.appendChild(drawSym(cat));
+    g.appendChild(symG);
+    const lblY=bY+12;
+    tt(g.appendChild(mk('text',{x:W/2,y:lblY,'text-anchor':'middle','font-size':9,'font-weight':'700',fill:'#212121','font-family':'ui-monospace,SFMono-Regular,monospace','pointer-events':'none'})),desigs[node.id]);
+    tt(g.appendChild(mk('text',{x:W/2,y:lblY+10,'text-anchor':'middle','font-size':8,fill:'#607d8b','font-family':'-apple-system,sans-serif','pointer-events':'none'})),node.ov.name||node.lib.name);
+    tt(g.appendChild(mk('text',{x:W/2,y:lblY+20,'text-anchor':'middle','font-size':7.5,fill:'#78909c','font-family':'-apple-system,sans-serif','pointer-events':'none'})),fmtVal(cat,s));
+    // Ports at rotated positions (drawn outside the symbol group)
     portsOf(cat).forEach(p=>{
+      const rp=rotPt(p.x,p.y,W/2,H/2,rot);
       const dot=p.sub==='lo'?'#ef6c00':(p.sub==='air'?'#0277bd':'#212121');
-      g.appendChild(mk('circle',{cx:p.x,cy:p.y,r:PR,fill:'#ffffff',stroke:dot,'stroke-width':1.4,'pointer-events':'none'}));
-      const hit=mk('circle',{cx:p.x,cy:p.y,r:10,fill:'transparent','data-port':node.id+'|'+p.name,class:'port-hit'});
+      g.appendChild(mk('circle',{cx:rp.x,cy:rp.y,r:PR,fill:'#ffffff',stroke:dot,'stroke-width':1.4,'pointer-events':'none'}));
+      const hit=mk('circle',{cx:rp.x,cy:rp.y,r:10,fill:'transparent','data-port':node.id+'|'+p.name,class:'port-hit'});
       hit.addEventListener('mousedown',e=>{e.stopPropagation();startWire(e,node.id,p.name);});
       g.appendChild(hit);
     });
     if(seld){
-      const dg=mk('g',{transform:`translate(${W-6},-6)`,style:'cursor:pointer'});
+      // rotate handle (↻) top-left + delete (✕) top-right of bbox
+      const rg=mk('g',{transform:`translate(${bx-6},${by-6})`,style:'cursor:pointer'});
+      rg.appendChild(mk('circle',{cx:0,cy:0,r:8,fill:'#1976d2',stroke:'#fff','stroke-width':1}));
+      tt(rg.appendChild(mk('text',{x:0,y:.5,'text-anchor':'middle','dominant-baseline':'middle','font-size':10,fill:'#fff'})),'↻');
+      rg.addEventListener('mousedown',e=>{e.stopPropagation();rotateNode(node.id,90);});
+      g.appendChild(rg);
+      const dg=mk('g',{transform:`translate(${bX+6},${by-6})`,style:'cursor:pointer'});
       dg.appendChild(mk('circle',{cx:0,cy:0,r:8,fill:'#757575',stroke:'#bdbdbd','stroke-width':1}));
       tt(dg.appendChild(mk('text',{x:0,y:0,'text-anchor':'middle','dominant-baseline':'middle','font-size':9,fill:'#fff'})),'✕');
       dg.addEventListener('mousedown',e=>{e.stopPropagation();pushUndo();deleteNode(node.id);});
@@ -977,11 +1032,13 @@ function deleteNode(id){
 }
 function deleteWire(id){wires=wires.filter(w=>w.id!==id);if(sel&&sel.id===id)sel=null;render();updateTable();renderInsp();}
 function deleteSelected(){if(!sel)return;pushUndo();if(sel.type==='node')deleteNode(sel.id);else deleteWire(sel.id);sbMsg('Deleted.');}
+function rotateNode(id,deg){const n=nodeById(id);if(!n)return;pushUndo();n.rot=(((n.rot||0)+deg)%360+360)%360;render();updateTable();sbMsg('Rotated '+(getDesigs()[id])+' → '+n.rot+'°');}
+function rotateSelected(deg){if(sel&&sel.type==='node')rotateNode(sel.id,deg);}
 
 /* ── Undo/redo ─────────────────────────────────────────────── */
-function snap(){return JSON.stringify({nodes:nodes.map(n=>({id:n.id,lib:n.lib.id,ov:n.ov,x:n.x,y:n.y})),wires});}
+function snap(){return JSON.stringify({nodes:nodes.map(n=>({id:n.id,lib:n.lib.id,ov:n.ov,x:n.x,y:n.y,rot:n.rot||0})),wires});}
 function restore(str){const d=JSON.parse(str);
-  nodes=d.nodes.map(n=>({id:n.id,lib:LIB.find(l=>l.id===n.lib),ov:n.ov,x:n.x,y:n.y}));
+  nodes=d.nodes.map(n=>({id:n.id,lib:LIB.find(l=>l.id===n.lib),ov:n.ov,x:n.x,y:n.y,rot:n.rot||0}));
   wires=d.wires;sel=null;render();updateTable();renderInsp();}
 function pushUndo(){undoStack.push(snap());redoStack=[];if(undoStack.length>40)undoStack.shift();}
 function doUndo(){if(!undoStack.length)return;redoStack.push(snap());restore(undoStack.pop());sbMsg('Undo');}
@@ -994,14 +1051,21 @@ function renderInsp(){
   if(sel.type==='wire'){
     const w=wires.find(x=>x.id===sel.id);if(!w){body.innerHTML='';return;}
     const dg=getDesigs();
+    const ct=wireCableType(w),loss=wireLoss(w,freqGhz);
+    const opts=CABLE_TYPES.map(c=>`<option value="${c.id}"${c.id===(w.cable||'ideal')?' selected':''}>${c.name}</option>`).join('');
+    const perM=(ct.eq&&ct.id!=='smacon');
     body.innerHTML=`<div style="padding:8px 0 12px;border-bottom:1px solid var(--border-l);margin-bottom:12px">
       <div style="font-size:15px;font-weight:700">Connection</div>
       <div style="font-size:11px;color:var(--text3);margin-top:2px">${dg[w.from.node]}.${w.from.port} → ${dg[w.to.node]}.${w.to.port}</div></div>
-      <div class="isec"><div class="isec-title">Cable</div>
-      <div class="ifield"><label>Cable type</label><div class="ifield-ro">Ideal (lossless)</div></div>
-      <div class="insp-locked-banner" data-feat="Cable models &amp; length">🔒 <span><b>Cable models &amp; length</b> — available in full app</span></div></div>
+      <div class="isec"><div class="isec-title">Connector / cable</div>
+        <div class="ifield"><label>Type</label><select id="w-cable">${opts}</select></div>
+        ${perM?`<div class="ifield" id="w-len-f"><label>Length (m)</label><input id="w-len" type="number" min="0" max="50" step=".1" value="${(w.length_m??1)}"/></div>`:''}
+        <div class="ifield"><label>Loss at ${freqGhz} GHz</label><div class="ifield-ro">${loss.toFixed(2)} dB</div></div>
+      </div>
       <button class="sz-btn" id="del-wire" style="width:100%;padding:6px">Delete connection</button>`;
-    body.querySelector('[data-feat]')?.addEventListener('click',e=>showUpgrade(e,'Cable models & length'));
+    body.querySelector('#w-cable').addEventListener('change',e=>{pushUndo();w.cable=e.target.value;if(w.length_m==null)w.length_m=1;render();updateTable();renderInsp();});
+    const li=body.querySelector('#w-len');if(li)li.addEventListener('input',e=>{w.length_m=parseFloat(e.target.value);render();updateTable();
+      const ro=body.querySelector('.ifield-ro');if(ro)ro.textContent=wireLoss(w,freqGhz).toFixed(2)+' dB';});
     body.querySelector('#del-wire').addEventListener('click',()=>{pushUndo();deleteWire(sel.id);sbMsg('Connection deleted.');});
     return;
   }
@@ -1098,6 +1162,7 @@ function updateTable(){
         ? `<span class="${r.loOk?'vg':'vw'}">${f1(r.outDbm)} dBm</span> <span class="vd">(need ${f1(r.loReq)})</span> ${r.loOk?'✓':'⚠ low'}`
         : `${f1(r.outDbm)} dBm`;
       tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name} → LO drive</td><td class="cg vd">—</td><td>${drive}</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
+    else if(r.isWire){tr.style.fontStyle='italic';tr.innerHTML=`<td class="tdg" style="color:var(--text3)">${r.desig}</td><td style="color:var(--text3)">${r.name}</td><td class="cg vw">${f1(r.gain)}</td><td>${f1(r.sig)}</td><td class="cnf vn">${f1(r.cascNF)}</td><td class="vd">${f1(r.noiseDbHz)}</td><td class="vd">—</td>`;}
     else{const gc=r.gain>=0?'vg':'vw';tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg ${gc}">${f1(r.gain)}</td><td class="${r.hdroom!=null&&r.hdroom<3?'vw':''}">${f1(r.sig)}</td><td class="cnf vn">${f1(r.cascNF)}</td><td class="vd">${f1(r.noiseDbHz)}</td><td class="${r.p1out!=null?'vp':'vd'}">${r.p1out!=null?f1(r.p1out):'—'}</td>`;}
     tbody.appendChild(tr);});
   const L=casc[casc.length-1];const sys=document.createElement('tr');sys.className='rsys';
@@ -1113,6 +1178,7 @@ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;con
   if(mod&&e.key==='z'&&!e.shiftKey){e.preventDefault();doUndo();}
   else if(mod&&(e.key==='Z'||e.key==='y')){e.preventDefault();doRedo();}
   else if((e.key==='Backspace'||e.key==='Delete')&&sel){e.preventDefault();deleteSelected();}
+  else if(e.key==='r'||e.key==='R'){if(sel&&sel.type==='node'){e.preventDefault();rotateSelected(e.shiftKey?-90:90);}}
   else if(mod&&(e.key==='='||e.key==='+')){e.preventDefault();changeZoom(1);}
   else if(mod&&e.key==='-'){e.preventDefault();changeZoom(-1);}
   else if(mod&&e.key==='0'){e.preventDefault();setZoom(1);}
