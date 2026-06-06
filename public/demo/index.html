@@ -195,6 +195,14 @@ tr.rsrc td{color:var(--text3);font-style:italic;}
 .ut-link:hover{color:var(--accent-d);}
 
 #drag-ghost{position:fixed;pointer-events:none;z-index:999;display:none;opacity:.65;}
+#ctxmenu{position:fixed;z-index:9998;display:none;min-width:170px;background:#fff;border:1px solid var(--border);
+  border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.18);padding:4px 0;font-size:12px;user-select:none;}
+#ctxmenu.show{display:block;}
+.cx-item{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:5px 14px;cursor:default;white-space:nowrap;}
+.cx-item:hover{background:var(--accent);color:#fff;}
+.cx-item.danger{color:var(--red);} .cx-item.danger:hover{background:var(--red);color:#fff;}
+.cx-item .cx-key{font-size:10px;color:var(--text3);} .cx-item:hover .cx-key{color:#fff;}
+.cx-sep{height:1px;background:var(--border-l);margin:3px 0;}
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:var(--panel);}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
@@ -383,6 +391,7 @@ tr.rsrc td{color:var(--text3);font-style:italic;}
   <a class="ut-link" href="/RFtrueLink/" target="_blank" rel="noopener">↗ Get the full app</a>
 </div>
 <div id="drag-ghost"></div>
+<div id="ctxmenu"></div>
 </div>
 <script>
 'use strict';
@@ -393,6 +402,29 @@ const NS='http://www.w3.org/2000/svg';
 const mk=(t,a={})=>{const e=document.createElementNS(NS,t);for(const[k,v]of Object.entries(a))e.setAttribute(k,String(v));return e;};
 const tt=(e,s)=>{e.textContent=s;return e;};
 const f1=v=>(v==null||isNaN(v))?'—':v.toFixed(1);
+
+/* ── Right-click context menu ──────────────────────────────── */
+const ctx=document.getElementById('ctxmenu');
+function hideCtx(){ctx.classList.remove('show');}
+function showCtx(clientX,clientY,items){
+  ctx.innerHTML='';
+  items.forEach(it=>{
+    if(it.sep){ctx.appendChild(mkEl('div','cx-sep'));return;}
+    const el=mkEl('div','cx-item'+(it.danger?' danger':''));
+    el.innerHTML=`<span>${it.label}</span>${it.key?`<span class="cx-key">${it.key}</span>`:''}`;
+    el.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();hideCtx();it.action&&it.action();});
+    ctx.appendChild(el);
+  });
+  ctx.classList.add('show');
+  // position, keeping on-screen
+  const w=ctx.offsetWidth||180,h=ctx.offsetHeight||100;
+  ctx.style.left=Math.min(clientX,window.innerWidth-w-6)+'px';
+  ctx.style.top=Math.min(clientY,window.innerHeight-h-6)+'px';
+}
+function mkEl(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e;}
+document.addEventListener('mousedown',e=>{if(!ctx.contains(e.target))hideCtx();},true);
+document.addEventListener('scroll',hideCtx,true);
+window.addEventListener('blur',hideCtx);
 
 /* ── Upgrade toast ─────────────────────────────────────────── */
 const toast=document.getElementById('uptost');let toastTimer=null;
@@ -840,7 +872,12 @@ function render(){
   // Full-canvas background rect for panning (drag empty space to pan)
   const bgRect=mk('rect',{x:0,y:0,width:r.width,height:r.height,fill:'transparent',style:'cursor:grab'});
   bgRect.addEventListener('mousedown',startPan);
+  bgRect.addEventListener('contextmenu',e=>{e.preventDefault();showCtx(e.clientX,e.clientY,[
+    {label:'Fit to view',key:'⌘1',action:zoomFit},
+    {label:'Reset zoom (100%)',key:'⌘0',action:()=>{panX=20;panY=20;setZoom(1);}},
+  ]);});
   svg.appendChild(bgRect);
+  svg.addEventListener('contextmenu',e=>e.preventDefault()); // suppress native menu
 
   const root=mk('g',{transform:`translate(${panX},${panY}) scale(${zoom})`});svg.appendChild(root);
   const desigs=getDesigs();
@@ -855,6 +892,12 @@ function render(){
     // hit (wide invisible) — click to select, drag to add a bend
     const hit=mk('path',{d,fill:'none',stroke:'transparent','stroke-width':12,'data-wire':w.id,style:'cursor:pointer'});
     hit.addEventListener('mousedown',e=>{e.stopPropagation();startWireBody(e,w.id);});
+    hit.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();selectWire(w.id);
+      const pt=sceneXY(e.clientX,e.clientY);
+      const items=[{label:'Add bend here',action:()=>{pushUndo();if(!w.waypoints)w.waypoints=[];w.waypoints.push({x:snapGrid(pt.x),y:snapGrid(pt.y)});render();}}];
+      if(w.waypoints&&w.waypoints.length)items.push({label:'Remove all bends',action:()=>{pushUndo();w.waypoints=[];render();}});
+      items.push({sep:true},{label:'Delete connection',danger:true,key:'⌫',action:()=>{pushUndo();deleteWire(w.id);sbMsg('Connection deleted.');}});
+      showCtx(e.clientX,e.clientY,items);});
     root.appendChild(hit);
     if(seld)root.appendChild(mk('path',{d,fill:'none',stroke:'#1565c0','stroke-width':4,'stroke-linejoin':'round','stroke-linecap':'round','pointer-events':'none'}));
     const lossy=!isLO&&wireCableType(w).eq;
@@ -872,7 +915,9 @@ function render(){
       // generous invisible grab area so the bend is easy to catch
       const hh=mk('circle',{cx:wp.x,cy:wp.y,r:13,fill:'transparent',style:'cursor:move'});
       hh.addEventListener('mousedown',e=>{e.stopPropagation();startWaypoint(e,w.id,idx);});
-      hh.addEventListener('dblclick',e=>{e.stopPropagation();pushUndo();w.waypoints.splice(idx,1);render();updateTable();});
+      hh.addEventListener('dblclick',e=>{e.stopPropagation();removeBend(w.id,idx);});
+      hh.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();
+        showCtx(e.clientX,e.clientY,[{label:'Remove bend',danger:true,action:()=>removeBend(w.id,idx)}]);});
       root.appendChild(hh);
     });}
   });
@@ -922,6 +967,13 @@ function render(){
       g.appendChild(dg);
     }
     g.addEventListener('mousedown',e=>startNode(e,node.id));
+    g.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();selectNode(node.id);
+      showCtx(e.clientX,e.clientY,[
+        {label:'Rotate 90° CW',key:'R',action:()=>rotateNode(node.id,90)},
+        {label:'Rotate 90° CCW',key:'⇧R',action:()=>rotateNode(node.id,-90)},
+        {sep:true},
+        {label:'Delete component',danger:true,key:'⌫',action:()=>{pushUndo();deleteNode(node.id);sbMsg('Deleted.');}},
+      ]);});
     root.appendChild(g);
   });
 }
@@ -977,12 +1029,16 @@ function startWireBody(e,wireId){
 function startWaypoint(e,wireId,idx,already){
   if(e.button!==0)return;
   const w=wires.find(x=>x.id===wireId);if(!w||!w.waypoints)return;
-  if(!already)pushUndo();
-  const onMove=ev=>{const pt=sceneXY(ev.clientX,ev.clientY);
-    w.waypoints[idx]={x:snapGrid(pt.x),y:snapGrid(pt.y)};render();};
-  const onUp=()=>{document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);render();};
+  let moved=false;
+  const onMove=ev=>{if(!moved){moved=true;if(!already)pushUndo();}
+    const pt=sceneXY(ev.clientX,ev.clientY);w.waypoints[idx]={x:snapGrid(pt.x),y:snapGrid(pt.y)};render();};
+  // Only re-render on an actual move, so a plain click leaves the handle
+  // element intact and a double-click can register reliably.
+  const onUp=()=>{document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);if(moved)updateTable();};
   document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
 }
+function removeBend(wireId,idx){const w=wires.find(x=>x.id===wireId);if(!w||!w.waypoints)return;
+  pushUndo();w.waypoints.splice(idx,1);render();updateTable();sbMsg('Bend removed.');}
 
 /* ── Wire draw ─────────────────────────────────────────────── */
 function startWire(e,nodeId,portName){
