@@ -336,8 +336,8 @@ tr.rsrc td{color:var(--text3);font-style:italic;}
 <!-- RESULTS -->
 <div id="results">
   <div id="path-tabs">
-    <div class="ptab active" data-path="0">Path 1</div>
-    <div class="ptab locked" data-feat="LO distribution analysis">LO distribution</div>
+    <div class="ptab active" data-path="rf">Path 1</div>
+    <div class="ptab" data-path="lo">LO distribution</div>
     <div class="path-spacer"></div>
     <div class="path-controls">
       <button class="sz-btn locked" id="band-btn" data-feat="Multi-frequency band sweep"
@@ -359,7 +359,7 @@ tr.rsrc td{color:var(--text3);font-style:italic;}
     <div id="res-tbl-wrap">
       <div id="te">Drop a Source and wire components together to see the cascaded link budget.</div>
       <table id="rt">
-        <thead><tr>
+        <thead id="rt-head"><tr>
           <th>Desig.</th><th>Component</th>
           <th class="cg">Gain [dB]</th><th>Signal [dBm]</th>
           <th class="cnf">Casc. NF [dB]</th><th>Noise [dBm/Hz]</th><th>P1dB out [dBm]</th>
@@ -455,7 +455,15 @@ document.querySelector('.itab[data-inner="chain"]').addEventListener('click',()=
   document.querySelectorAll('.itab').forEach(t=>t.classList.remove('active'));
   document.querySelector('[data-inner="chain"]').classList.add('active');
 });
-document.querySelectorAll('.ptab.locked').forEach(tab=>tab.addEventListener('click',e=>showUpgrade(e,tab.dataset.feat)));
+let activePath='rf';
+document.querySelectorAll('.ptab[data-path]').forEach(tab=>tab.addEventListener('click',()=>{
+  activePath=tab.dataset.path;
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.toggle('active',t===tab));
+  // LO distribution has its own single view; keep Chain active, Plots/Summary locked
+  document.querySelectorAll('.itab').forEach(t=>t.classList.toggle('active',t.dataset.inner==='chain'));
+  document.getElementById('locked-panel').classList.remove('show');
+  updateTable();
+}));
 
 /* ── Menu bar ──────────────────────────────────────────────── */
 let openMenu=null;
@@ -656,6 +664,23 @@ function discoverPath(){
 function loSourceFor(mixerId){
   const w=wires.find(w=>w.to.node===mixerId&&w.to.port==='LO');
   return w?nodeById(w.from.node):null;
+}
+// LO distribution: every LO-source → mixer link with delivered vs required drive.
+function loPaths(){
+  const dg=getDesigs(),out=[];
+  nodes.filter(n=>n.lib.cat==='mixer').forEach(mx=>{
+    const loW=wires.find(w=>w.to.node===mx.id&&w.to.port==='LO');
+    if(!loW)return;
+    const lo=nodeById(loW.from.node);if(!lo)return;
+    const ls=sp(lo),fLO=ls.loFreqGhz??freqGhz;
+    const loss=wireLoss(loW,fLO);
+    const delivered=ls.outDbm-loss;
+    const req=mx.ov.lo_req_dbm??mx.lib.p.lo_req_dbm??null;
+    out.push({src:dg[lo.id],srcName:lo.ov.name||lo.lib.name,mixer:dg[mx.id],
+      loFreq:fLO,srcOut:ls.outDbm,loss,delivered,req,
+      margin:req!=null?delivered-req:null,ok:req==null||delivered>=req});
+  });
+  return out;
 }
 
 /* ── Connector / cable types for wires (lossy connections) ──── */
@@ -1209,7 +1234,12 @@ cvw.addEventListener('drop',e=>{e.preventDefault();const id=e.dataTransfer.getDa
   const lib=LIB.find(l=>l.id===id);if(!lib)return;pushUndo();const pt=sceneXY(e.clientX,e.clientY);addNode(lib,pt.x,pt.y);});
 
 /* ── Results table ─────────────────────────────────────────── */
+const RF_HEAD=`<tr><th>Desig.</th><th>Component</th><th class="cg">Gain [dB]</th><th>Signal [dBm]</th><th class="cnf">Casc. NF [dB]</th><th>Noise [dBm/Hz]</th><th>P1dB out [dBm]</th></tr>`;
+const LO_HEAD=`<tr><th>LO source</th><th>→ Mixer</th><th>LO freq [GHz]</th><th>Source out [dBm]</th><th>Path loss [dB]</th><th class="cg">Delivered [dBm]</th><th>Required [dBm]</th><th class="cnf">Margin [dB]</th></tr>`;
 function updateTable(){
+  const head=document.getElementById('rt-head');
+  if(typeof activePath!=='undefined'&&activePath==='lo'){updateLOTable(head);return;}
+  if(head)head.innerHTML=RF_HEAD;
   const{rows}=calcCascade();
   const tbody=document.getElementById('rb'),empty=document.getElementById('te'),tbl=document.getElementById('rt');
   const rfl=document.getElementById('res-freq-label');if(rfl)rfl.textContent=freqGhz+' GHz';
@@ -1231,6 +1261,23 @@ function updateTable(){
   const L=casc[casc.length-1];const sys=document.createElement('tr');sys.className='rsys';
   sys.innerHTML=`<td></td><td>System (cascaded)</td><td class="cg ${L.cumG>=0?'vg':'vw'}">${f1(L.cumG)}</td><td>${f1(L.sig)}</td><td class="cnf vn">${f1(L.cascNF)}</td><td class="vd">${f1(L.noiseDbHz)}</td><td class="${L.p1out!=null?'vp':'vd'}">${L.p1out!=null?f1(L.p1out):'—'}</td>`;
   tbody.appendChild(sys);
+}
+function updateLOTable(head){
+  if(head)head.innerHTML=LO_HEAD;
+  const tbody=document.getElementById('rb'),empty=document.getElementById('te'),tbl=document.getElementById('rt');
+  const lps=loPaths();
+  if(!lps.length){tbl.style.display='none';empty.style.display='block';
+    empty.innerHTML='No LO paths yet. Drop a <b>Mixer</b> and an <b>LO source</b>, then wire the LO source into the mixer’s LO port.';return;}
+  tbl.style.display='';empty.style.display='none';tbody.innerHTML='';
+  lps.forEach(p=>{const tr=document.createElement('tr');
+    const mc=p.margin!=null?(p.ok?'vg':'vw'):'vd';
+    tr.innerHTML=`<td class="tdg">${p.src}</td><td class="tdg">${p.mixer}</td>`+
+      `<td>${f1(p.loFreq)}</td><td>${f1(p.srcOut)}</td>`+
+      `<td class="${p.loss>0.01?'vw':'vd'}">${p.loss>0.01?f1(p.loss):'—'}</td>`+
+      `<td class="cg ${p.ok?'vg':'vw'}">${f1(p.delivered)}</td>`+
+      `<td class="vd">${p.req!=null?f1(p.req):'—'}</td>`+
+      `<td class="cnf ${mc}">${p.margin!=null?(p.margin>=0?'+':'')+f1(p.margin)+(p.ok?' ✓':' ⚠'):'—'}</td>`;
+    tbody.appendChild(tr);});
 }
 
 /* ── Controls ──────────────────────────────────────────────── */
