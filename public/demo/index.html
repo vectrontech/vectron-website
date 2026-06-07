@@ -519,6 +519,7 @@ const CAT={
   cable:{fill:'#DCE9F4',ink:'#1565c0',prefix:'W',badge:'∿'},
   antenna:{fill:'#FCE4CC',ink:'#bf360c',prefix:'ANT',badge:'⊲'},
   fspl:{fill:'#E1F5FE',ink:'#0277bd',prefix:'FS',badge:')'},
+  coupler:{fill:'#FFF9C4',ink:'#827717',prefix:'C',badge:'⋈'},
   chassis:{fill:'#FFF4CC',ink:'#795500',prefix:'PNA',badge:'▤'},
 };
 
@@ -534,10 +535,16 @@ function portsOf(cat){
     case 'mixer':     return [{name:'RF',kind:'in',sub:'rf',x:0,y:H/2,d:[-1,0]},
                               {name:'LO',kind:'in',sub:'lo',x:W/2,y:H,d:[0,1]},
                               {name:'IF',kind:'out',sub:'rf',x:W,y:H/2,d:[1,0]}];
-    case 'antenna':   return [{name:'IN',kind:'in',sub:'rf',x:0,y:H/2,d:[-1,0]},
-                              {name:'AIR',kind:'out',sub:'air',x:W,y:H/2,d:[1,0]}];
-    case 'fspl':      return [{name:'IN',kind:'in',sub:'air',x:0,y:H/2,d:[-1,0]},
-                              {name:'OUT',kind:'out',sub:'air',x:W,y:H/2,d:[1,0]}];
+    // Antenna + free-space ports are BIDIRECTIONAL so they wire up in
+    // either direction (transmit OR receive antenna, any orientation).
+    case 'antenna':   return [{name:'RF', kind:'bidir',sub:'rf', x:0,y:H/2,d:[-1,0]},
+                              {name:'AIR',kind:'bidir',sub:'air',x:W,y:H/2,d:[1,0]}];
+    case 'fspl':      return [{name:'IN',kind:'bidir',sub:'air',x:0,y:H/2,d:[-1,0]},
+                              {name:'OUT',kind:'bidir',sub:'air',x:W,y:H/2,d:[1,0]}];
+    case 'coupler':   // 3-port directional coupler: IN, OUT (mainline), CPL (tap)
+                      return [{name:'IN', kind:'in', sub:'rf',x:0,y:H/2,d:[-1,0]},
+                              {name:'OUT',kind:'out',sub:'rf',x:W,y:H/3,d:[1,0]},
+                              {name:'CPL',kind:'out',sub:'rf',x:W,y:2*H/3,d:[1,0]}];
     case 'chassis':   // 4-port PNA — ports on the right edge, evenly spaced
                       return [1,2,3,4].map((n,i)=>({name:'P'+n,kind:'out',sub:'rf',
                                 x:W,y:H/5*(i+1),d:[1,0]}));
@@ -580,6 +587,13 @@ const LIB=[
    gain_t:[[2,8],[6,12],[12,16],[18,20]], p:{gain_dbi:12}},
   /* Free-space path — FSPL between two antennas */
   {id:'fspl',name:'Free-space path',cat:'fspl',ideal:true,sub:'FSPL · configurable range',kpi:'FSPL over range R',p:{range_m:10}},
+  /* Directional couplers — mainline insertion loss + coupling factor */
+  {id:'coupler',name:'Dir. Coupler',cat:'coupler',ideal:true,sub:'Ideal · configurable coupling',kpi:'IL 0.5 dB · 20 dB coupling',
+   p:{mainline_db:0.5,coupling_db:20}},
+  {id:'krytar1830',name:'Krytar 1830',cat:'coupler',mfr:'Krytar',sub:'Krytar · 2–18 GHz · 30 dB',kpi:'2–18 GHz · IL 0.4 · 30 dB',
+   p:{mainline_db:0.4,coupling_db:30}},
+  {id:'rfl-dc20',name:'RFDC2G40G20',cat:'coupler',mfr:'RF-Lambda',sub:'RF-Lambda · 2–40 GHz · 20 dB',kpi:'2–40 GHz · IL 1.0 · 20 dB',
+   p:{mainline_db:1.0,coupling_db:20}},
   /* Multi-port PNA chassis — 4 source ports */
   {id:'pna-chassis',name:'PNA-X (4-port)',cat:'chassis',mfr:'Keysight',sub:'Keysight · 4-port VNA · 10 MHz–67 GHz',kpi:'4 ports · src+receiver',
    out_t:[[.01,11],[2,10],[10,8],[18,5],[26.5,2],[40,0],[50,-3],[67,-8]],p:{out_dbm:10,nf_db:28}},
@@ -592,7 +606,7 @@ let sel=null;   // {type:'node'|'wire', id}
 let nxtId=1, freqGhz=2.4;
 let undoStack=[], redoStack=[];
 
-const BW=64,BH=64,PR=4,SNAP=14,GRID=20;
+const BW=64,BH=64,PR=4,SNAP=22,GRID=20;
 const cvw=document.getElementById('cvw');
 const svg=document.getElementById('schematic');
 
@@ -628,23 +642,28 @@ function sp(b){const L=b.lib,o=b.ov,f=freqGhz,c=L.cat;
     gain=-loss;nf=loss;note=L.loss_eq?`${len} m · ${(loss).toFixed(2)} dB`:null;}
   else if(c==='antenna'){gain=o.gain_dbi??(L.gain_t?interp(f,L.gain_t):L.p.gain_dbi);nf=0;}  // gain, no thermal noise
   else if(c==='fspl'){const R=o.range_m??L.p.range_m??10;gain=-fsplDb(f,R);nf=0;note=`R=${R} m`;}
+  else if(c==='coupler'){const ml=o.mainline_db??L.p.mainline_db??0.5;gain=-ml;nf=ml;
+    note=`tap −${(o.coupling_db??L.p.coupling_db??20)} dB`;}  // mainline IL (exit via CPL handled in cascade)
   return{isSource:false,isLO:false,gain,nf,p1out,p1in,note};
 }
 
 /* ── Path discovery: walk the signal (non-LO) wires source → end ─ */
 // Returns the wire leaving any signal output port (rf or air, not LO).
 function sigOutWire(nodeId){
-  return wires.find(w=>{
+  // A wire leaving this node from an output (or bidir) signal port.
+  // Prefer the mainline 'OUT'/'IF' port over a coupler tap ('CPL').
+  const cands=wires.filter(w=>{
     if(w.from.node!==nodeId)return false;
     const fn=nodeById(nodeId),p=portsOf(fn.lib.cat).find(p=>p.name===w.from.port);
-    return p&&p.kind==='out'&&p.sub!=='lo';
+    return p&&(p.kind==='out'||p.kind==='bidir')&&p.sub!=='lo';
   });
+  return cands.find(w=>w.from.port!=='CPL')||cands[0];
 }
 function hasSigIn(nodeId){
   return wires.some(w=>{
     if(w.to.node!==nodeId)return false;
     const tn=nodeById(nodeId),p=portsOf(tn.lib.cat).find(p=>p.name===w.to.port);
-    return p&&p.kind==='in'&&p.sub!=='lo';
+    return p&&(p.kind==='in'||p.kind==='bidir')&&p.sub!=='lo';
   });
 }
 function discoverPath(){
@@ -721,6 +740,11 @@ function calcCascade(){
     const s=sp(node),desc=node.ov.name||node.lib.name,dg=desigs[node.id];
     if(s.isSource&&!s.isLO){pin=s.outDbm;
       rows.push({desig:dg,name:desc,isSource:true,outDbm:s.outDbm,sig:s.outDbm});return;}
+    // Coupler: if the path exits via the coupled (CPL) tap, use the
+    // coupling factor instead of the mainline insertion loss.
+    if(node.lib.cat==='coupler'){const ow=sigOutWire(node.id);
+      if(ow&&ow.from.port==='CPL'){const cdb=node.ov.coupling_db??node.lib.p.coupling_db??20;s.gain=-cdb;s.nf=cdb;s.note='coupled tap';}
+      else s.note='mainline';}
     const m=applyLoss(s.gain,s.nf);
     rows.push({desig:dg,name:desc,gain:s.gain,cumG,sig:pin,nf:s.nf,cascNF:m.cascNF,
       noiseDbHz:m.noiseDbHz,p1out:s.p1out,hdroom:s.p1out!=null&&pin!=null?s.p1out-pin:null,note:s.note});
@@ -814,6 +838,20 @@ function drawSym(cat){const g=mk('g');const CX=32,CY=32,R=32;switch(cat){
       g.appendChild(mk('path',{d:`M ${44+k*2},${CY-rr} A ${rr} ${rr} 0 0 0 ${44+k*2},${CY+rr}`,fill:'none',stroke:'#0277bd','stroke-width':1.4,opacity:.85}));}
     tt(g.appendChild(mk('text',{x:CX,y:CY,'text-anchor':'middle','dominant-baseline':'central','font-size':7,fill:'#0277bd','font-family':'-apple-system,sans-serif'})),'~');break;
   }
+  case 'coupler':{
+    // _coupler: yellow box, two parallel lines (through @ H/3, coupled @ 2H/3), crossed coupling arrows
+    g.appendChild(mk('rect',{x:0,y:0,width:64,height:64,rx:4,fill:'#fff9c4',stroke:'#37474f','stroke-width':1.8}));
+    const yT=64/3, yC=2*64/3, xl=8, xr=56;
+    g.appendChild(mk('line',{x1:xl,y1:yT,x2:xr,y2:yT,stroke:'#212121','stroke-width':1.6}));
+    g.appendChild(mk('line',{x1:xl,y1:yC,x2:xr,y2:yC,stroke:'#212121','stroke-width':1.6}));
+    // crossed coupling arrows
+    const cl=CX-9,cr=CX+9;
+    g.appendChild(mk('line',{x1:cl,y1:yT+1,x2:cr,y2:yC-1,stroke:'#212121','stroke-width':1.4}));
+    g.appendChild(mk('line',{x1:cl,y1:yC-1,x2:cr,y2:yT+1,stroke:'#212121','stroke-width':1.4}));
+    // ISO termination zigzag on the coupled line (left end)
+    g.appendChild(mk('polyline',{points:`${xl},${yC} ${xl+3},${yC-3} ${xl+6},${yC+3} ${xl+9},${yC-3} ${xl+12},${yC}`,
+      fill:'none',stroke:'#9e9e9e','stroke-width':1.2}));break;
+  }
   case 'chassis':{
     // 4-port PNA rack instrument (132×100)
     const W=132,H=100;
@@ -845,6 +883,7 @@ function fmtVal(cat,s){
   if(cat==='cable')return s.note?`${s.note}`:`${f1(-s.gain)} dB`;
   if(cat==='antenna')return `${f1(s.gain)} dBi`;
   if(cat==='fspl')return `FSPL=${f1(-s.gain)} dB · ${s.note||''}`;
+  if(cat==='coupler')return `IL=${f1(-s.gain)} dB · ${s.note||''}`;
   return '';}
 
 /* ── Wire routing — orthogonal (mirrors wire_item.py) ────────
@@ -1083,11 +1122,17 @@ function finishWire(cursor){
   if(!best)return;
   const f=wireDrag.fromPort;
   if(best.node===f.node){sbMsg('Cannot wire a component to itself.');return;}
-  // must be one out + one in
+  // Resolve producer (out) / consumer (in). 'bidir' ports (antenna, free-
+  // space) can act as either; when both ends are bidir, the dragged-from
+  // end is the producer so signal flows the way you drew it.
   let out,inp;
-  if(f.kind==='out'&&best.kind==='in'){out=f;inp=best;}
-  else if(f.kind==='in'&&best.kind==='out'){out=best;inp=f;}
+  const fO=f.kind==='out',fI=f.kind==='in',fB=f.kind==='bidir';
+  const bO=best.kind==='out',bI=best.kind==='in',bB=best.kind==='bidir';
+  if((fO||fB)&&(bI||bB)&&!(fB&&bB&&false)){out=f;inp=best;}
+  else if((fI)&&(bO||bB)){out=best;inp=f;}
+  else if(fB&&bO){out=best;inp=f;}
   else{sbMsg('Connect an output port to an input port.');return;}
+  if(fB&&bB){out=f;inp=best;} // both bidir → flow follows drag direction
   // LO matching: lo_in only accepts lo_out
   if(inp.sub==='lo'&&out.sub!=='lo'){sbMsg('A mixer LO port needs an LO source.');return;}
   if(inp.sub==='rf'&&out.sub==='lo'){sbMsg('An LO source drives a mixer LO port.');return;}
@@ -1201,6 +1246,9 @@ function renderInsp(){
     if(L.gain_t){const n=document.createElement('p');n.className='inote';n.textContent=`${L.sub}. Gain interpolated at ${freqGhz} GHz. Pair two antennas with a free-space path to model the link.`;p.appendChild(n);}}
   else if(cat==='fspl'){addF(p,'Range (m)','range_m',b.ov.range_m??L.p.range_m??10,.1,100000,1,'(user-set)');
     const n=document.createElement('p');n.className='inote';n.textContent=`FSPL = 20·log₁₀(f) + 20·log₁₀(R) + 32.45 = ${(-s.gain).toFixed(1)} dB at ${freqGhz} GHz over ${b.ov.range_m??L.p.range_m??10} m.`;p.appendChild(n);}
+  else if(cat==='coupler'){addF(p,'Mainline loss (dB)','mainline_db',b.ov.mainline_db??L.p.mainline_db??0.5,0,6,.1,'(IN→OUT)');
+    addF(p,'Coupling (dB)','coupling_db',b.ov.coupling_db??L.p.coupling_db??20,3,40,.5,'(IN→CPL)');
+    const n=document.createElement('p');n.className='inote';n.textContent='IN→OUT carries the mainline insertion loss; IN→CPL taps off the coupling factor. Wire either port into the chain — the cascade uses whichever the signal exits through.';p.appendChild(n);}
 }
 
 /* ── Palette ───────────────────────────────────────────────── */
