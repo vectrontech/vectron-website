@@ -823,12 +823,14 @@ function drawSym(cat){const g=mk('g');const CX=32,CY=32,R=32;switch(cat){
     g.appendChild(mk('line',{x1:8,y1:cy,x2:56,y2:cy,stroke:'#212121','stroke-width':1}));break;
   }
   case 'antenna':{
-    // _antenna: horn pointing right (feed on left, radiates right)
+    // _antenna: horn — RF coax feed on the left, over-the-air (AIR) on the right
     g.appendChild(mk('polygon',{points:'4,28 4,36 18,42 18,22',fill:'#fffde7',stroke:'#212121','stroke-width':1.6,'stroke-linejoin':'round'}));
     g.appendChild(mk('polygon',{points:'18,22 18,42 56,56 56,8',fill:'#fffde7',stroke:'#212121','stroke-width':1.6,'stroke-linejoin':'round'}));
-    // radiation arcs
     for(let k=1;k<=2;k++){const rr=6+k*5;
       g.appendChild(mk('path',{d:`M ${58},${CY-rr} A ${rr} ${rr} 0 0 1 ${58},${CY+rr}`,fill:'none',stroke:'#bf360c','stroke-width':1,opacity:.6}));}
+    // port-role tags
+    tt(g.appendChild(mk('text',{x:7,y:18,'font-size':6,'font-weight':'bold',fill:'#424242','font-family':'ui-monospace,monospace'})),'RF');
+    tt(g.appendChild(mk('text',{x:46,y:18,'font-size':6,'font-weight':'bold',fill:'#0277bd','font-family':'ui-monospace,monospace'})),'AIR');
     break;
   }
   case 'fspl':{
@@ -1133,9 +1135,14 @@ function finishWire(cursor){
   else if(fB&&bO){out=best;inp=f;}
   else{sbMsg('Connect an output port to an input port.');return;}
   if(fB&&bB){out=f;inp=best;} // both bidir → flow follows drag direction
-  // LO matching: lo_in only accepts lo_out
-  if(inp.sub==='lo'&&out.sub!=='lo'){sbMsg('A mixer LO port needs an LO source.');return;}
-  if(inp.sub==='rf'&&out.sub==='lo'){sbMsg('An LO source drives a mixer LO port.');return;}
+  // Port-type must match: rf↔rf (coax), air↔air (over-the-air), lo↔lo.
+  // This stops nonsensical links like free-space → an antenna's RF feed.
+  if(out.sub!==inp.sub){
+    if(out.sub==='lo'||inp.sub==='lo') sbMsg('LO ports connect only to an LO source.');
+    else if(out.sub==='air'||inp.sub==='air') sbMsg('The over-the-air (AIR) port connects only to a free-space path or another antenna — not an RF coax port.');
+    else sbMsg('Incompatible port types.');
+    return;
+  }
   // one wire per input
   if(wires.some(w=>w.to.node===inp.node&&w.to.port===inp.name)){sbMsg('That input is already wired.');return;}
   // no duplicate
