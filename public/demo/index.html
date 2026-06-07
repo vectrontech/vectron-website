@@ -161,6 +161,9 @@ input,select{font:inherit;color:var(--text);}
 .cg{background:#e8f5e9!important;}.cnf{background:#e3f2fd!important;}
 tr.rsys{background:#f3f3f3;font-weight:700;border-top:2px solid var(--border);}
 tr.rspec td{background:#fafbfc;} tr.rspec td:nth-child(2){font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);}
+.ed{cursor:text;border-bottom:1px dashed var(--border2);padding:0 2px;border-radius:2px;}
+.ed:hover{background:var(--accent-bg);border-bottom-color:var(--accent);color:var(--accent);}
+.ed-input{width:52px;padding:1px 3px;font-size:11px;border:1px solid var(--accent);border-radius:3px;text-align:right;font-family:inherit;color:var(--text);background:#fff;}
 tr.rsys td:nth-child(2){font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);}
 tr.rsrc td{color:var(--text3);font-style:italic;}
 .tdg{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;font-weight:700;}
@@ -744,14 +747,14 @@ function calcCascade(){
             gain:-loss,cumG,sig:pin,nf:loss,cascNF:m.cascNF,noiseDbHz:m.noiseDbHz,p1out:null});}}}
     const s=sp(node),desc=node.ov.name||node.lib.name,dg=desigs[node.id];
     if(s.isSource&&!s.isLO){pin=s.outDbm;
-      rows.push({desig:dg,name:desc,isSource:true,outDbm:s.outDbm,sig:s.outDbm});return;}
+      rows.push({desig:dg,id:node.id,cat:node.lib.cat,name:desc,isSource:true,outDbm:s.outDbm,sig:s.outDbm});return;}
     // Coupler: if the path exits via the coupled (CPL) tap, use the
     // coupling factor instead of the mainline insertion loss.
     if(node.lib.cat==='coupler'){const ow=sigOutWire(node.id);
       if(ow&&ow.from.port==='CPL'){const cdb=node.ov.coupling_db??node.lib.p.coupling_db??20;s.gain=-cdb;s.nf=cdb;s.note='coupled tap';}
       else s.note='mainline';}
     const m=applyLoss(s.gain,s.nf);
-    rows.push({desig:dg,name:desc,gain:s.gain,cumG,sig:pin,nf:s.nf,cascNF:m.cascNF,
+    rows.push({desig:dg,id:node.id,cat:node.lib.cat,name:desc,gain:s.gain,cumG,sig:pin,nf:s.nf,cascNF:m.cascNF,
       noiseDbHz:m.noiseDbHz,p1out:s.p1out,hdroom:s.p1out!=null&&pin!=null?s.p1out-pin:null,note:s.note});
     // LO info row after a mixer — delivered-vs-required drive check
     if(node.lib.cat==='mixer'){const lo=loSourceFor(node.id);
@@ -1308,6 +1311,25 @@ cvw.addEventListener('drop',e=>{e.preventDefault();const id=e.dataTransfer.getDa
 /* ── Results table ─────────────────────────────────────────── */
 const RF_HEAD=`<tr><th>Desig.</th><th>Component</th><th class="cg">Gain [dB]</th><th>Signal [dBm]</th><th class="cnf">Casc. NF [dB]</th><th>Noise [dBm/Hz]</th><th>P1dB out [dBm]</th></tr>`;
 const LO_HEAD=`<tr><th>LO source</th><th>→ Mixer</th><th>LO freq [GHz]</th><th>Source out [dBm]</th><th>Path loss [dB]</th><th class="cg">Delivered [dBm]</th><th>Required [dBm]</th><th class="cnf">Margin [dB]</th></tr>`;
+/* ── Inline editable cells (spreadsheet-style) ─────────────── */
+let editCell=null; // {n, f, neg, raw, caret}
+// Which override the Gain cell maps to, per component category.
+function gainEdit(cat,lib){
+  switch(cat){
+    case 'amplifier': return {f:'gain_db',neg:0};
+    case 'attenuator':case 'filter': return {f:'loss_db',neg:1};
+    case 'mixer': return {f:'conv_loss_db',neg:1};
+    case 'antenna': return {f:'gain_dbi',neg:0};
+    case 'coupler': return {f:'mainline_db',neg:1};
+    case 'cable': return lib&&lib.loss_eq?null:{f:'loss_db',neg:1};
+    default: return null;
+  }
+}
+function edCell(n,f,neg,disp,suffix=''){
+  if(editCell&&editCell.n===n&&editCell.f===f)
+    return `<input class="ed-input" data-ed="1" type="text" inputmode="decimal" value="${editCell.raw}"/>${suffix}`;
+  return `<span class="ed" data-n="${n}" data-f="${f}" data-neg="${neg?1:0}" data-disp="${f1(disp)}">${f1(disp)}</span>${suffix}`;
+}
 function updateTable(){
   const head=document.getElementById('rt-head');
   if(typeof activePath!=='undefined'&&activePath==='lo'){updateLOTable(head);return;}
@@ -1321,14 +1343,17 @@ function updateTable(){
     empty.textContent=nodes.length?'Wire a Source through your components to compute the cascade.':'Drop a Source and wire components together to see the cascaded link budget.';return;}
   tbl.style.display='';empty.style.display='none';tbody.innerHTML='';
   rows.forEach(r=>{const tr=document.createElement('tr');
-    if(r.isSource){tr.className='rsrc';tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg vd">—</td><td class="vg">${f1(r.outDbm)} dBm</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
+    if(r.isSource){tr.className='rsrc';tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg vd">—</td><td class="vg">${edCell(r.id,'out_dbm',0,r.outDbm,' dBm')}</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
     else if(r.isLO){tr.className='rsrc';
       const drive = r.loReq!=null
         ? `<span class="${r.loOk?'vg':'vw'}">${f1(r.outDbm)} dBm</span> <span class="vd">(need ${f1(r.loReq)})</span> ${r.loOk?'✓':'⚠ low'}`
         : `${f1(r.outDbm)} dBm`;
       tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name} → LO drive</td><td class="cg vd">—</td><td>${drive}</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
     else if(r.isWire){tr.style.fontStyle='italic';tr.innerHTML=`<td class="tdg" style="color:var(--text3)">${r.desig}</td><td style="color:var(--text3)">${r.name}</td><td class="cg vw">${f1(r.gain)}</td><td>${f1(r.sig)}</td><td class="cnf vn">${f1(r.cascNF)}</td><td class="vd">${f1(r.noiseDbHz)}</td><td class="vd">—</td>`;}
-    else{const gc=r.gain>=0?'vg':'vw';tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg ${gc}">${f1(r.gain)}</td><td class="${r.hdroom!=null&&r.hdroom<3?'vw':''}">${f1(r.sig)}</td><td class="cnf vn">${f1(r.cascNF)}</td><td class="vd">${f1(r.noiseDbHz)}</td><td class="${r.p1out!=null?'vp':'vd'}">${r.p1out!=null?f1(r.p1out):'—'}</td>`;}
+    else{const gc=r.gain>=0?'vg':'vw';const ge=gainEdit(r.cat,nodeById(r.id)&&nodeById(r.id).lib);
+      const gainCell=ge?edCell(r.id,ge.f,ge.neg,r.gain):f1(r.gain);
+      const p1Cell=r.cat==='amplifier'?edCell(r.id,'p1db_out',0,r.p1out??20):(r.p1out!=null?f1(r.p1out):'—');
+      tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg ${gc}">${gainCell}</td><td class="${r.hdroom!=null&&r.hdroom<3?'vw':''}">${f1(r.sig)}</td><td class="cnf vn">${f1(r.cascNF)}</td><td class="vd">${f1(r.noiseDbHz)}</td><td class="${r.p1out!=null?'vp':'vd'}">${p1Cell}</td>`;}
     tbody.appendChild(tr);});
   const L=casc[casc.length-1];const sys=document.createElement('tr');sys.className='rsys';
   sys.innerHTML=`<td></td><td>System (cascaded)</td><td class="cg ${L.cumG>=0?'vg':'vw'}">${f1(L.cumG)}</td><td>${f1(L.sig)}</td><td class="cnf vn">${f1(L.cascNF)}</td><td class="vd">${f1(L.noiseDbHz)}</td><td class="${L.p1out!=null?'vp':'vd'}">${L.p1out!=null?f1(L.p1out):'—'}</td>`;
@@ -1350,6 +1375,18 @@ function updateTable(){
       const sDbmCm2=10*Math.log10(sWm2)-10;          // dBm/cm²
       const sDbWm2=10*Math.log10(sWm2);              // dBW/m²
       specRow(`Power density @ ${sm.pdRange} m`, `<b class="vp">${f1(sDbmCm2)} dBm/cm²</b> <span class="vd">(${f1(sDbWm2)} dBW/m²)</span>`);
+    }
+  }
+  // Wire up an active inline editor (kept focused across live re-renders)
+  if(editCell){const inp=tbody.querySelector('input[data-ed]');
+    if(inp){inp.focus();
+      if(editCell.caret!=null){try{inp.setSelectionRange(editCell.caret,editCell.caret);}catch(e){}}else inp.select();
+      inp.oninput=()=>{editCell.raw=inp.value;editCell.caret=inp.selectionStart;
+        const v=parseFloat(inp.value);
+        if(!isNaN(v)){const node=nodeById(editCell.n);if(node)node.ov[editCell.f]=editCell.neg?-v:v;render();}
+        updateTable();};
+      inp.onblur=()=>{editCell=null;updateTable();renderInsp();};
+      inp.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();inp.blur();}else if(ev.key==='Escape'){editCell=null;updateTable();}};
     }
   }
 }
@@ -1397,6 +1434,13 @@ function loadStarter(){
   const W=(fn,fp,tn,tp)=>wires.push({id:'w'+(nxtId++),from:{node:fn,port:fp},to:{node:tn,port:tp}});
   W(s,'OUT',a,'IN');W(a,'OUT',f,'IN');W(f,'OUT',m,'RF');W(lo,'OUT',m,'LO');
 }
+
+/* ── Inline-edit: click an editable cell to type into it ───── */
+document.getElementById('res-tbl-wrap').addEventListener('click',e=>{
+  const sp=e.target.closest('.ed');if(!sp)return;
+  editCell={n:sp.dataset.n,f:sp.dataset.f,neg:sp.dataset.neg==='1',raw:sp.dataset.disp,caret:null};
+  updateTable();
+});
 
 /* ── Boot ──────────────────────────────────────────────────── */
 buildPalette();loadStarter();
