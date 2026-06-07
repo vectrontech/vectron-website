@@ -756,6 +756,11 @@ function calcCascade(){
     const m=applyLoss(s.gain,s.nf);
     rows.push({desig:dg,id:node.id,cat:node.lib.cat,name:desc,gain:s.gain,cumG,sig:pin,nf:s.nf,cascNF:m.cascNF,
       noiseDbHz:m.noiseDbHz,p1out:s.p1out,hdroom:s.p1out!=null&&pin!=null?s.p1out-pin:null,note:s.note});
+    // Over-the-air boundary: the receive-system noise figure starts fresh at
+    // the receive antenna. TX-side amps and free-space loss don't add to the
+    // receiver's NF — the RX chain sees the sky/thermal floor (kTB). Restart
+    // the Friis accumulation so the downstream cascaded NF is LNA-dominated.
+    if(node.lib.cat==='fspl'){nfLin=null;gRun=1;noiseL=KTB;}
     // LO info row after a mixer — delivered-vs-required drive check
     if(node.lib.cat==='mixer'){const lo=loSourceFor(node.id);
       if(lo){const ls=sp(lo);
@@ -1342,6 +1347,7 @@ function updateTable(){
   if(!casc.length){tbl.style.display='none';empty.style.display='block';
     empty.textContent=nodes.length?'Wire a Source through your components to compute the cascade.':'Drop a Source and wire components together to see the cascaded link budget.';return;}
   tbl.style.display='';empty.style.display='none';tbody.innerHTML='';
+  const RK=(rk,c)=>`data-rk="${rk}" data-c="${c}"`;  // tag computed cells for in-place patching
   rows.forEach(r=>{const tr=document.createElement('tr');
     if(r.isSource){tr.className='rsrc';tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg vd">—</td><td class="vg">${edCell(r.id,'out_dbm',0,r.outDbm,' dBm')}</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
     else if(r.isLO){tr.className='rsrc';
@@ -1349,17 +1355,33 @@ function updateTable(){
         ? `<span class="${r.loOk?'vg':'vw'}">${f1(r.outDbm)} dBm</span> <span class="vd">(need ${f1(r.loReq)})</span> ${r.loOk?'✓':'⚠ low'}`
         : `${f1(r.outDbm)} dBm`;
       tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name} → LO drive</td><td class="cg vd">—</td><td>${drive}</td><td class="cnf vd">—</td><td class="vd">—</td><td class="vd">—</td>`;}
-    else if(r.isWire){tr.style.fontStyle='italic';tr.innerHTML=`<td class="tdg" style="color:var(--text3)">${r.desig}</td><td style="color:var(--text3)">${r.name}</td><td class="cg vw">${f1(r.gain)}</td><td>${f1(r.sig)}</td><td class="cnf vn">${f1(r.cascNF)}</td><td class="vd">${f1(r.noiseDbHz)}</td><td class="vd">—</td>`;}
+    else if(r.isWire){tr.style.fontStyle='italic';tr.innerHTML=`<td class="tdg" style="color:var(--text3)">${r.desig}</td><td style="color:var(--text3)">${r.name}</td><td class="cg vw">${f1(r.gain)}</td><td ${RK(r.desig,'sig')}>${f1(r.sig)}</td><td class="cnf vn" ${RK(r.desig,'nf')}>${f1(r.cascNF)}</td><td class="vd" ${RK(r.desig,'noise')}>${f1(r.noiseDbHz)}</td><td class="vd">—</td>`;}
     else{const gc=r.gain>=0?'vg':'vw';const ge=gainEdit(r.cat,nodeById(r.id)&&nodeById(r.id).lib);
       const gainCell=ge?edCell(r.id,ge.f,ge.neg,r.gain):f1(r.gain);
       const p1Cell=r.cat==='amplifier'?edCell(r.id,'p1db_out',0,r.p1out??20):(r.p1out!=null?f1(r.p1out):'—');
-      tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg ${gc}">${gainCell}</td><td class="${r.hdroom!=null&&r.hdroom<3?'vw':''}">${f1(r.sig)}</td><td class="cnf vn">${f1(r.cascNF)}</td><td class="vd">${f1(r.noiseDbHz)}</td><td class="${r.p1out!=null?'vp':'vd'}">${p1Cell}</td>`;}
+      tr.innerHTML=`<td class="tdg">${r.desig}</td><td>${r.name}</td><td class="cg ${gc}">${gainCell}</td><td ${RK(r.desig,'sig')}>${f1(r.sig)}</td><td class="cnf vn" ${RK(r.desig,'nf')}>${f1(r.cascNF)}</td><td class="vd" ${RK(r.desig,'noise')}>${f1(r.noiseDbHz)}</td><td class="${r.p1out!=null?'vp':'vd'}">${p1Cell}</td>`;}
     tbody.appendChild(tr);});
-  const L=casc[casc.length-1];const sys=document.createElement('tr');sys.className='rsys';
+  appendSummaryRows(tbody,casc,summary);
+  // Wire up an active inline editor. Typing patches computed cells in place
+  // (no full rebuild), so the input keeps focus + caret and multi-digit works.
+  if(editCell){const inp=tbody.querySelector('input[data-ed]');
+    if(inp){inp.focus();
+      if(editCell.caret!=null){try{inp.setSelectionRange(editCell.caret,editCell.caret);}catch(e){}}else inp.select();
+      inp.oninput=()=>{editCell.raw=inp.value;editCell.caret=inp.selectionStart;
+        const v=parseFloat(inp.value);
+        if(!isNaN(v)){const node=nodeById(editCell.n);if(node)node.ov[editCell.f]=editCell.neg?-v:v;render();patchComputed();}};
+      inp.onblur=()=>{editCell=null;updateTable();renderInsp();};
+      inp.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();inp.blur();}else if(ev.key==='Escape'){editCell=null;updateTable();}};
+    }
+  }
+}
+// Append the System (cascaded) row + spec rows (noise floor, SNR, EIRP, power density).
+function appendSummaryRows(tbody,casc,summary){
+  const L=casc[casc.length-1];if(!L)return;
+  const sys=document.createElement('tr');sys.className='rsys';
   sys.innerHTML=`<td></td><td>System (cascaded)</td><td class="cg ${L.cumG>=0?'vg':'vw'}">${f1(L.cumG)}</td><td>${f1(L.sig)}</td><td class="cnf vn">${f1(L.cascNF)}</td><td class="vd">${f1(L.noiseDbHz)}</td><td class="${L.p1out!=null?'vp':'vd'}">${L.p1out!=null?f1(L.p1out):'—'}</td>`;
   tbody.appendChild(sys);
-  // ── Spec rows: noise floor, SNR, EIRP, power density ──────────
-  const sm=window.__lastSummary; const bwHz=bwMhz*1e6;
+  const sm=summary; const bwHz=bwMhz*1e6;
   const specRow=(label,val,cls)=>{const tr=document.createElement('tr');tr.className='rspec';
     tr.innerHTML=`<td></td><td>${label}</td><td colspan="5" class="${cls||''}" style="text-align:left;padding-left:10px">${val}</td>`;tbody.appendChild(tr);};
   if(sm&&sm.outSig!=null&&sm.outNoiseDbHz!=null){
@@ -1369,26 +1391,25 @@ function updateTable(){
     specRow('Output SNR', `<b class="${snr>=0?'vg':'vw'}">${f1(snr)} dB</b>`);
     if(sm.eirp!=null){
       specRow(`EIRP (at ${sm.eirpAnt})`, `<b class="vp">${f1(sm.eirp)} dBm</b>`);
-      // incident power density at the path range (from calc/ota.py)
       const eirpW=Math.pow(10,(sm.eirp-30)/10);
       const sWm2=eirpW/(4*Math.PI*sm.pdRange*sm.pdRange);
-      const sDbmCm2=10*Math.log10(sWm2)-10;          // dBm/cm²
-      const sDbWm2=10*Math.log10(sWm2);              // dBW/m²
-      specRow(`Power density @ ${sm.pdRange} m`, `<b class="vp">${f1(sDbmCm2)} dBm/cm²</b> <span class="vd">(${f1(sDbWm2)} dBW/m²)</span>`);
+      specRow(`Power density @ ${sm.pdRange} m`, `<b class="vp">${f1(10*Math.log10(sWm2)-10)} dBm/cm²</b> <span class="vd">(${f1(10*Math.log10(sWm2))} dBW/m²)</span>`);
     }
   }
-  // Wire up an active inline editor (kept focused across live re-renders)
-  if(editCell){const inp=tbody.querySelector('input[data-ed]');
-    if(inp){inp.focus();
-      if(editCell.caret!=null){try{inp.setSelectionRange(editCell.caret,editCell.caret);}catch(e){}}else inp.select();
-      inp.oninput=()=>{editCell.raw=inp.value;editCell.caret=inp.selectionStart;
-        const v=parseFloat(inp.value);
-        if(!isNaN(v)){const node=nodeById(editCell.n);if(node)node.ov[editCell.f]=editCell.neg?-v:v;render();}
-        updateTable();};
-      inp.onblur=()=>{editCell=null;updateTable();renderInsp();};
-      inp.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();inp.blur();}else if(ev.key==='Escape'){editCell=null;updateTable();}};
-    }
-  }
+}
+// Live in-place update of computed cells while an inline edit is active.
+function patchComputed(){
+  const tbody=document.getElementById('rb');
+  const{rows,summary}=calcCascade();window.__lastSummary=summary;
+  rows.forEach(r=>{
+    const set=(c,v)=>{const el=tbody.querySelector(`[data-rk="${r.desig}"][data-c="${c}"]`);if(el)el.textContent=v;};
+    if(r.sig!=null)set('sig',f1(r.sig));
+    if(r.cascNF!=null)set('nf',f1(r.cascNF));
+    if(r.noiseDbHz!=null)set('noise',f1(r.noiseDbHz));
+  });
+  tbody.querySelectorAll('tr.rsys,tr.rspec').forEach(t=>t.remove());
+  const casc=rows.filter(r=>!r.isSource&&!r.isLO&&r.cascNF!=null);
+  if(casc.length)appendSummaryRows(tbody,casc,summary);
 }
 function updateLOTable(head){
   if(head)head.innerHTML=LO_HEAD;
