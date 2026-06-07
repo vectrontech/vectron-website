@@ -160,6 +160,7 @@ input,select{font:inherit;color:var(--text);}
 #rt td:nth-child(-n+2){text-align:left;}
 .cg{background:#e8f5e9!important;}.cnf{background:#e3f2fd!important;}
 tr.rsys{background:#f3f3f3;font-weight:700;border-top:2px solid var(--border);}
+tr.rspec td{background:#fafbfc;} tr.rspec td:nth-child(2){font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);}
 tr.rsys td:nth-child(2){font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);}
 tr.rsrc td{color:var(--text3);font-style:italic;}
 .tdg{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;font-weight:700;}
@@ -345,8 +346,12 @@ tr.rsrc td{color:var(--text3);font-style:italic;}
         title="The full app sweeps across frequency bands">🔒 Single CW point — full app sweeps bands</button>
       <span>CW</span>
       <input id="freq" type="number" min=".001" max="110" step=".1" value="2.4"
-        style="width:68px;padding:2px 6px;background:#fff;border:1px solid var(--border);border-radius:3px;font-size:11px;"/>
+        style="width:64px;padding:2px 6px;background:#fff;border:1px solid var(--border);border-radius:3px;font-size:11px;"/>
       <span>GHz</span>
+      <span style="margin-left:8px">BW</span>
+      <input id="bw" type="number" min=".001" max="100000" step="1" value="1"
+        style="width:64px;padding:2px 6px;background:#fff;border:1px solid var(--border);border-radius:3px;font-size:11px;"/>
+      <span>MHz</span>
       <button class="sz-btn" id="clr" style="margin-left:8px;">Clear all</button>
     </div>
   </div>
@@ -603,7 +608,7 @@ const LIB=[
 let nodes=[];   // {id, lib, ov, x, y}
 let wires=[];   // {id, from:{node,port}, to:{node,port}}
 let sel=null;   // {type:'node'|'wire', id}
-let nxtId=1, freqGhz=2.4;
+let nxtId=1, freqGhz=2.4, bwMhz=1;
 let undoStack=[], redoStack=[];
 
 const BW=64,BH=64,PR=4,SNAP=22,GRID=20;
@@ -759,7 +764,19 @@ function calcCascade(){
         rows.push({desig:desigs[lo.id],name:lo.ov.name||lo.lib.name,isLO:true,
           outDbm:delivered,loFreq:ls.loFreqGhz,loReq:req,loOk:ok});}}
   });
-  return{rows,path};
+  // Summary: output signal/noise + EIRP & power density at a transmit antenna
+  const stages=rows.filter(r=>!r.isSource&&!r.isLO);
+  const last=stages[stages.length-1]||null;
+  let eirp=null,eirpAnt=null,pdRange=null;
+  for(let i=0;i<path.length;i++){
+    if(path[i].lib.cat==='antenna'&&path[i+1]&&path[i+1].lib.cat==='fspl'){
+      const aRow=rows.find(r=>r.desig===desigs[path[i].id]);
+      if(aRow){eirp=aRow.sig;eirpAnt=desigs[path[i].id];
+        pdRange=path[i+1].ov.range_m??path[i+1].lib.p.range_m??10;}
+      break;
+    }
+  }
+  return{rows,path,summary:{outSig:last?last.sig:null,outNoiseDbHz:last?last.noiseDbHz:null,eirp,eirpAnt,pdRange}};
 }
 
 /* ── SVG symbols — geometry ported 1:1 from symbols.py ─────────
@@ -1295,7 +1312,7 @@ function updateTable(){
   const head=document.getElementById('rt-head');
   if(typeof activePath!=='undefined'&&activePath==='lo'){updateLOTable(head);return;}
   if(head)head.innerHTML=RF_HEAD;
-  const{rows}=calcCascade();
+  const{rows,summary}=calcCascade();window.__lastSummary=summary;
   const tbody=document.getElementById('rb'),empty=document.getElementById('te'),tbl=document.getElementById('rt');
   const rfl=document.getElementById('res-freq-label');if(rfl)rfl.textContent=freqGhz+' GHz';
   const rhf=document.getElementById('rf');if(rhf)rhf.textContent=freqGhz+' GHz';
@@ -1316,6 +1333,25 @@ function updateTable(){
   const L=casc[casc.length-1];const sys=document.createElement('tr');sys.className='rsys';
   sys.innerHTML=`<td></td><td>System (cascaded)</td><td class="cg ${L.cumG>=0?'vg':'vw'}">${f1(L.cumG)}</td><td>${f1(L.sig)}</td><td class="cnf vn">${f1(L.cascNF)}</td><td class="vd">${f1(L.noiseDbHz)}</td><td class="${L.p1out!=null?'vp':'vd'}">${L.p1out!=null?f1(L.p1out):'—'}</td>`;
   tbody.appendChild(sys);
+  // ── Spec rows: noise floor, SNR, EIRP, power density ──────────
+  const sm=window.__lastSummary; const bwHz=bwMhz*1e6;
+  const specRow=(label,val,cls)=>{const tr=document.createElement('tr');tr.className='rspec';
+    tr.innerHTML=`<td></td><td>${label}</td><td colspan="5" class="${cls||''}" style="text-align:left;padding-left:10px">${val}</td>`;tbody.appendChild(tr);};
+  if(sm&&sm.outSig!=null&&sm.outNoiseDbHz!=null){
+    const nFloor=sm.outNoiseDbHz+10*Math.log10(bwHz);
+    const snr=sm.outSig-nFloor;
+    specRow(`Noise floor (BW = ${bwMhz} MHz)`, `${f1(nFloor)} dBm`,'vd');
+    specRow('Output SNR', `<b class="${snr>=0?'vg':'vw'}">${f1(snr)} dB</b>`);
+    if(sm.eirp!=null){
+      specRow(`EIRP (at ${sm.eirpAnt})`, `<b class="vp">${f1(sm.eirp)} dBm</b>`);
+      // incident power density at the path range (from calc/ota.py)
+      const eirpW=Math.pow(10,(sm.eirp-30)/10);
+      const sWm2=eirpW/(4*Math.PI*sm.pdRange*sm.pdRange);
+      const sDbmCm2=10*Math.log10(sWm2)-10;          // dBm/cm²
+      const sDbWm2=10*Math.log10(sWm2);              // dBW/m²
+      specRow(`Power density @ ${sm.pdRange} m`, `<b class="vp">${f1(sDbmCm2)} dBm/cm²</b> <span class="vd">(${f1(sDbWm2)} dBW/m²)</span>`);
+    }
+  }
 }
 function updateLOTable(head){
   if(head)head.innerHTML=LO_HEAD;
@@ -1337,6 +1373,7 @@ function updateLOTable(head){
 
 /* ── Controls ──────────────────────────────────────────────── */
 document.getElementById('freq').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isNaN(v)&&v>0){freqGhz=v;render();updateTable();renderInsp();}});
+document.getElementById('bw').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isNaN(v)&&v>0){bwMhz=v;updateTable();}});
 document.getElementById('clr').addEventListener('click',()=>{pushUndo();nodes=[];wires=[];sel=null;render();updateTable();renderInsp();sbMsg('Canvas cleared.');});
 window.addEventListener('resize',()=>render());
 document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const mod=e.metaKey||e.ctrlKey;
