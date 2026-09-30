@@ -10,6 +10,9 @@ export default defineConfig({
       // otherwise miss it. Bump priority on the RF consulting service
       // page — that's the page we want ranking for the target keywords.
       customPages: [
+        // Homepage is a static file in public/, so the integration would
+        // otherwise miss it the same way it misses /RFtrueLink/.
+        "https://vectrontechnologies.com/",
         "https://vectrontechnologies.com/RFtrueLink/",
       ],
       serialize(item) {
