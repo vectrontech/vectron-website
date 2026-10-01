@@ -167,15 +167,54 @@ strong { font-weight: 600; }
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-chrome-rule);
 }
-.header-inner { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+.header-inner { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 .brand { display: inline-flex; align-items: center; flex: none; }
 .brand img { height: 40px; width: auto; }
-@media (min-width: 768px) { .brand img { height: 44px; } }
-.site-nav { display: none; gap: 2rem; font-size: .9rem; color: var(--color-muted); }
-.site-nav a { transition: color .2s ease; }
+@media (min-width: 768px) { .brand img { height: 44px; } .header-inner { gap: 1.25rem; } }
+.nav-disclosure { position: relative; flex: none; }
+.nav-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0; margin: 0;
+  border: 1px solid var(--color-chrome-edge); border-radius: 8px;
+  background: transparent; color: var(--color-chrome-ink); cursor: pointer;
+  list-style: none;
+}
+.nav-toggle::-webkit-details-marker { display: none; }
+.nav-toggle-icon, .nav-toggle-icon::before, .nav-toggle-icon::after {
+  display: block; width: 16px; height: 1.5px; background: currentColor; border-radius: 1px;
+  position: relative;
+}
+.nav-toggle-icon::before, .nav-toggle-icon::after {
+  content: ""; position: absolute; left: 0;
+}
+.nav-toggle-icon::before { top: -5px; }
+.nav-toggle-icon::after { top: 5px; }
+.nav-disclosure[open] .nav-toggle { border-color: var(--color-accent); color: var(--color-accent); }
+.site-nav {
+  display: none;
+  position: absolute; left: 0; right: 0; top: var(--header-h); z-index: 60;
+  flex-direction: column; gap: 0;
+  margin: 0; padding: .35rem 0 .75rem;
+  background: #050505f5;
+  border-bottom: 1px solid var(--color-chrome-rule);
+  font-size: 1rem; color: var(--color-muted);
+}
+.nav-disclosure[open] + .site-nav { display: flex; }
+.site-nav a { transition: color .2s ease; padding: .8rem 1.5rem; }
 .site-nav a:hover { color: #fff; }
-@media (min-width: 900px) { .site-nav { display: flex; } }
-.header-actions { display: flex; align-items: center; gap: .5rem; }
+.site-nav a[href="#products"] { color: var(--color-accent); }
+.site-nav a[href="#products"]:hover { color: #99f6e4; }
+@media (min-width: 1180px) {
+  .nav-disclosure { display: none; }
+  .site-nav {
+    display: flex; position: static; flex-direction: row; align-items: center;
+    gap: 1.05rem; padding: 0;
+    background: transparent; border: 0;
+    font-size: .84rem;
+  }
+  .site-nav a { padding: 0; }
+}
+.header-actions { display: flex; align-items: center; gap: .5rem; margin-left: auto; }
 .header-actions .btn-ghost { display: none; }
 @media (min-width: 768px) { .header-actions .btn-ghost { display: inline-flex; } }
 
@@ -381,8 +420,50 @@ strong { font-weight: 600; }
 
 /* ---------- Wide figures, AI section, application areas ---------- */
 .cap-fig.wide { aspect-ratio: 2 / 1; }
-.site-nav { display: none; }
-@media (min-width: 1100px) { .site-nav { display: flex; gap: 1.75rem; } }
+
+/* ---------- Products ---------- */
+.products-section {
+  background:
+    radial-gradient(780px 320px at 78% 18%, #5eead41c, transparent 68%),
+    radial-gradient(560px 260px at 8% 100%, #5eead410, transparent 70%),
+    var(--color-bg);
+  border-block: 1px solid #5eead42e;
+}
+.product-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+@media (min-width: 800px) {
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 3rem; }
+}
+.product-card-featured {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 1.5rem;
+  border-color: #5eead473;
+  box-shadow: inset 0 1px 0 #5eead433, 0 0 0 1px #5eead424, 0 24px 70px -28px #5eead466;
+}
+.product-card-featured:hover {
+  border-color: #5eead4b3;
+  box-shadow: inset 0 1px 0 #5eead44d, 0 0 0 1px #5eead440, 0 24px 70px -20px #5eead480;
+}
+.product-card-featured .product-fig { margin-bottom: 0; }
+.product-card-featured .product-body h3 {
+  margin-top: 0;
+  font-size: clamp(1.85rem, 3vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -.02em;
+}
+.product-card-featured .product-body > p { font-size: 1.0625rem; line-height: 1.65; }
+@media (min-width: 800px) {
+  .product-card-featured {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem 2.25rem;
+  }
+}
 .ai-glow {
   background:
     radial-gradient(700px 380px at 15% 0%, #5eead414, transparent 70%),
