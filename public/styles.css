@@ -497,3 +497,10 @@ strong { font-weight: 600; }
 }
 .tile-link svg { width: 12px; height: 12px; flex: none; }
 .tile-link:hover { color: #99f6e4; gap: .5rem; }
+
+/* About headshot */
+.about-photo { display: block; margin-top: 2rem; max-width: 340px; border: 1px solid var(--color-chrome-edge); border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px var(--color-bg-elev), 0 30px 60px -30px rgba(94, 234, 212, .13); }
+.about-photo img { display: block; width: 100%; height: auto; }
+.about-body .about-lead { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.4; color: #fff; }
+.about-body .about-lead strong { font-weight: 600; }
+.stat-list strong { color: var(--color-chrome-ink); font-weight: 600; }
