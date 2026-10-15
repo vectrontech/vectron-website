@@ -526,3 +526,33 @@ strong { font-weight: 600; }
 .about-body .about-lead { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.4; color: #fff; }
 .about-body .about-lead strong { font-weight: 600; }
 .stat-list strong { color: var(--color-chrome-ink); font-weight: 600; }
+
+#capabilities .cap-card:nth-child(1) .f-a{stroke:url(#gb1)}
+#capabilities .cap-card:nth-child(1) .f-af{fill:url(#gb1f)}
+#capabilities .cap-card:nth-child(2) .f-a{stroke:url(#gb2)}
+#capabilities .cap-card:nth-child(2) .f-af{fill:url(#gb2f)}
+#capabilities .cap-card:nth-child(3) .f-a{stroke:url(#gb3)}
+#capabilities .cap-card:nth-child(3) .f-af{fill:url(#gb3f)}
+#capabilities .cap-card:nth-child(4) .f-a{stroke:url(#gb4)}
+#capabilities .cap-card:nth-child(4) .f-af{fill:url(#gb4f)}
+#capabilities .cap-card:nth-child(5) .f-a{stroke:url(#gb5)}
+#capabilities .cap-card:nth-child(5) .f-af{fill:url(#gb5f)}
+#capabilities .cap-card:nth-child(6) .f-a{stroke:url(#gb6)}
+#capabilities .cap-card:nth-child(6) .f-af{fill:url(#gb6f)}
+#capabilities .cap-card:nth-child(7) .f-a{stroke:url(#gb7)}
+#capabilities .cap-card:nth-child(7) .f-af{fill:url(#gb7f)}
+#capabilities .cap-card:nth-child(8) .f-a{stroke:url(#gb8)}
+#capabilities .cap-card:nth-child(8) .f-af{fill:url(#gb8f)}
+#capabilities .cap-fig .f-a{stroke-opacity:.95;filter:drop-shadow(0 0 2px rgba(250,204,21,.35))}
+#capabilities .cap-fig .f-m{stroke:#60a5fa;stroke-opacity:.35}
+#capabilities .cap-fig .f-dot{fill:#ef4444;filter:drop-shadow(0 0 3px #f59e0b)}
+#capabilities .cap-fig .f-pt{fill:#22d3ee;fill-opacity:.35}
+/* Cards 09–12: same six-stop heatmap. Upward or output-bound vectors use flipped offsets. */
+#capabilities .cap-card:nth-child(9) .f-a{stroke:url(#gb9)}
+#capabilities .cap-card:nth-child(9) .f-af{fill:url(#gb9f)}
+#capabilities .cap-card:nth-child(10) .f-a{stroke:url(#gb10)}
+#capabilities .cap-card:nth-child(10) .f-af{fill:url(#gb10f)}
+#capabilities .cap-card:nth-child(11) .f-a{stroke:url(#gb11)}
+#capabilities .cap-card:nth-child(11) .f-af{fill:url(#gb11f)}
+#capabilities .cap-card:nth-child(12) .f-a{stroke:url(#gb12)}
+#capabilities .cap-card:nth-child(12) .f-af{fill:url(#gb12f)}
