@@ -304,7 +304,8 @@ strong { font-weight: 600; }
 .stat-card:hover::before { opacity: 1; }
 
 /* ---------- About ---------- */
-.about-grid { display: grid; gap: 2.5rem; margin-top: 3rem; }
+.about-grid { display: grid; gap: 2.5rem; margin-top: 3rem; align-items: start; }
+.about-grid > * { min-width: 0; min-height: 0; }
 @media (min-width: 900px) { .about-grid { grid-template-columns: 5fr 7fr; gap: 4rem; margin-top: 0; } }
 .about-body p { font-size: 1.0625rem; line-height: 1.75; color: var(--color-muted); }
 .about-body p + p { margin-top: 1.25rem; }
@@ -498,9 +499,30 @@ strong { font-weight: 600; }
 .tile-link svg { width: 12px; height: 12px; flex: none; }
 .tile-link:hover { color: #99f6e4; gap: .5rem; }
 
-/* About headshot */
-.about-photo { display: block; margin-top: 2rem; max-width: 340px; border: 1px solid var(--color-chrome-edge); border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px var(--color-bg-elev), 0 30px 60px -30px rgba(94, 234, 212, .13); }
-.about-photo img { display: block; width: 100%; height: auto; }
+/* About headshot. Width drives a locked 4:5 frame so a stretched grid/flex
+   item cannot squash the portrait. The bitmap is covered, never filled. */
+.about-photo {
+  display: block;
+  position: relative;
+  width: min(100%, 340px);
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  margin-top: 2rem;
+  border: 1px solid var(--color-chrome-edge);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--color-bg-elev), 0 30px 60px -30px rgba(94, 234, 212, .13);
+}
+.about-photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
 .about-body .about-lead { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.4; color: #fff; }
 .about-body .about-lead strong { font-weight: 600; }
 .stat-list strong { color: var(--color-chrome-ink); font-weight: 600; }
