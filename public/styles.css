@@ -508,6 +508,8 @@ strong { font-weight: 600; }
   object-fit: cover;
   object-position: center;
 }
+.work-thumb-fit { background: #fff; }
+.work-thumb-fit img { object-fit: contain; }
 #work .pub-group:first-of-type { margin-top: 3rem; }
 
 /* ---------- Paper and patent links on tiles ---------- */
