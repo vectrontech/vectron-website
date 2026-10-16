@@ -421,6 +421,18 @@ strong { font-weight: 600; }
 
 /* ---------- Wide figures, AI section, application areas ---------- */
 .cap-fig.wide { aspect-ratio: 2 / 1; }
+.cap-fig.photo picture,
+.cap-fig.photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cap-fig.photo img {
+  object-fit: cover;
+  object-position: center;
+}
 
 /* ---------- Products ---------- */
 .products-section {
