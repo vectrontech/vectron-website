@@ -433,6 +433,10 @@ strong { font-weight: 600; }
   object-fit: cover;
   object-position: center;
 }
+.work-grid .cap-fig.photo {
+  margin-top: 1.25rem;
+  margin-bottom: 0;
+}
 
 /* ---------- Products ---------- */
 .products-section {
