@@ -343,6 +343,7 @@ strong { font-weight: 600; }
 /* ---------- Background ---------- */
 .bg-col h3 { margin-top: 0; }
 .bg-col .dot-list { margin-top: 1.25rem; }
+.bg-col .dot-list li + li { margin-top: 1rem; }
 
 /* ---------- Contact CTA ---------- */
 .cta-wrap { position: relative; }
