@@ -515,6 +515,7 @@ strong { font-weight: 600; }
 /* ---------- Paper and patent links on tiles ---------- */
 .inline-link { color: var(--color-accent); border-bottom: 1px solid #5eead44d; transition: border-color .2s ease, color .2s ease; }
 .inline-link:hover { color: #99f6e4; border-color: var(--color-accent); }
+.tile-credit { margin-top: .85rem; font-size: .75rem; letter-spacing: .02em; color: var(--color-chrome-dim); }
 .tile-paper-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: 1rem !important; }
 .tile-link {
   display: inline-flex; align-items: center; gap: .35rem;
