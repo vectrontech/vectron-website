@@ -464,23 +464,6 @@ strong { font-weight: 600; }
 }
 .product-shot { aspect-ratio: 5 / 3; }
 .work-thumb { aspect-ratio: 16 / 10; margin-bottom: 1.25rem; }
-.cap-evidence { margin-top: 2.5rem; }
-.cap-evidence .eyebrow { margin-bottom: .85rem; }
-.cap-evidence picture { display: block; }
-.cap-evidence img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border: 1px solid var(--color-chrome-rule);
-  border-radius: 10px;
-  background: #05070c;
-}
-.cap-evidence figcaption {
-  margin-top: .7rem;
-  font-size: .8rem;
-  line-height: 1.45;
-  color: var(--color-chrome-dim);
-}
 .product-shot img,
 .work-thumb img {
   position: absolute;
@@ -492,6 +475,7 @@ strong { font-weight: 600; }
   object-fit: cover;
   object-position: center;
 }
+.work-thumb.contain img { object-fit: contain; }
 .product-card-featured .product-body h3 {
   margin-top: 0;
   font-size: clamp(1.85rem, 3vw, 2.6rem);
