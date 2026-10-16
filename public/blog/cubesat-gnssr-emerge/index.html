@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open-Source FEM vs. a CubeSat Antenna | Vectron Technologies</title>
+<meta name="description" content="We rebuilt a CubeSat GNSS-R patch array in EMerge, an open-source finite-element solver, and compared it with the original HFSS model and the measured hardware.">
+<link rel="canonical" href="https://vectrontechnologies.com/blog/cubesat-gnssr-emerge/">
+<link rel="icon" type="image/svg+xml" href="brand/favicon.svg">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Vectron Technologies">
+<meta property="og:title" content="Open-Source FEM vs. a CubeSat Antenna">
+<meta property="og:description" content="A CubeSat GNSS-R array rebuilt in EMerge and checked against HFSS and measurement.">
+<meta property="og:url" content="https://vectrontechnologies.com/blog/cubesat-gnssr-emerge/">
+<meta property="og:image" content="https://vectrontechnologies.com/blog/cubesat-gnssr-emerge/images/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#050505">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-bg: #050505;
+    --color-bg-elev: #0b0b0b;
+    --color-chrome-ink: #d9d9d9;
+    --color-chrome-dim: #7a7a7a;
+    --color-chrome-edge: #2a2a2a;
+    --color-chrome-rule: #1a1a1a;
+    --color-accent: #5eead4;
+    --color-muted: #9ca3af;
+    --font-display: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+    --radius-md: 8px;
+    --radius-lg: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--color-bg); color: var(--color-chrome-ink); font-family: var(--font-body);
+         -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { background: radial-gradient(1200px 600px at 50% -10%, #5eead412, transparent 60%),
+                     radial-gradient(900px 500px at 90% 10%, #ffffff0a, transparent 60%), var(--color-bg);
+         min-height: 100vh; line-height: 1.5; }
+  ::selection { color: #fff; background: #5eead44d; }
+  a { color: inherit; }
+  img, video { display: block; max-width: 100%; height: auto; }
+  video { width: 100%; background: #0b0b0b; }
+
+  .container { max-width: 1120px; margin-inline: auto; padding-inline: 16px; }
+  @media (min-width: 640px) { .container { padding-inline: 2rem; } }
+  .measure { max-width: 46rem; }
+
+  /* header (matches the live site) */
+  header.site { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+                background: rgba(5,5,5,.7); border-bottom: 1px solid var(--color-chrome-rule); }
+  header.site .bar { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 1rem; }
+  header.site .logo img { height: 40px; width: auto; }
+  header.site nav { display: none; gap: 2rem; }
+  header.site nav a { text-decoration: none; font-size: .9rem; color: var(--color-muted); transition: color .15s; }
+  header.site nav a:hover, header.site nav a[aria-current] { color: #fff; }
+  @media (min-width: 860px) { header.site nav { display: flex; } }
+
+  .btn { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.25rem; border-radius: var(--radius-md);
+         font-family: var(--font-display); font-weight: 500; font-size: .95rem; letter-spacing: -.01em; white-space: nowrap;
+         text-decoration: none; transition: transform .12s, background .2s, border-color .2s, box-shadow .2s; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { color: #050505; background: linear-gradient(#fff, #d4d4d4); border: 1px solid #fff;
+                 box-shadow: inset 0 1px #fff9, 0 0 40px -10px #ffffff40; }
+  .btn-ghost { color: var(--color-chrome-ink); border: 1px solid var(--color-chrome-edge); background: transparent; }
+  .btn-ghost:hover { border-color: var(--color-chrome-ink); background: #ffffff08; }
+  .btn-sm { padding: .55rem 1rem; font-size: .85rem; }
+
+  .eyebrow { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .22em;
+             color: var(--color-chrome-dim); font-size: .72rem; font-weight: 500; }
+  .chrome-text { color: transparent; text-shadow: 0 0 40px #ffffff0f;
+    background: linear-gradient(#a0a0a0, #e8e8e8 12%, #fff 22%, #b8b8b8 30%, #d0d0d0 40%, #f5f5f5 48%, #909090, #c8c8c8 62%, #e0e0e0, #fff 78%, #b0b0b0, #dcdcdc 92%, #a8a8a8);
+    -webkit-background-clip: text; background-clip: text; }
+  .bg-blueprint { position: absolute; inset: 0; pointer-events: none; opacity: .6;
+    background-image: linear-gradient(#ffffff09 1px, transparent 1px), linear-gradient(90deg, #ffffff09 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(#000 0% 40%, transparent 85%); mask-image: radial-gradient(#000 0% 40%, transparent 85%); }
+
+  /* hero */
+  .hero { position: relative; overflow: hidden; padding: 4rem 0 2.5rem; }
+  @media (min-width: 768px) { .hero { padding: 6rem 0 3.5rem; } }
+  .hero h1 { margin-top: 1.25rem; font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+             line-height: .98; letter-spacing: -.02em; font-size: clamp(2.3rem, 7vw, 4.6rem); }
+  .hero h1 .white { color: rgba(255,255,255,.95); }
+  .hero .lead { margin-top: 1.5rem; max-width: 46rem; font-size: clamp(1.05rem, 2.2vw, 1.3rem); color: var(--color-muted); line-height: 1.6; }
+  .byline { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; font-size: .85rem; color: var(--color-chrome-dim); }
+  .byline strong { color: var(--color-chrome-ink); font-weight: 500; }
+
+  /* article */
+  article { padding-bottom: 4rem; }
+  article h2 { margin-top: 3.5rem; font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+               letter-spacing: -.01em; line-height: 1.1; color: #fff; font-size: clamp(1.5rem, 3.4vw, 2.1rem); }
+  article h2 + p { margin-top: 1rem; }
+  article p { margin-top: 1.1rem; font-size: 1.075rem; line-height: 1.75; color: #c4c8cd; }
+  article p a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid #5eead466; }
+  article p a:hover { border-bottom-color: var(--color-accent); }
+  article strong { color: #fff; font-weight: 600; }
+
+  figure { margin: 2.25rem 0 0; }
+  figure .frame { background: var(--color-bg-elev); border: 1px solid var(--color-chrome-rule); border-radius: var(--radius-lg);
+                  overflow: hidden; }
+  figure.wide { margin-inline: auto; }
+  figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.55; color: var(--color-chrome-dim); max-width: 46rem; }
+  figcaption b { color: var(--color-chrome-ink); font-weight: 500; }
+
+  .key { display: flex; flex-wrap: wrap; gap: .4rem 1.25rem; margin-top: 2.25rem; font-size: .85rem; color: var(--color-muted); }
+  .key span { display: inline-flex; align-items: center; gap: .5rem; }
+  .key i { width: 22px; height: 3px; border-radius: 2px; display: inline-block; }
+
+  .callout { margin-top: 2.25rem; padding: 1.25rem 1.4rem; border: 1px solid var(--color-chrome-rule); border-left: 2px solid var(--color-accent);
+             border-radius: var(--radius-md); background: linear-gradient(180deg, #ffffff06, transparent 60%), var(--color-bg-elev); }
+  .callout p { margin-top: 0; font-size: 1rem; }
+  .callout p + p { margin-top: .7rem; }
+
+  .cta { margin-top: 4rem; padding: 2rem 1.5rem; border: 1px solid var(--color-chrome-rule); border-radius: var(--radius-lg);
+         background: linear-gradient(180deg, #ffffff06, transparent 60%), var(--color-bg-elev); position: relative; overflow: hidden; }
+  @media (min-width: 640px) { .cta { padding: 2.5rem; } }
+  .cta h3 { font-family: var(--font-display); text-transform: uppercase; font-weight: 600; font-size: clamp(1.35rem, 3vw, 1.8rem);
+            line-height: 1.1; color: #fff; margin-top: .9rem; }
+  .cta p { margin-top: .9rem; color: var(--color-muted); line-height: 1.65; max-width: 40rem; }
+  .cta .actions { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+
+  .notes { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--color-chrome-rule); font-size: .85rem; color: var(--color-chrome-dim); line-height: 1.65; }
+  .notes p { margin-top: .5rem; font-size: .85rem; color: var(--color-chrome-dim); line-height: 1.65; }
+  .notes a { color: var(--color-chrome-ink); }
+
+  footer.site { border-top: 1px solid var(--color-chrome-rule); padding: 2rem 0; font-size: .85rem; color: var(--color-chrome-dim); }
+  footer.site .row { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; }
+  footer.site img { height: 32px; width: auto; opacity: .9; }
+  footer.site a { color: var(--color-muted); text-decoration: none; }
+  footer.site a:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container bar">
+    <a href="/" class="logo" aria-label="Vectron Technologies home"><img src="brand/vectron-wordmark.svg" alt="Vectron Technologies" width="120" height="42"></a>
+    <nav aria-label="Main">
+      <a href="/#ai">Engineering</a>
+      <a href="/#capabilities">RF / EM</a>
+      <a href="/#about">Sales</a>
+      <a href="/RFtrueLink/">RFTrueLink</a>
+      <a href="/#blog">Blog</a>
+      <a href="/#contact">Contact</a>
+    </nav>
+    <a href="/#contact" class="btn btn-primary btn-sm">Book an intro</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="bg-blueprint" aria-hidden="true"></div>
+    <div class="container" style="position:relative">
+      <div class="eyebrow">RF / EM &nbsp;·&nbsp; Solver validation</div>
+      <h1><span class="chrome-text">Open-source FEM</span><br><span class="white">vs. a CubeSat antenna.</span></h1>
+      <p class="lead">We rebuilt a CubeSat GPS reflectometry antenna in EMerge, a free, Python-based finite-element solver, and put it next to the original HFSS model and the measured hardware. The three agree.</p>
+      <div class="byline"><span><strong>Domenic Belgiovane, PhD</strong></span><span>October 2026</span><span>5 min read</span></div>
+    </div>
+  </section>
+
+  <article class="container">
+    <figure class="wide" style="margin-top:0">
+      <div class="frame"><video src="images/anim_nearfield_hero.mp4" poster="images/anim_nearfield_hero_poster.webp" width="1600" height="504" autoplay muted loop playsinline preload="auto" aria-label="Animation of the electric field just above the copper, rotating around each patch"></video></div>
+      <figcaption><b>Circular polarization, simulated.</b> The electric field just above the antenna's copper, solved in EMerge and played through one RF cycle. The bright edges walk around each patch once per cycle; that rotation is the circular polarization, set up by the diagonal slot in every element.</figcaption>
+    </figure>
+
+
+    <div class="measure">
+      <p>Commercial EM solvers set the standard for antenna work, and their licenses cost accordingly. Open-source tools have been getting better fast, but the honest question with any new solver is whether it gets real hardware right, not a textbook dipole in free space. So we picked a test with nowhere to hide: an antenna that was designed in HFSS, built, and measured on a spacecraft mock-up, with every one of those results still on file.</p>
+
+      <h2>The antenna</h2>
+      <p>The test article is a three-element patch array for GNSS reflectometry at the GPS L1 band (1.575 GHz). It's left-hand circularly polarized, because a GPS signal flips its handedness when it reflects off the ocean or the ground, and it sits on the nadir face of a 3U CubeSat looking down at those reflections. Each element is a square patch with a diagonal slot that splits it into two modes for circular polarization. One coax probe feeds the middle patch, and a printed network carries power out to the other two.</p>
+      <p>Then there's the spacecraft. Two deployed solar panels hang off the sides at 45°, close enough to the array to reshape both its pattern and its input match. Any solver that skips the platform will get this antenna wrong.</p>
+    </div>
+
+    <figure class="wide">
+      <div class="frame"><img src="images/photo_mockup.webp" width="1600" height="1200" alt="The gold three-patch array mounted on the nadir face of an aluminum CubeSat mock-up with both solar panels attached" loading="lazy"></div>
+      <figcaption><b>The real thing.</b> The array bolted to the nadir face of the CubeSat mock-up, with both solar panels attached.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:520px">
+      <div class="frame"><img src="images/photo_boards.webp" width="1100" height="1466" alt="Two fabricated antenna boards: the gold ground side with the SMA connector, and the patch side with three slotted square patches" loading="lazy"></div>
+      <figcaption><b>Flight boards.</b> The ground side with its SMA connector (left) and the patch side (right).</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:760px">
+      <div class="frame"><img src="images/model.webp" width="1451" height="1300" alt="EMerge model of the three-patch array on top of a CubeSat body, with two solar panels angled at 45 degrees, inside the simulation air box" loading="lazy"></div>
+      <figcaption><b>The EMerge model.</b> The patch array on the CubeSat body, both solar panels, and the air box that bounds the simulation.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>Rebuilding it without redrawing it</h2>
+      <p>We didn't trace anything by hand. A script read the original HFSS project file and replayed its geometry operations straight into EMerge: the copper patches and feed network, the board, the mounting holes, the probe and its coax. Materials and the coax feed match the HFSS setup, and the copper carries finite conductivity, as it did in HFSS.</p>
+      <p>One simplification stayed in: the CubeSat body is a plain metal box in our model, where HFSS had the detailed CAD body with rails and standoffs. The solar panels are thin metal sheets in both.</p>
+
+      <h2>The mesh</h2>
+      <p>EMerge meshed the model with roughly 190,000 tetrahedra. The mesh is tight along the copper edges and through the board, where the fields change fastest, and opens up quickly in free space. A full sweep from 1.3 to 1.8 GHz in 5 MHz steps (101 frequencies, with boresight gain at every point) took about four hours on a laptop.</p>
+    </div>
+
+    <figure class="wide">
+      <div class="frame"><img src="images/mesh.webp" width="1800" height="825" alt="Left: surface mesh of the full model including the air box. Top right: top view of the board and copper mesh. Bottom right: volume mesh cross-section through the middle patch." loading="lazy"></div>
+      <figcaption><b>The mesh.</b> Left, the whole model; top right, the board and copper from above; bottom right, a cut through the middle patch showing how the elements shrink toward the antenna.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>Inside the simulation</h2>
+      <p>A solver that matches the curves also gives you the fields that produce them. Here's what EMerge shows at 1.575 GHz, solved on the same mesh.</p>
+    </div>
+
+    <figure class="wide" style="max-width:900px">
+      <div class="frame"><video src="images/anim_orbit.mp4" poster="images/anim_orbit_poster.webp" width="1600" height="1008" autoplay muted loop playsinline preload="metadata" aria-label="Animated orbit around the 3D radiation pattern above the CubeSat and its solar panels"></video></div>
+      <figcaption><b>3D radiation pattern.</b> Left-hand circular gain plotted as a surface over the spacecraft, colored from low (dark blue) to peak gain (white). The beam points straight down at the Earth (up in this view) and leans toward one side, where the solar panels pull it.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:900px">
+      <div class="frame"><img src="images/3d_field_cuts.webp" width="1600" height="1259" alt="Electric field magnitude on two perpendicular planes cutting through the antenna array and spacecraft" loading="lazy"></div>
+      <figcaption><b>Electric field on two cut planes.</b> One plane runs along the array, the other across the middle patch. The field is strongest at the patch edges and fans out into the beam; under the spacecraft it falls off by 30 to 40 dB.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:900px">
+      <div class="frame"><video src="images/anim_fields.mp4" poster="images/anim_fields_poster.webp" width="1600" height="1008" autoplay muted loop playsinline preload="metadata" aria-label="Animation of the electric field on two cut planes over one RF cycle, showing waves leaving the array"></video></div>
+      <figcaption><b>The same planes in motion.</b> One component of the electric field through an RF cycle, slowed from 1.575 billion cycles a second to two. Teal and amber are opposite signs; you can watch each wavefront peel off the patches and head out into the beam.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:900px">
+      <div class="frame"><video src="images/anim_cloud.mp4" poster="images/anim_cloud_poster.webp" width="1600" height="1008" autoplay muted loop playsinline preload="metadata" aria-label="Volumetric cloud of the electric field around the CubeSat, color showing field direction"></video></div>
+      <figcaption><b>The whole field at once.</b> A volume render of the electric field around the spacecraft, the same "cloud" view EMerge draws, regraded to our colors. Opacity is field strength; color is direction: teal across the track, amber along it, blue vertical. Watch the color cycle as the circularly polarized field rotates.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>The comparison</h2>
+      <p>Each plot below carries three curves. The original HFSS simulation and the measurement of a flight-representative mock-up both come from the antenna's original test report. The mock-up went into a compact range with its panels attached, so the measurement includes the whole spacecraft, just like the simulations. The third curve is EMerge. We didn't tune the EMerge model against either reference.</p>
+    </div>
+
+    <figure class="wide">
+      <div class="frame"><img src="images/photo_chamber.webp" width="1600" height="1200" alt="The CubeSat mock-up with the antenna array on a foam-covered positioner in an anechoic compact range, in front of the curved reflector" loading="lazy"></div>
+      <figcaption><b>On the range.</b> The mock-up on its positioner in the compact range, facing the reflector.</figcaption>
+    </figure>
+
+    <div class="key" aria-hidden="true">
+      <span><i style="background:#f5b450"></i>Measured</span>
+      <span><i style="background:#e8e8e8"></i>HFSS</span>
+      <span><i style="background:#5eead4"></i>EMerge</span>
+    </div>
+
+    <figure class="wide" style="margin-top:1rem">
+      <div class="frame"><img src="images/fig_s11.webp" width="1600" height="800" alt="Reflection coefficient from 1.3 to 1.8 GHz: EMerge, HFSS and measurement overlap, with dips near 1.385, 1.585 and 1.745 GHz" loading="lazy"></div>
+      <figcaption><b>Input match.</b> All three resonances land where HFSS and the measurement put them: the main L1 match near 1.585 GHz and two narrow resonances near 1.385 and 1.745 GHz.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>The input match is where we looked first. EMerge follows the HFSS curve across the whole half-gigahertz span, including the shoulder on the low side of the main dip and the two narrow resonances well outside the band. Those narrow features are easy to miss with a coarse frequency grid or a careless model, so seeing them in the right places told us the platform was modeled properly.</p>
+    </div>
+
+    <figure class="wide">
+      <div class="frame"><img src="images/fig_gain.webp" width="1600" height="800" alt="Boresight LHCP and RHCP gain versus frequency for EMerge, HFSS and measurement, closely overlapping" loading="lazy"></div>
+      <figcaption><b>Boresight gain vs. frequency.</b> Solid lines are left-hand circular (the intended polarization); dashed lines are right-hand circular (cross-polarization).</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>Gain tells the same story. The co-polarized peak at L1 sits on the HFSS curve, and the cross-polarized curve reproduces its odd shape: a bump just below the band, a deep null right at L1 where the circular polarization is cleanest, and a rise above it. That null is narrow and sensitive. It moves if the slots or the feed are even slightly off, so it's a good check on the details.</p>
+    </div>
+
+    <figure class="wide">
+      <div class="frame"><img src="images/fig_patterns.webp" width="1600" height="800" alt="Radiation patterns at 1.575 GHz in two principal planes, LHCP and RHCP, for EMerge, HFSS and measurement" loading="lazy"></div>
+      <figcaption><b>Radiation patterns at 1.575 GHz.</b> Left, the intended polarization; right, cross-polarization. Solid lines cut across the track, dashed lines run along it. The test report has no clean measured cross-polarization traces, so the right panel compares against HFSS only.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>In the patterns, the main beam matches in both planes. So does the lopsided shoulder in the cross-track cut, which the solar panels create; you can see it in the measured data too. The cross-polarization lobes line up in angle and level with HFSS.</p>
+
+      <div class="callout">
+        <p><strong>Where it still differs.</strong> Far out in the pattern, beyond about 90° from boresight, EMerge and HFSS drift apart by a few dB. That's the region the plain-box spacecraft body affects most, so we'd expect the CAD body to close most of the gap.</p>
+      </div>
+
+      <h2>Why this matters</h2>
+      <p>A solver you can trust is one thing. A solver you can trust, run from Python, and run as many times as you like without a license server changes how simulation fits into engineering work. Parameter sweeps, design optimization, and training data for machine-learning surrogates all become scripts instead of manual sessions in a GUI, and they can run overnight on hardware you already own.</p>
+      <p>That's the work we do at Vectron: putting RF simulation inside automated design workflows, with the validation to back it up. EMerge is one of the tools in that kit now that we've seen it hold up against a real CubeSat antenna.</p>
+    </div>
+
+    <div class="cta">
+      <div class="eyebrow">Work with us</div>
+      <h3>Have an antenna that needs a second opinion?</h3>
+      <p>We model, simulate, and validate antennas on real platforms, and we build automated simulation pipelines for RF teams. If you're weighing an open-source solver against your current toolchain, we can run the comparison on your design.</p>
+      <div class="actions">
+        <a href="/#contact" class="btn btn-primary">Start a conversation</a>
+        <a href="/#capabilities" class="btn btn-ghost">RF / EM services</a>
+      </div>
+    </div>
+
+    <div class="notes measure">
+      <p>EMerge is an open-source finite-element electromagnetic solver by Robert Fennis, available on <a href="https://github.com/FennisRobert/EMerge">GitHub</a>. Simulations here used EMerge 2.6.1. HFSS and measured curves are digitized from the original test report for this antenna and redrawn for this post.</p>
+    </div>
+  </article>
+</main>
+
+<footer class="site">
+  <div class="container row">
+    <a href="/" aria-label="Vectron Technologies home"><img src="brand/vectron-wordmark.svg" alt="Vectron Technologies" width="92" height="32"></a>
+    <span>© 2026 Vectron Technologies LLC · Tucson, Arizona</span>
+    <a href="/#contact">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
