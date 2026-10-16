@@ -309,6 +309,8 @@ strong { font-weight: 600; }
 @media (min-width: 900px) { .about-grid { grid-template-columns: 5fr 7fr; gap: 4rem; margin-top: 0; } }
 .about-body p { font-size: 1.0625rem; line-height: 1.75; color: var(--color-muted); }
 .about-body p + p { margin-top: 1.25rem; }
+.about-body .eyebrow { margin-top: 2.25rem; font-size: .72rem; line-height: 1.2; color: var(--color-chrome-dim); }
+.about-body .dot-list { margin-top: 1.25rem; }
 .about-body a { color: var(--color-chrome-ink); border-bottom: 1px solid var(--color-chrome-edge); }
 .about-body a:hover { color: #fff; border-color: var(--color-accent); }
 .about-role { margin-top: 1.25rem; font-family: var(--font-display); font-size: .95rem; letter-spacing: .02em; color: var(--color-chrome-ink); }
