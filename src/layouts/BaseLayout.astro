@@ -15,7 +15,7 @@ interface Props {
   serviceJsonLd?: Record<string, unknown>;
 }
 
-const { title, description, path, ogImage = "/og.png", serviceJsonLd } = Astro.props;
+const { title, description, path, ogImage = "/blog/cubesat-gnssr-emerge/images/og.jpg", serviceJsonLd } = Astro.props;
 const canonical = new URL(path, Astro.site).toString();
 const absoluteOg = new URL(ogImage, Astro.site).toString();
 
