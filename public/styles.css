@@ -284,6 +284,40 @@ strong { font-weight: 600; }
 /* ---------- Achievements strip ---------- */
 .achievements { position: relative; z-index: 2; margin-top: -1rem; padding-bottom: 1rem; }
 .achievements .grid { margin-top: 0; }
+.review-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem 2.5rem;
+  margin-top: 1.25rem;
+  padding: 2.25rem 1.5rem;
+}
+@media (min-width: 768px) { .review-banner { padding: 2.75rem 3rem; } }
+.review-banner:hover { transform: none; }
+.review-banner::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  opacity: .7;
+}
+.review-banner-copy { flex: 1 1 22rem; min-width: 0; }
+.review-banner .eyebrow { font-size: .78rem; letter-spacing: .22em; color: var(--color-chrome-dim); }
+.review-banner h2 {
+  margin-top: .55rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.85rem, 3.2vw, 2.85rem);
+  line-height: 1.02;
+  letter-spacing: -.02em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.review-banner p { margin-top: .85rem; max-width: 42rem; font-size: 1.15rem; line-height: 1.5; }
+.review-banner .btn { flex: none; padding: 1.05rem 1.75rem; font-size: 1.15rem; }
+@media (max-width: 639px) { .review-banner .btn { width: 100%; } }
 .stat-value {
   display: block;
   margin-top: .9rem;
