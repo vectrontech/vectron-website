@@ -93,13 +93,12 @@
                letter-spacing: -.01em; line-height: 1.1; color: #fff; font-size: clamp(1.5rem, 3.4vw, 2.1rem); }
   article h2 + p { margin-top: 1rem; }
   article p { margin-top: 1.1rem; font-size: 1.075rem; line-height: 1.75; color: #c4c8cd; }
-  article p a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid #5eead466; }
+  article p a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid #5eead466; overflow-wrap: anywhere; }
   article p a:hover { border-bottom-color: var(--color-accent); }
   article strong { color: #fff; font-weight: 600; }
   article ul, article ol { margin-top: 1.1rem; padding-left: 1.35rem; }
   article li { margin-top: .75rem; font-size: 1.075rem; line-height: 1.75; color: #c4c8cd; }
   article li strong { color: #fff; font-weight: 600; }
-  .confirm { color: #fff; background: #5eead440; box-shadow: inset 0 -1px 0 var(--color-accent); padding: .05em .28em; border-radius: 3px; }
 
   figure { margin: 2.25rem 0 0; }
   figure .frame { background: var(--color-bg-elev); border: 1px solid var(--color-chrome-rule); border-radius: var(--radius-lg);
@@ -174,21 +173,21 @@
       <p>Solver agreement only proves the solvers agree. The real test is hardware. In "Antenna Gain Calibration with Improved Accuracy Modeling of Pyramidal Standard Gain Horns, Part 2" (AMTA Symposium, 2024), where I was first author, we modeled a commercial off-the-shelf X-band horn covering 8.2 to 12.4 GHz and compared the simulated on-axis gain with measurements of that horn made by the UK's National Physical Laboratory (NPL) in 2023.</p>
       <p>Three results stood out:</p>
       <ul>
-        <li><strong>Agreement of about 0.06 to 0.08 dB</strong> across the band, but only once connector loss was included in the comparison. Without it, the numbers did not line up as well.</li>
-        <li><strong>A build-tolerance study</strong> put error bars on the simulation itself. Varying the horn dimensions within realistic manufacturing tolerances gave a simulation uncertainty of about ±0.079 dB.</li>
+        <li><strong>Agreement within 0.08 dB (+0.06 / −0.08 dB)</strong> across the band. The supplier could not provide the SMA connector's dimensions, so a VNA measurement of the connector was folded into the simulation. NPL's 2023 measurement of the SGH820 itself carried a ±0.09 dB (2σ) uncertainty, so the model lands inside the measurement's own error bars.</li>
+        <li><strong>A build-tolerance study</strong> put error bars on the simulation itself. The simulation uncertainty is ±0.079 dB overall (build-tolerance study ±0.078 dB combined with ±0.0075 dB solver spread).</li>
         <li><strong>Compared with the ±0.3 dB</strong> usually assigned to the NRL/Slayton curve, that is a meaningful reduction in one of the biggest terms in a gain budget.</li>
       </ul>
       <p>The point is not that simulation replaces calibration. The point is that a carefully built model, with honest loss accounting and its own uncertainty, can be a credible reference and a strong cross-check on the measurement.</p>
 
       <h2>The 2025 follow-up</h2>
-      <p>The work continued at the 2025 AMTA Symposium with "Modeling of Standard Gain Horns Using Advanced Electromagnetic Simulation Techniques" (AMTA Symposium, 2025), where I am a co-author. <mark class="confirm">[CONFIRM: one or two sentences on the 2025 paper's main finding. I could not verify the result from a public abstract, so it is not summarized here.]</mark></p>
+      <p>The work continued at the 2025 AMTA Symposium with "Modeling of Standard Gain Horns Using Advanced Electromagnetic Simulation Techniques" (AMTA Symposium, 2025), where I am a co-author. That paper modeled the same MVG SGH820 X-band (8–12 GHz) horn, with and without its waveguide adapter, using two full-wave solvers in Altair Feko: the Method of Moments (MoM) and the Multilevel Fast Multipole Method (MLFMM). The two solvers agreed within ±0.008 dB on boresight gain and directivity, and MLFMM cut computation time significantly with no loss of accuracy.</p>
       <p>Paper (IEEE Xplore): <a href="https://doi.org/10.23919/AMTA66658.2025.11317872" target="_blank" rel="noopener">https://doi.org/10.23919/AMTA66658.2025.11317872</a></p>
 
       <h2>How to make your sim match your range</h2>
       <p>Most sim versus measurement arguments I get pulled into come down to the same few items. Before you blame the solver, work through this list:</p>
       <ol>
-        <li><strong>Model the hardware you have, not the drawing.</strong> Measure the critical dimensions. At the hundredth-of-a-dB level, small flare and aperture differences show up.</li>
-        <li><strong>Account for every loss in the path.</strong> Connectors, adapters, and waveguide transitions all cost something. In our horn work, connector loss was the difference between "close" and "within 0.08 dB."</li>
+        <li><strong>Model the hardware you have, not the drawing.</strong> Measure the critical dimensions. At the hundredth-of-a-dB level, small flare and aperture differences show up. In the 2022 work, the collar around the horn aperture alone added 0.07 dB of gain (0.09 dB more directivity, 0.02 dB less radiation efficiency).</li>
+        <li><strong>Account for every loss in the path.</strong> Connectors, adapters, and waveguide transitions all cost something. The supplier could not provide the SMA connector's dimensions, so a VNA measurement of the connector was folded into the simulation.</li>
         <li><strong>Compare the same quantity.</strong> Make sure you are comparing gain to gain, at the same reference plane, with the same definition (realized gain versus gain, for example).</li>
         <li><strong>Converge on what you report.</strong> Check mesh convergence on gain itself, not just on S-parameters.</li>
         <li><strong>Put error bars on the simulation.</strong> Run a tolerance study. If the model has no uncertainty, you cannot say whether it "agrees" with anything.</li>
