@@ -13,9 +13,11 @@
 <meta property="og:title" content="0.08 dB: What It Takes to Make Simulation Match a Calibrated Horn">
 <meta property="og:description" content="How a full-wave horn model matched calibrated gain measurements within about 0.08 dB, plus a checklist for making your sim match your range.">
 <meta property="og:url" content="https://vectrontechnologies.com/blog/008-db-calibrated-horn/">
-<meta property="og:image" content="https://vectrontechnologies.com/images/work/horn-npl.jpg">
+<meta property="og:image" content="https://vectrontechnologies.com/blog/008-db-calibrated-horn/images/cem-results.jpg">
+<meta property="og:image:width" content="1980">
+<meta property="og:image:height" content="1144">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://vectrontechnologies.com/images/work/horn-npl.jpg">
+<meta name="twitter:image" content="https://vectrontechnologies.com/blog/008-db-calibrated-horn/images/cem-results.jpg">
 <meta name="theme-color" content="#050505">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -156,8 +158,8 @@
 
   <article class="container">
     <figure class="wide" style="margin-top:0">
-      <div class="frame"><picture><source srcset="/images/work/horn-npl.webp" type="image/webp"><img src="/images/work/horn-npl.jpg" width="1395" height="822" alt="Standard gain horn gain from 8.2 to 12.4 GHz: NPL measurement and high-fidelity simulation of an SGH820 horn"></picture></div>
-      <figcaption><b>SGH820.</b> High-fidelity simulation of an X-band standard gain horn compared with NPL 2023 measurements, 8.2–12.4 GHz, agreeing within about 0.08 dB.</figcaption>
+      <div class="frame"><picture><source srcset="images/cem-results.webp" type="image/webp"><img src="images/cem-results.jpg" width="1980" height="1144" alt="Boresight directivity of the SGH820 from 8.2 to 12.4 GHz for FEKO, HFSS, CST, and the NRL curve"></picture></div>
+      <figcaption><b>CEM results from the intercomparison study of the SGH820.</b> On-axis directivity from FEKO, HFSS, and CST Studio Suite, with the NRL gain curve, 8.2–12.4 GHz. Figure from Giacomini, Saccardi, Foged, Belgiovane, Dobbins, AMTA 2022.</figcaption>
     </figure>
 
     <div class="measure">
@@ -167,6 +169,25 @@
       <h2>Part 1: Do the solvers even agree?</h2>
       <p>Before you can use simulation as a reference, you have to know the solvers are not the weak link. In "Antenna Gain Calibration with Improved Accuracy Modeling of Pyramidal Standard Gain Horns" (AMTA Symposium, 2022), we modeled pyramidal standard gain horns in three commercial full-wave tools: HFSS, CST, and FEKO. The computed gains agreed with each other within ±0.0075 dB.</p>
       <p>That number matters. It says that, for a well-defined geometry, three different numerical methods land on the same answer to better than a hundredth of a dB. If simulation and measurement later disagree by a tenth of a dB, the solver is not the first place to look.</p>
+      <p>The antenna in that study was one commercial off-the-shelf X-band horn, the Microwave Vision Group SGH820, with interior surfaces compliant to the NRL pyramidal dimensions. Every solver used the same interior geometry: a = 194.4 mm, b = 144.0 mm, l<sub>e</sub> = 320.0 mm, and l<sub>h</sub> = 342.5 mm, with a 2 mm wall thickness at the aperture edges. The horn was modeled entirely as aluminum, and every tool used the same properties, taken from the HFSS materials library at 9.4 GHz: ε<sub>r</sub> = 1, σ<sub>e</sub> = 3.8 × 10<sup>7</sup> S/m, μ<sub>r</sub> = 1.000021, and tan δ<sub>μ</sub> = 0.</p>
+    </div>
+
+    <figure class="wide" style="max-width:640px">
+      <div class="frame"><picture><source srcset="images/sgh-drawing.webp" type="image/webp"><img src="images/sgh-drawing.jpg" width="1207" height="1333" alt="Interior dimensions of the SGH820, including aperture a and b and flare lengths le and lh"></picture></div>
+      <figcaption><b>Interior dimensions of the SGH820.</b> Figure from Giacomini, Saccardi, Foged, Belgiovane, Dobbins, AMTA 2022.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>The three tool suites were not one method run three times. FEKO used a direct Method of Moments solution. HFSS used the finite element method. CST Studio Suite was run four ways: finite integration technique, transmission line method, Method of Moments, and finite elements. Each curve covers 8.2–12.4 GHz at a 25 MHz step, 169 frequencies, to capture the ripple of the curves. The setup followed IEEE Std 1597.1 and IEEE Std 1597.2 for validating computational electromagnetics: mesh convergence as a self-reference, and the intercomparison of independent codes as an external reference. Feature selective validation rated the simulations "Excellent" on the Validation Rating Scale. The paper's conclusion puts the solutions within ±0.0075 dB from an average curve.</p>
+    </div>
+
+    <figure class="wide">
+      <div class="frame"><picture><source srcset="images/cem-diff.webp" type="image/webp"><img src="images/cem-diff.jpg" width="1680" height="992" alt="Difference of each SGH820 directivity curve from the mean of the CEM simulations"></picture></div>
+      <figcaption><b>CEM directivity results subtracted from the mean of all simulation curves for the SGH820.</b> Figure from Giacomini, Saccardi, Foged, Belgiovane, Dobbins, AMTA 2022.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>There is a notable difference between the NRL gain curve and the CEM directivity results, especially at the higher frequencies, where the NRL gain curve overestimates the directivity. Conductor loss in the aluminum model is a much smaller term: the difference between directivity and IEEE gain falls between 0.006 and 0.012 dB. The abstract states the practical consequence directly. Based on the compiled results of multiple simulations and measurements, this simulation methodology could be applied to other models of commercial off-the-shelf standard gain horns to provide more accurate on-axis gain predictions.</p>
       <p>Paper (IEEE Xplore): <a href="https://doi.org/10.23919/AMTA55213.2022.9954972" target="_blank" rel="noopener">https://doi.org/10.23919/AMTA55213.2022.9954972</a></p>
 
       <h2>Part 2: Holding the model up against a calibrated measurement</h2>
@@ -177,6 +198,14 @@
         <li><strong>A build-tolerance study</strong> put error bars on the simulation itself. The simulation uncertainty is ±0.079 dB overall (build-tolerance study ±0.078 dB combined with ±0.0075 dB solver spread).</li>
         <li><strong>Compared with the ±0.3 dB</strong> usually assigned to the NRL/Slayton curve, that is a meaningful reduction in one of the biggest terms in a gain budget.</li>
       </ul>
+    </div>
+
+    <figure class="wide">
+      <div class="frame"><picture><source srcset="images/npl-vs-sim.webp" type="image/webp"><img src="images/npl-vs-sim.jpg" width="2280" height="1420" alt="IEEE gain of the MVG SGH820: NPL 2023 measurement compared with the high-fidelity simulation, and the difference between them"></picture></div>
+      <figcaption><b>Comparison of measurement and simulation with the CST FIT algorithm for high fidelity model of the MVG SGH820.</b> Figure from Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
       <p>The point is not that simulation replaces calibration. The point is that a carefully built model, with honest loss accounting and its own uncertainty, can be a credible reference and a strong cross-check on the measurement.</p>
 
       <h2>The 2025 follow-up</h2>
