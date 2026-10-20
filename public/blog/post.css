@@ -42,6 +42,18 @@
   font-size: clamp(1.5rem, 3.4vw, 2.1rem);
 }
 .post h2 + p { margin-top: 1rem; }
+.post .measure h3 {
+  margin-top: 2.4rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+  line-height: 1.15;
+  color: #fff;
+  font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+}
+.post .measure h3 + p,
+.post .measure h3 + ol { margin-top: 1rem; }
 .post p { margin-top: 1.1rem; font-size: 1.075rem; line-height: 1.75; color: #c4c8cd; }
 .post p a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid #5eead466; overflow-wrap: anywhere; }
 .post p a:hover { border-bottom-color: var(--color-accent); }
@@ -49,6 +61,7 @@
 .post ul, .post ol { margin-top: 1.1rem; padding-left: 1.35rem; }
 .post ul { list-style: disc; }
 .post ol { list-style: decimal; }
+.post ol ::marker { color: var(--color-chrome-dim); font-variant-numeric: tabular-nums; }
 .post li { margin-top: .75rem; font-size: 1.075rem; line-height: 1.75; color: #c4c8cd; }
 .post li strong { color: #fff; font-weight: 600; }
 
