@@ -54,12 +54,47 @@
 
   header.site { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
                 background: rgba(5,5,5,.7); border-bottom: 1px solid var(--color-chrome-rule); }
-  header.site .bar { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 1rem; }
+  header.site .bar { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: .75rem; }
+  header.site .logo { flex: none; }
   header.site .logo img { height: 40px; width: auto; }
-  header.site nav { display: none; gap: 2rem; }
-  header.site nav a { text-decoration: none; font-size: .9rem; color: var(--color-muted); transition: color .15s; }
+  .nav-disclosure { position: relative; flex: none; }
+  .nav-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; padding: 0; margin: 0;
+    border: 1px solid var(--color-chrome-edge); border-radius: 8px;
+    background: transparent; color: var(--color-chrome-ink); cursor: pointer; list-style: none;
+  }
+  .nav-toggle::-webkit-details-marker { display: none; }
+  .nav-toggle-icon, .nav-toggle-icon::before, .nav-toggle-icon::after {
+    display: block; width: 16px; height: 1.5px; background: currentColor; border-radius: 1px; position: relative;
+  }
+  .nav-toggle-icon::before, .nav-toggle-icon::after { content: ""; position: absolute; left: 0; }
+  .nav-toggle-icon::before { top: -5px; }
+  .nav-toggle-icon::after { top: 5px; }
+  .nav-disclosure[open] .nav-toggle { border-color: var(--color-accent); color: var(--color-accent); }
+  header.site nav {
+    display: none; position: absolute; left: 0; right: 0; top: 64px; z-index: 60;
+    flex-direction: column; gap: 0; margin: 0; padding: .35rem 0 .75rem;
+    background: #050505f5; border-bottom: 1px solid var(--color-chrome-rule);
+    font-size: 1rem;
+  }
+  .nav-disclosure[open] + nav { display: flex; }
+  header.site nav a { text-decoration: none; color: var(--color-muted); transition: color .15s; padding: .8rem 1.5rem; }
   header.site nav a:hover, header.site nav a[aria-current] { color: #fff; }
-  @media (min-width: 860px) { header.site nav { display: flex; } }
+  header.site nav a[href="/#products"] { color: var(--color-accent); }
+  header.site nav a[href="/#products"]:hover { color: #99f6e4; }
+  .header-actions { display: flex; align-items: center; gap: .5rem; margin-left: auto; }
+  .header-actions .btn-ghost { display: none; }
+  .btn svg { width: 14px; height: 14px; flex: none; }
+  @media (min-width: 768px) { .header-actions .btn-ghost { display: inline-flex; } }
+  @media (min-width: 1180px) {
+    .nav-disclosure { display: none; }
+    header.site nav {
+      display: flex; position: static; flex-direction: row; align-items: center;
+      gap: 1.05rem; padding: 0; background: transparent; border: 0; font-size: .84rem;
+    }
+    header.site nav a { padding: 0; }
+  }
 
   .btn { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.25rem; border-radius: var(--radius-md);
          font-family: var(--font-display); font-weight: 500; font-size: .95rem; letter-spacing: -.01em; white-space: nowrap;
@@ -123,6 +158,7 @@
 
   footer.site { border-top: 1px solid var(--color-chrome-rule); padding: 2rem 0; font-size: .85rem; color: var(--color-chrome-dim); }
   footer.site .row { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; }
+  footer.site .place { font-family: var(--font-display); letter-spacing: .2em; text-transform: uppercase; }
   footer.site img { height: 32px; width: auto; opacity: .9; }
   footer.site a { color: var(--color-muted); text-decoration: none; }
   footer.site a:hover { color: #fff; }
@@ -133,15 +169,21 @@
 <header class="site">
   <div class="container bar">
     <a href="/" class="logo" aria-label="Vectron Technologies home"><img src="/brand/vectron-wordmark.svg" alt="Vectron Technologies" width="120" height="42"></a>
-    <nav aria-label="Main">
-      <a href="/#ai">Engineering</a>
-      <a href="/#capabilities">RF / EM</a>
-      <a href="/#about">Sales</a>
-      <a href="/RFtrueLink/">RFTrueLink</a>
-      <a href="/#blog">Blog</a>
-      <a href="/#contact">Contact</a>
+    <details class="nav-disclosure">
+      <summary class="nav-toggle" aria-label="Menu"><span class="nav-toggle-icon" aria-hidden="true"></span></summary>
+    </details>
+    <nav aria-label="Primary">
+      <a href="/#about">About</a>
+      <a href="/#products">Products</a>
+      <a href="/#capabilities">Capabilities</a>
+      <a href="/#work">Past work</a>
+      <a href="/#ai">AI integration</a>
+      <a href="/#publications">Publications</a>
     </nav>
-    <a href="/#contact" class="btn btn-primary btn-sm">Book an intro</a>
+    <div class="header-actions">
+      <a href="/#contact" class="btn btn-ghost btn-sm">Contact</a>
+      <a class="btn btn-primary btn-sm" href="mailto:domenic@vectrontechnologies.com?subject=Vectron%20Technologies%20inquiry">Email Domenic <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+    </div>
   </div>
 </header>
 
@@ -246,10 +288,20 @@
 <footer class="site">
   <div class="container row">
     <a href="/" aria-label="Vectron Technologies home"><img src="/brand/vectron-wordmark.svg" alt="Vectron Technologies" width="92" height="32"></a>
-    <span>© 2026 Vectron Technologies LLC · Tucson, Arizona</span>
+    <span>© 2026 Vectron Technologies LLC</span>
+    <span class="place">Scottsdale, Arizona</span>
     <a href="/#contact">Contact</a>
   </div>
 </footer>
+<script>
+  (function () {
+    var menu = document.querySelector(".nav-disclosure");
+    if (!menu) return;
+    document.querySelectorAll("header.site nav a").forEach(function (link) {
+      link.addEventListener("click", function () { menu.open = false; });
+    });
+  })();
+</script>
 
 </body>
 </html>
