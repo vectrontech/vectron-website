@@ -1,0 +1,56 @@
+---
+import BlogLayout from "~/layouts/BlogLayout.astro";
+
+const posts = [
+  {
+    href: "/blog/008-db-calibrated-horn/",
+    title: "0.08 dB: What It Takes to Make Simulation Match a Calibrated Horn",
+    description:
+      "How a full-wave horn model matched calibrated gain measurements within about 0.08 dB, plus a checklist for making your sim match your range.",
+    image: "/blog/008-db-calibrated-horn/images/cem-results",
+    alt: "Boresight directivity of the SGH820 from 8.2 to 12.4 GHz for FEKO, HFSS, CST, and the NRL curve",
+    width: 1980,
+    height: 1144,
+  },
+  {
+    href: "/blog/cubesat-gnssr-emerge/",
+    title: "Open-Source FEM vs. a CubeSat Antenna",
+    description:
+      "We rebuilt a CubeSat GNSS-R patch array in EMerge, an open-source finite-element solver, and compared it with the original HFSS model and the measured hardware.",
+    image: "/blog/cubesat-gnssr-emerge/images/hero_cubesat_orbit",
+    alt: "3U CubeSat with patch antennas in low Earth orbit (render)",
+    width: 1792,
+    height: 1008,
+  },
+];
+---
+
+<BlogLayout
+  title="Blog | Vectron Technologies"
+  description="Writing from Vectron Technologies on antenna measurement, simulation, and electromagnetics."
+  path="/blog/"
+>
+  <section class="section blog-index">
+    <div class="container-narrow">
+      <div class="section-head">
+        <p class="eyebrow">Blog</p>
+        <h1 class="display-h2">Latest writing</h1>
+      </div>
+      <div class="grid grid-2">
+        {posts.map((post) => (
+          <article class="card">
+            <a href={post.href}>
+              <picture class="work-thumb contain">
+                <source srcset={`${post.image}.webp`} type="image/webp" />
+                <img src={`${post.image}.jpg`} alt={post.alt} width={post.width} height={post.height} />
+              </picture>
+            </a>
+            <h2>{post.title}</h2>
+            <p>{post.description}</p>
+            <p class="tile-paper-links"><a class="tile-link" href={post.href}>Read the post <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a></p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</BlogLayout>

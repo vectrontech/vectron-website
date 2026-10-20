@@ -1,0 +1,102 @@
+/* Shared article styles. The site stylesheet resets lists and heading margins. */
+
+.post-hero { position: relative; overflow: hidden; padding: 4rem 0 1.5rem; }
+@media (min-width: 768px) { .post-hero { padding: 5.5rem 0 2rem; } }
+.post-hero h1 {
+  margin-top: 1.25rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: .98;
+  letter-spacing: -.02em;
+  font-size: clamp(2.3rem, 6vw, 4.6rem);
+}
+.post-hero h1 .white { color: rgba(255,255,255,.95); }
+.post-lead {
+  margin-top: 1.5rem;
+  max-width: 46rem;
+  font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+.post-byline {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.5rem;
+  font-size: .85rem;
+  color: var(--color-chrome-dim);
+}
+.post-byline strong { color: var(--color-chrome-ink); font-weight: 500; }
+
+.post { padding-bottom: 4rem; }
+.post .measure { max-width: 46rem; }
+.post h2 {
+  margin-top: 3.5rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+  line-height: 1.1;
+  color: #fff;
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+}
+.post h2 + p { margin-top: 1rem; }
+.post p { margin-top: 1.1rem; font-size: 1.075rem; line-height: 1.75; color: #c4c8cd; }
+.post p a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid #5eead466; overflow-wrap: anywhere; }
+.post p a:hover { border-bottom-color: var(--color-accent); }
+.post strong { color: #fff; font-weight: 600; }
+.post ul, .post ol { margin-top: 1.1rem; padding-left: 1.35rem; }
+.post ul { list-style: disc; }
+.post ol { list-style: decimal; }
+.post li { margin-top: .75rem; font-size: 1.075rem; line-height: 1.75; color: #c4c8cd; }
+.post li strong { color: #fff; font-weight: 600; }
+
+.post figure { margin: 2.25rem 0 0; }
+.post figure.wide { margin-inline: auto; }
+.post figure .frame {
+  background: #fff;
+  border: 1px solid var(--color-chrome-rule);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.post figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.55; color: var(--color-chrome-dim); max-width: 46rem; }
+.post figcaption b { color: var(--color-chrome-ink); font-weight: 500; }
+
+.post .cta {
+  margin-top: 4rem;
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--color-chrome-rule);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff06, transparent 60%), var(--color-bg-elev);
+}
+@media (min-width: 640px) { .post .cta { padding: 2.5rem; } }
+.post .cta h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  line-height: 1.1;
+  color: #fff;
+  margin-top: .9rem;
+}
+.post .cta p { margin-top: .9rem; color: var(--color-muted); line-height: 1.65; max-width: 40rem; }
+.post .cta .actions { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+
+.post .notes { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--color-chrome-rule); }
+.post .notes p { margin-top: .5rem; font-size: .85rem; color: var(--color-chrome-dim); line-height: 1.65; }
+
+.site-nav a[href="/#products"] { color: var(--color-accent); }
+.site-nav a[href="/#products"]:hover { color: #99f6e4; }
+
+.blog-index .grid { align-items: start; }
+.blog-index .card > a { display: block; }
+.blog-index .card h2 {
+  margin-top: .75rem;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.35rem;
+  line-height: 1.3;
+  letter-spacing: -.02em;
+  color: #fff;
+}

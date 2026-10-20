@@ -1,0 +1,40 @@
+---
+/** Homepage header. Hash links are rooted so they work from /blog/. */
+const home = "/";
+---
+
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container-narrow header-inner">
+    <a class="brand" href={home} aria-label="Vectron Technologies home">
+      <img src="/brand/vectron-wordmark.svg" alt="Vectron Technologies" width="126" height="44">
+    </a>
+    <details class="nav-disclosure">
+      <summary class="nav-toggle" aria-label="Menu">
+        <span class="nav-toggle-icon" aria-hidden="true"></span>
+      </summary>
+    </details>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="/#about">About</a>
+      <a href="/#products">Products</a>
+      <a href="/#capabilities">Capabilities</a>
+      <a href="/#work">Past work</a>
+      <a href="/#ai">AI integration</a>
+      <a href="/#publications">Publications</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-ghost btn-sm" href="/#contact">Contact</a>
+      <a class="btn btn-primary btn-sm" href="mailto:domenic@vectrontechnologies.com?subject=Vectron%20Technologies%20inquiry">Email Domenic <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+    </div>
+  </div>
+</header>
+<script>
+  const menu = document.querySelector(".nav-disclosure");
+  if (menu instanceof HTMLDetailsElement) {
+    document.querySelectorAll(".site-nav a").forEach((link) => {
+      link.addEventListener("click", () => {
+        menu.open = false;
+      });
+    });
+  }
+</script>
