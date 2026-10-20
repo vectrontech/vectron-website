@@ -236,7 +236,7 @@
       <p>Solver agreement only proves the solvers agree. The real test is hardware. In "Antenna Gain Calibration with Improved Accuracy Modeling of Pyramidal Standard Gain Horns, Part 2" (AMTA Symposium, 2024), where I was first author, we modeled a commercial off-the-shelf X-band horn covering 8.2 to 12.4 GHz and compared the simulated on-axis gain with measurements of that horn made by the UK's National Physical Laboratory (NPL) in 2023.</p>
       <p>Three results stood out:</p>
       <ul>
-        <li><strong>Agreement within 0.08 dB (+0.06 / −0.08 dB)</strong> across the band. The supplier could not provide the SMA connector's dimensions, so a VNA measurement of the connector was folded into the simulation. NPL's 2023 measurement of the SGH820 itself carried a ±0.09 dB (2σ) uncertainty, so the model lands inside the measurement's own error bars.</li>
+        <li><strong>Agreement within 0.08 dB (+0.06 / −0.08 dB)</strong> across the band. The supplier could not provide the SMA connector's dimensions, so connector loss was accounted for from a VNA measurement of the connector. NPL's 2023 measurement of the SGH820 itself carried a ±0.09 dB (2σ) uncertainty, so the model lands inside the measurement's own error bars.</li>
         <li><strong>A build-tolerance study</strong> put error bars on the simulation itself. The simulation uncertainty is ±0.079 dB overall (build-tolerance study ±0.078 dB combined with ±0.0075 dB solver spread).</li>
         <li><strong>Compared with the ±0.3 dB</strong> usually assigned to the NRL/Slayton curve, that is a meaningful reduction in one of the biggest terms in a gain budget.</li>
       </ul>
@@ -257,8 +257,8 @@
       <h2>How to make your sim match your range</h2>
       <p>Most sim versus measurement arguments I get pulled into come down to the same few items. Before you blame the solver, work through this list:</p>
       <ol>
-        <li><strong>Model the hardware you have, not the drawing.</strong> Measure the critical dimensions. At the hundredth-of-a-dB level, small flare and aperture differences show up. In the 2022 work, the collar around the horn aperture alone added 0.07 dB of gain (0.09 dB more directivity, 0.02 dB less radiation efficiency).</li>
-        <li><strong>Account for every loss in the path.</strong> Connectors, adapters, and waveguide transitions all cost something. The supplier could not provide the SMA connector's dimensions, so a VNA measurement of the connector was folded into the simulation.</li>
+        <li><strong>The models used nominal dimensions, not measured ones.</strong> At the hundredth-of-a-dB level, small flare and aperture differences show up. Breinbjerg et al. (AMTA 2017) showed that an absorber collar increased gain by 0.07 dB (0.09 dB higher directivity and 0.02 dB lower radiation efficiency).</li>
+        <li><strong>Account for every loss in the path.</strong> Connectors, adapters, and waveguide transitions all cost something. The supplier could not provide the SMA connector's dimensions, so connector loss was accounted for from a VNA measurement of the connector.</li>
         <li><strong>Compare the same quantity.</strong> Make sure you are comparing gain to gain, at the same reference plane, with the same definition (realized gain versus gain, for example).</li>
         <li><strong>Converge on what you report.</strong> Check mesh convergence on gain itself, not just on S-parameters.</li>
         <li><strong>Put error bars on the simulation.</strong> Run a tolerance study. If the model has no uncertainty, you cannot say whether it "agrees" with anything.</li>
