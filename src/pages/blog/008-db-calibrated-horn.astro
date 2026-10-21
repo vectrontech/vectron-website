@@ -1,15 +1,15 @@
 ---
 import BlogLayout from "~/layouts/BlogLayout.astro";
-const description = "How a full-wave horn model matched calibrated gain measurements within about 0.08 dB, plus a checklist for making your sim match your range.";
+const description = "How we modeled an X-band standard gain horn in HFSS, CST Studio Suite and FEKO, why the HFSS adaptive mesher got it wrong at first, and how six solver runs ended up within ±0.0075 dB of each other.";
 ---
 
 <BlogLayout
-  title="0.08 dB: What It Takes to Make Simulation Match a Calibrated Horn | Vectron Technologies"
+  title="How do you know your simulation is correct? Six solvers, one horn, and ±0.0075 dB | Vectron Technologies"
   description={description}
   path="/blog/008-db-calibrated-horn/"
-  ogImage="/blog/008-db-calibrated-horn/images/cem-results.jpg"
-  ogWidth={1980}
-  ogHeight={1144}
+  ogImage="/blog/008-db-calibrated-horn/images/fig4-cem-directivity-vs-nrl.jpg"
+  ogWidth={744}
+  ogHeight={477}
   ogType="article"
   noindex
 >
@@ -17,138 +17,103 @@ const description = "How a full-wave horn model matched calibrated gain measurem
     <div class="bg-blueprint" aria-hidden="true"></div>
     <div class="container-narrow" style="position:relative">
       <div class="eyebrow">RF / EM &nbsp;·&nbsp; Antenna measurement</div>
-      <h1><span class="chrome-text">0.08 dB</span><br><span class="white">What it takes to make simulation match a calibrated horn.</span></h1>
-      <p class="post-lead">How a full-wave horn model matched calibrated gain measurements within about 0.08 dB, plus a checklist for making your sim match your range.</p>
-      <div class="post-byline"><span><strong>Dom Belgiovane, PhD</strong></span><span>October 2026</span><span>5 min read</span></div>
+      <h1><span class="chrome-text">How do you know your simulation is correct?</span><br><span class="white">Six solvers, one horn, and ±0.0075 dB</span></h1>
+      <div class="post-byline"><span><strong>Dom Belgiovane, PhD</strong></span><span>October 2026</span></div>
     </div>
   </section>
 
   <article class="post container-narrow">
-    <figure class="wide" style="margin-top:0">
-      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/cem-results.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/cem-results.jpg" width="1980" height="1144" alt="Boresight directivity of the SGH820 from 8.2 to 12.4 GHz for FEKO, HFSS, CST, and the NRL curve"></picture></div>
-      <figcaption><b>CEM results from the intercomparison study of the SGH820.</b> On-axis directivity from FEKO, HFSS, and CST Studio Suite, with the NRL gain curve, 8.2–12.4 GHz. Figure from Giacomini, Saccardi, Foged, Belgiovane, Dobbins, AMTA 2022.</figcaption>
-    </figure>
-
     <div class="measure">
-      <p>Almost every antenna gain number you have ever trusted traces back to a reference antenna. On most ranges that reference is a pyramidal standard gain horn, and its gain usually comes from a published curve. The common NRL curve (the Schelkunoff and Slayton approach) carries an uncertainty of about ±0.3 dB. On many ranges, that single term is one of the largest entries in the gain uncertainty budget.</p>
-      <p>Over the last few years I have worked with colleagues on a simple question: can full-wave simulation give us a better gain value for a real, off-the-shelf horn than the classic curve does? Here is what we found, and what it means for anyone comparing simulation against measured data.</p>
+      <p>How do you know your simulation is correct?</p>
+      <p>It is an uncomfortable question, because the usual answer is "it converged." But converged on what? A solver can converge cleanly on the wrong answer and give you no warning at all. I learned that firsthand on a project where we needed simulation to be not just good, but extremely accurate: hundredths of a dB on the gain of a standard gain horn.</p>
+      <p>This post walks through that work, published at the 2022 AMTA Symposium as "Antenna Gain Calibration with Improved Accuracy Modeling of Pyramidal Standard Gain Horns," with Andrea Giacomini, Francesco Saccardi and Lars J. Foged of Microwave Vision Italy, and Justin Dobbins and me, then at Raytheon Technologies.</p>
 
-      <h2>Part 1: Do the solvers even agree?</h2>
-      <p>Before you can use simulation as a reference, you have to know the solvers are not the weak link. In "Antenna Gain Calibration with Improved Accuracy Modeling of Pyramidal Standard Gain Horns" (AMTA Symposium, 2022), we modeled pyramidal standard gain horns in three commercial full-wave tools: HFSS, CST, and FEKO. The computed gains agreed with each other within ±0.0075 dB.</p>
-      <p>That number matters. It says that, for a well-defined geometry, three different numerical methods land on the same answer to better than a hundredth of a dB. If simulation and measurement later disagree by a tenth of a dB, the solver is not the first place to look.</p>
-      <p>The antenna in that study was one commercial off-the-shelf X-band horn, the Microwave Vision Group SGH820, with interior surfaces compliant to the NRL pyramidal dimensions. Every solver used the same interior geometry: a = 194.4 mm, b = 144.0 mm, l<sub>e</sub> = 320.0 mm, and l<sub>h</sub> = 342.5 mm, with a 2 mm wall thickness at the aperture edges. The horn was modeled entirely as aluminum, and every tool used the same properties, taken from the HFSS materials library at 9.4 GHz: ε<sub>r</sub> = 1, σ<sub>e</sub> = 3.8 × 10<sup>7</sup> S/m, μ<sub>r</sub> = 1.000021, and tan δ<sub>μ</sub> = 0.</p>
+      <h2>Why a horn needs better accuracy</h2>
+      <p>Most antenna gain measurements use the gain transfer method: you measure your antenna against a reference whose gain you already know. That reference is very often a pyramidal standard gain horn (SGH), and its gain usually comes from the NRL curves based on the Schelkunoff and Slayton formulation. Because of approximations in that formulation, Slayton assessed an uncertainty of ±0.3 dB for typical SGHs operating above 2.6 GHz, back in 1954. That number is still in use, and it is often one of the largest terms in a range's gain uncertainty budget.</p>
+      <p>Many studies have tried to improve on Slayton's expressions, but none has seen wide adoption. Our question was whether commercially available full-wave tools could predict the on-axis gain of a real, off-the-shelf horn well enough to shrink that term. The first step is proving the tools agree with each other.</p>
+
+      <h2>One horn, one geometry</h2>
+      <p>We modeled a commercial off-the-shelf X-band horn, the SGH820, with interior surfaces compliant to the NRL dimensions. Every tool used the same nominal interior geometry: a = 194.4 mm, b = 144.0 mm, le = 320.0 mm and lh = 342.5 mm, with a 2 mm wall thickness at the aperture edges. The horn was fed from a WR-90 transition section (22.86 mm by 10.16 mm, 33.8 mm long), with a waveport at its end.</p>
     </div>
 
-    <figure class="wide" style="max-width:640px">
-      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/sgh-drawing.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/sgh-drawing.jpg" width="1207" height="1333" alt="Interior dimensions of the SGH820, including aperture a and b and flare lengths le and lh"></picture></div>
-      <figcaption><b>Interior dimensions of the SGH820.</b> Figure from Giacomini, Saccardi, Foged, Belgiovane, Dobbins, AMTA 2022.</figcaption>
+    <figure class="wide" style="max-width:560px">
+      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/fig3-sgh820-interior-dimensions.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/fig3-sgh820-interior-dimensions.jpg" width="560" height="365" alt="Interior dimensions of the SGH820 (Fig. 3 of the 2022 paper)"></picture></div>
+      <figcaption>Interior dimensions of the SGH820 (Fig. 3 of the 2022 paper)</figcaption>
     </figure>
 
     <div class="measure">
-      <h3>Following IEEE Std 1597.1: self-referencing first</h3>
-      <p>The 2022 study was built around the CEM validation flow in IEEE Standard 1597.1. That standard asks what level you are validating: the computational technique, the specific code implementation, or the individual model. Because we used commercial tools, only the individual model's correctness was assessed. The codes and their algorithms were taken as accurate, and the job was to prove our model was right.</p>
-      <p>The next branch is engineering judgement: do you check the model against itself or against an outside reference? The judgement started from physics. The boresight gain of a standard gain horn has a well-known ripple, so a correct model has to reproduce it. We self-referenced first, using iterative mesh refinement to confirm each model converged, with care taken to capture the aperture-edge diffraction that causes that ripple. Running the same geometry in several commercial codes and solver types also counts toward external referencing, because it compares independent implementations and alternate modeling techniques.</p>
-      <p>The flow ends with the feature selective validation (FSV) method and its rating scale, a standardized way to put a number on how well two results agree. The paper's conclusion was that measurement is the remaining external reference, and Part 2 is where that happened.</p>
+      <p>To remove geometry error, the model was split and mirrored across the principal planes so it was exactly symmetric, and symmetry planes were used wherever a tool allowed, since a symmetric mesh can suppress very small meshing errors. The horn was modeled as aluminum, with the same properties in every tool (σe = 3.8 × 10^7 S/m, μr = 1.000021, from the HFSS materials library).</p>
+
+      <h2>Six solver runs, four numerical methods</h2>
+      <p>This was not one method run three times. We used:</p>
+      <ul>
+        <li><strong>FEKO:</strong> direct Method of Moments. We chose direct MoM over MLFMM because MLFMM can cost accuracy if the residual is not set low enough.</li>
+        <li><strong>HFSS:</strong> the finite element method, with a PML-bounded air box.</li>
+        <li><strong>CST Studio Suite:</strong> four ways, finite integration technique (FIT), transmission line method (TLM), MoM, and FEM.</li>
+      </ul>
+      <p>Every run covered 8.2 to 12.4 GHz in 25 MHz steps, 169 frequencies, fine enough to capture the ripple in the boresight directivity. That ripple comes from edge diffraction at the aperture, and it is exactly what the classic Schelkunoff solution leaves out.</p>
+      <p>The methodology followed IEEE Std 1597.1 and 1597.2 for validating computational electromagnetics: iterative mesh refinement as self-referencing, and multiple independent codes as external referencing.</p>
+
+      <h2>The mesher that converged on the wrong answer</h2>
+      <p>Here is the lesson I would put at the top of any simulation checklist.</p>
+      <p>HFSS has an excellent adaptive mesher. It refines the mesh until the S-parameters stop changing. But a horn is a well-matched antenna: very little energy reflects back to the port. So the S-parameters settle long before the fields at the aperture edges are resolved. Our initial HFSS model converged on an incorrect solution because the adaptive mesher never captured the diffraction at the edge of the horn.</p>
+      <p>The fix was a stricter manual mesh:</p>
+      <ul>
+        <li>λ/20 at 12 GHz (1.25 mm) on the aperture edges</li>
+        <li>λ/8 at 12 GHz (3.125 mm) on the interior and exterior flare surfaces</li>
+        <li>1 mm at the waveport feed</li>
+        <li>second-order basis functions</li>
+      </ul>
+      <p>Only with that in place did HFSS agree with the other tools. The broader point: converge on the quantity you report. If you care about gain, an S-parameter convergence criterion is not proof of anything.</p>
+      <p>The other tools were pushed too. In FEKO, going from standard to fine mesh, and adding higher-order basis functions, made no appreciable difference. CST FIT was adapted down to a λ/100 mesh step and TLM used λ/80. CST FEM started at λ/3 and refined adaptively with higher solver order. HFSS uses an air box and MoM does not, so their agreement is also evidence that reflections from the PML boundaries were negligible.</p>
+
+      <h2>Compare against the mean, not a favorite</h2>
+      <p>When six curves lie on top of each other, an overlay tells you very little. All of the CEM results agree extraordinarily well, and the visible story is how they differ from the NRL curve, which overestimates directivity especially at the higher frequencies.</p>
     </div>
 
-    <figure class="wide" style="max-width:520px">
-      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/ieee1597-flowchart.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/ieee1597-flowchart.jpg" width="652" height="856" alt="IEEE 1597.1 CEM validation flowchart: level of validation, engineering judgement, self or external referencing, FSV rating."></picture></div>
-      <figcaption>The CEM validation flowchart we followed, after IEEE Standard 1597.1 (Fig. 2, AMTA 2022).</figcaption>
+    <figure class="wide" style="max-width:744px">
+      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/fig4-cem-directivity-vs-nrl.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/fig4-cem-directivity-vs-nrl.jpg" width="744" height="477" alt="Boresight directivity from all six solver runs versus the NRL curve (Fig. 4)"></picture></div>
+      <figcaption>Boresight directivity from all six solver runs versus the NRL curve (Fig. 4)</figcaption>
     </figure>
 
     <div class="measure">
-      <p>The three tool suites were not one method run three times. FEKO used a direct Method of Moments solution. HFSS used the finite element method. CST Studio Suite was run four ways: finite integration technique, transmission line method, Method of Moments, and finite elements. Each curve covers 8.2–12.4 GHz at a 25 MHz step, 169 frequencies, to capture the ripple of the curves. The setup followed IEEE Std 1597.1 and IEEE Std 1597.2 for validating computational electromagnetics: mesh convergence as a self-reference, and the intercomparison of independent codes as an external reference. Feature selective validation rated the simulations "Excellent" on the Validation Rating Scale. The paper's conclusion puts the solutions within ±0.0075 dB from an average curve.</p>
+      <p>To see the differences between solvers, we averaged all the simulated directivity curves and subtracted that mean from each one. Nobody's tool is the reference; the ensemble is.</p>
     </div>
 
-    <figure class="wide">
-      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/cem-diff.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/cem-diff.jpg" width="1680" height="992" alt="Difference of each SGH820 directivity curve from the mean of the CEM simulations"></picture></div>
-      <figcaption><b>CEM directivity results subtracted from the mean of all simulation curves for the SGH820.</b> Figure from Giacomini, Saccardi, Foged, Belgiovane, Dobbins, AMTA 2022.</figcaption>
+    <figure class="wide" style="max-width:744px">
+      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/fig5-difference-from-mean.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/fig5-difference-from-mean.jpg" width="744" height="467" alt="Each solver's directivity minus the mean of all solvers (Fig. 5)"></picture></div>
+      <figcaption>Each solver's directivity minus the mean of all solvers (Fig. 5)</figcaption>
     </figure>
 
     <div class="measure">
-      <p>There is a notable difference between the NRL gain curve and the CEM directivity results, especially at the higher frequencies, where the NRL gain curve overestimates the directivity. Conductor loss in the aluminum model is a much smaller term: the difference between directivity and IEEE gain falls between 0.006 and 0.012 dB. The abstract states the practical consequence directly. Based on the compiled results of multiple simulations and measurements, this simulation methodology could be applied to other models of commercial off-the-shelf standard gain horns to provide more accurate on-axis gain predictions.</p>
+      <p>This view exposes bias you cannot see in an overlay. FEKO, for example, sits consistently on the positive side of the mean. Even so, the solutions land within ±0.0075 dB of the average curve, and the simulations agree predominantly to three decimal places across the band. Using the feature selective validation (FSV) method, the results rated "Excellent" on the Validation Rating Scale.</p>
+
+      <h2>Directivity, gain, and what is left</h2>
+      <p>With the aluminum model, the difference between directivity and IEEE gain gives conductor loss: only 0.006 to 0.012 dB. The difference between directivity and realized gain showed a best-case mismatch loss of 0.022 dB with an idealized waveport, which would likely grow with a real coax-to-waveguide adapter.</p>
+      <p>We also wrote down the error budget, unknowns included:</p>
+      <ul>
+        <li>Differences in code implementation: ±0.0075 dB</li>
+        <li>Gain calculation: -0.012 dB</li>
+        <li>Higher-order waveguide modes, numerical precision, air box reflections, mesh noise: negligible</li>
+        <li>Coax-to-waveguide feed: measurable, not yet modeled</li>
+        <li>Physical versus model dimensions: unknown</li>
+        <li>Exterior interacting scatterers: +0.070 dB (from earlier published work on absorber collars)</li>
+      </ul>
+      <p>Listing "unknown" is not a weakness. It tells you exactly where the next piece of work has to go. The real SGH820 has edge tapering at the aperture that the model did not include, no horn is perfectly symmetric, and manufacturing tolerances still had to be quantified with a dedicated sensitivity analysis.</p>
+
+      <h2>What this answers, and what it does not</h2>
+      <p>Back to the opening question. This paper does not prove the simulation matches the hardware. What it proves is narrower and still important: for a well-defined geometry, four numerical methods in three commercial tools land on the same answer to better than a hundredth of a dB, provided you mesh for the physics that matters. When simulation and measurement disagree by a tenth of a dB, the solver is not the first place to look.</p>
       <p>Paper (IEEE Xplore): <a href="https://doi.org/10.23919/AMTA55213.2022.9954972" target="_blank" rel="noopener">https://doi.org/10.23919/AMTA55213.2022.9954972</a></p>
 
-      <h2>Part 2: Holding the model up against a calibrated measurement</h2>
-      <p>Solver agreement only proves the solvers agree. The real test is hardware. In "Antenna Gain Calibration with Improved Accuracy Modeling of Pyramidal Standard Gain Horns, Part 2" (AMTA Symposium, 2024), where I was first author, we modeled a commercial off-the-shelf X-band horn covering 8.2 to 12.4 GHz and compared the simulated on-axis gain with measurements of that horn made by the UK's National Physical Laboratory (NPL) in 2023.</p>
-      <p>Three results stood out:</p>
-      <ul>
-        <li><strong>Agreement within 0.08 dB (+0.06 / −0.08 dB)</strong> across the band. The supplier could not provide the SMA connector's dimensions, so connector loss was accounted for from a VNA measurement of the connector. NPL's 2023 measurement of the SGH820 itself carried a ±0.09 dB (2σ) uncertainty, so the model lands inside the measurement's own error bars.</li>
-        <li><strong>A build-tolerance study</strong> put error bars on the simulation itself. The simulation uncertainty is ±0.079 dB overall (build-tolerance study ±0.078 dB combined with ±0.0075 dB solver spread).</li>
-        <li><strong>Compared with the ±0.3 dB</strong> usually assigned to the NRL/Slayton curve, that is a meaningful reduction in one of the biggest terms in a gain budget.</li>
-      </ul>
-    </div>
-
-    <figure class="wide">
-      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/npl-vs-sim.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/npl-vs-sim.jpg" width="2280" height="1420" alt="IEEE gain of the MVG SGH820: NPL 2023 measurement compared with the high-fidelity simulation, and the difference between them"></picture></div>
-      <figcaption><b>Comparison of measurement and simulation with the CST FIT algorithm for high fidelity model of the MVG SGH820.</b> Figure from Belgiovane et al., AMTA 2024.</figcaption>
-    </figure>
-
-    <div class="measure">
-      <p>The point is not that simulation replaces calibration. The point is that a carefully built model, with honest loss accounting and its own uncertainty, can be a credible reference and a strong cross-check on the measurement.</p>
-
-      <h2>The 2025 follow-up</h2>
-      <p>The work continued at the 2025 AMTA Symposium with "Modeling of Standard Gain Horns Using Advanced Electromagnetic Simulation Techniques" (AMTA Symposium, 2025), where I am a co-author. That paper modeled the same MVG SGH820 X-band (8–12 GHz) horn, with and without its waveguide adapter, using two full-wave solvers in Altair Feko: the Method of Moments (MoM) and the Multilevel Fast Multipole Method (MLFMM). The two solvers agreed within ±0.008 dB on boresight gain and directivity, and MLFMM cut computation time significantly with no loss of accuracy.</p>
-      <p>Paper (IEEE Xplore): <a href="https://doi.org/10.23919/AMTA66658.2025.11317872" target="_blank" rel="noopener">https://doi.org/10.23919/AMTA66658.2025.11317872</a></p>
-
-      <h2>Our methodology: iterating until the simulations agree, then until they match the range</h2>
-      <p>The results above are only as good as the process behind them. Here is the loop we actually ran across the three papers, written as a checklist you can apply to your own antenna. Each step notes which paper it comes from.</p>
-      <h3>Stage 1: Make the solvers agree with each other (AMTA 2022)</h3>
-      <ol start="1">
-        <li><strong>Build one geometry and share it.</strong> We used a single common CAD geometry, imported into every tool. To remove geometry error, the model was split and mirrored across the principal planes so it was exactly symmetric, and E- and H-plane symmetry planes were used where the tool allowed, since a symmetric mesh can suppress very small meshing errors. (2022; common CAD import also stated in the 2024 presentation)</li>
-        <li><strong>Model the feed the same way everywhere.</strong> Every model was excited by a waveport at the end of a WR-90 transition section (22.86 mm by 10.16 mm, 33.8 mm long, interior surfaces coincident with the horn). We then checked the port modes: in HFSS the first 3 modes were computed and only the fundamental propagated; in FEKO all higher-order modes were evanescent. The coax-to-waveguide adapter was deliberately left out at this stage and carried as a separate error term. (2022)</li>
-        <li><strong>Do not trust adaptive meshing on S-parameters alone.</strong> This was the most important lesson. The HFSS adaptive mesher refines on S-parameter convergence, but a horn reflects very little energy back to the port, so the initial model converged on an incorrect solution and missed the edge diffraction terms. We fixed it with stricter manual mesh rules: λ/20 at 12 GHz (1.25 mm) on the aperture edges, λ/8 at 12 GHz (3.125 mm) on the interior and exterior flare surfaces, 1 mm at the waveport, plus second-order basis functions. Only then did all the tools agree. (2022)</li>
-        <li><strong>Push each solver until refinement stops moving the answer.</strong> In FEKO MoM we stepped the mesh from standard to fine and tried higher-order basis functions, with no appreciable change. In CST FIT the mesh step was adapted down to λ/100; TLM used λ/80; CST FEM started at λ/3 and adaptively refined with higher solver order; CST MoM needed a solver-setting change via a VBA macro. We also cross-checked solvers with and without an air box (HFSS FEM with PML at λ/10 at 8 GHz versus MoM with no air box); because they agreed, air-box reflections were treated as negligible rather than studied separately. (2022)</li>
-        <li><strong>Compare against the mean, not against a favorite.</strong> We averaged all the directivity curves, subtracted the mean from each solver, and built a pairwise maximum-difference table. That exposes bias you cannot see on an overlay; for example, FEKO sat slightly on the positive side of the mean. (2022)</li>
-        <li><strong>Separate directivity, gain, and realized gain.</strong> With the aluminum model, directivity minus IEEE gain gave conductor loss. Directivity minus realized gain showed a best-case mismatch loss of 0.022 dB with an idealized waveport, which we expect to grow once a real coax adapter is added. Far fields were computed at boresight only in FEKO and CST MoM to save run time. (2022)</li>
-        <li><strong>Write down the error budget, including the unknowns.</strong> We listed every term: code differences ±0.0075 dB; gain calculation -0.012 dB; higher-order modes, discretization, air-box reflections and mesh noise negligible; coax-to-waveguide feed measurable; physical versus model dimensions unknown; exterior interacting scatterers +0.070 dB. That last entry comes from earlier published work (Breinbjerg et al., AMTA 2017) cited in our paper, where an absorber collar raised gain by 0.07 dB (0.09 dB more directivity, 0.02 dB less radiation efficiency). (2022)</li>
-      </ol>
-      <h3>Stage 2: Put error bars on the model (AMTA 2024)</h3>
-      <ol start="8">
-        <li><strong>Turn "unknown dimensions" into a number.</strong> We took the manufacturing drawing tolerances (Table I of the 2024 paper; for example ±0.040 in on the aperture a and b, ±0.060 in on horn length) and ran each variable to its limits in HFSS FEM with higher-order basis functions, symmetry planes, PML at λ/8 at 8 GHz, and the same λ/20 edge mesh. Horn length had by far the biggest effect. We did not run a full Monte Carlo; instead we ran three simulations (all minimum, all nominal, all maximum) and took the bounds. (2024)</li>
-        <li><strong>Watch the aperture edge.</strong> Older horns had beveled (flat) edges; later ones were square-cut sheet metal. Our initial studies suggest the edge shape has a non-negligible effect on the gain ripple. It was not folded into the tolerance number. (2024)</li>
-        <li><strong>RSS the terms in linear units.</strong> The tolerance study gave ±0.0781 dB. Combined by root sum square with the ±0.0075 dB code spread, the simulation uncertainty is ±0.0791 dB. Because it uses worst-case tolerance extremes, we treat it as a worst-case bound, and it assumes a perfectly symmetric horn. (2024)</li>
-      </ol>
-      <h3>Stage 3: Iterate against the range (AMTA 2024)</h3>
-      <ol start="11">
-        <li><strong>Pick reference data that has its own uncertainty.</strong> We used the 1996 international X-band intercomparison data for the SA Model 12-8.2 (NIST 1992, ±0.07 dB; NPL 1991, ±0.04 dB and ±0.07 dB by band) and NPL's 2023 measurement of the SGH820 at ±0.09 dB (2σ). (2024)</li>
-        <li><strong>Match the reference plane.</strong> The legacy measurements were referenced to the waveguide flange, which is exactly where our waveport sits. Against them, the nominal-dimension model ran consistently high: +0.005 / -0.149 dB versus NIST and -0.027 / -0.166 dB versus NPL. Since the as-built dimensions of those horns are not known, we stopped iterating there rather than tuning dimensions to fit. (2024)</li>
-        <li><strong>When the reference plane cannot match, model what is really there.</strong> The SGH820 has an integrated coax-to-waveguide adapter, so NPL's 2023 data necessarily includes it. We built a high-fidelity CST FIT model with the adapter, the different E-plane (square-cut) and H-plane (beveled) edges, the exterior ribs, and the rear mounting plate. (2024)</li>
-        <li><strong>Measure what you cannot model.</strong> The supplier could not give us the SMA connector dimensions, so we measured the coax section's insertion loss back to back on a VNA and accounted for it in the simulated IEEE gain. With that, simulation and measurement agreed within +0.06 / -0.08 dB, inside each other's uncertainty bounds. (2024)</li>
-      </ol>
-      <h3>Stage 4: Re-verify with a faster solver (AMTA 2025)</h3>
-      <ol start="15">
-        <li><strong>Once you trust the model, check whether you can make it cheaper.</strong> In the 2025 follow-up, the same horn was run with and without its waveguide adapter in Feko MoM and MLFMM. The two agreed within ±0.008 dB on boresight gain and directivity, and MLFMM was significantly faster. That matters because the 2022 paper had flagged MLFMM as a possible accuracy risk if the residual is not set low enough; the 2025 work checked it directly instead of assuming. (2025)</li>
-      </ol>
-      <p>The order is the point. Get the solvers to agree first, so code differences are a known small number. Then bound the geometry. Only then compare to the range, and when the comparison is off, fix the physics (reference plane, adapter, connector loss), not the dimensions.</p>
-
-      <h2>How to make your sim match your range</h2>
-      <p>Most sim versus measurement arguments I get pulled into come down to the same few items. Before you blame the solver, work through this list:</p>
-      <ol>
-        <li><strong>The models used nominal dimensions, not measured ones.</strong> At the hundredth-of-a-dB level, small flare and aperture differences show up. Breinbjerg et al. (AMTA 2017) showed that an absorber collar increased gain by 0.07 dB (0.09 dB higher directivity and 0.02 dB lower radiation efficiency).</li>
-        <li><strong>Account for every loss in the path.</strong> Connectors, adapters, and waveguide transitions all cost something. The supplier could not provide the SMA connector's dimensions, so connector loss was accounted for from a VNA measurement of the connector.</li>
-        <li><strong>Compare the same quantity.</strong> Make sure you are comparing gain to gain, at the same reference plane, with the same definition (realized gain versus gain, for example).</li>
-        <li><strong>Converge on what you report.</strong> Check mesh convergence on gain itself, not just on S-parameters.</li>
-        <li><strong>Put error bars on the simulation.</strong> Run a tolerance study. If the model has no uncertainty, you cannot say whether it "agrees" with anything.</li>
-        <li><strong>Know your range's uncertainty budget.</strong> Find the biggest term. If it is the reference horn's gain, a better model may be the cheapest improvement you can make.</li>
-        <li><strong>Cross-check with a second solver when the stakes are high.</strong> If two methods agree and measurement does not, look hard at the setup.</li>
-      </ol>
-
-      <h2>Takeaway for engineering managers</h2>
-      <p>When simulation and test data disagree, the instinct is often to buy another tool or schedule another test. In my experience the gap usually lives in the model, the loss accounting, or the measurement setup, not in the solver. Budget engineering time for loss characterization and simulation uncertainty, not just for software licenses. A model with honest error bars tells you when you can trust it. A model without them only tells you a number.</p>
+      <h2>Next: the hardware</h2>
+      <p>Agreement between solvers only proves the solvers agree. In the next post, we hold the model up against measurement of a real horn and see what it takes to close the gap.</p>
     </div>
 
     <div class="cta">
-      <div class="eyebrow">Work with us</div>
-      <h3>Want a second set of eyes?</h3>
-      <p>If your simulated and measured antenna data do not agree, or you want to know whether your gain numbers will hold up, I offer a paid one-hour design review. Send me your sim and range data beforehand and we will work through where the gap is coming from.</p>
+      <p>If your sim and range data don't agree, I do paid one-hour design reviews. Book one here:</p>
       <div class="actions">
         <a class="btn btn-primary" href="https://calendar.app.google/BkzA1rurMrozK5Ta9" target="_blank" rel="noopener">Book a review <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
       </div>
-    </div>
-
-    <div class="notes measure">
-      <p>Dom Belgiovane, PhD, is the founder of Vectron Technologies, an independent antenna and electromagnetics consultancy. He holds a PhD from The Ohio State University and is an AMTA Senior Member.</p>
     </div>
   </article>
 </BlogLayout>
