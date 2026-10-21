@@ -80,8 +80,8 @@
 .post figure picture,
 .post figure .frame { display: block; }
 .post figure .frame {
-  background: #fff;
-  border: 1px solid var(--color-chrome-rule);
+  background: #0b0b0b;
+  border: none;
   border-radius: 14px;
   overflow: hidden;
 }

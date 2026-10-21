@@ -45,6 +45,18 @@ const description = "How we modeled an X-band standard gain horn in HFSS, CST St
     <div class="measure">
       <p>To remove geometry error, the model was split and mirrored across the principal planes so it was exactly symmetric, and symmetry planes were used wherever a tool allowed, since a symmetric mesh can suppress very small meshing errors. The horn was modeled as aluminum, with the same properties in every tool (σe = 3.8 × 10^7 S/m, μr = 1.000021, from the HFSS materials library).</p>
 
+      <h2>Following IEEE Std 1597.1: self-referencing first</h2>
+      <p>The 2022 study was built around the CEM validation flow in IEEE Standard 1597.1. That standard asks what level you are validating: the computational technique, the specific code implementation, or the individual model. Because we used commercial tools, only the individual model's correctness was assessed. The codes and their algorithms were taken as accurate, and the job was to prove our model was right.</p>
+      <p>The next branch is engineering judgement: do you check the model against itself or against an outside reference? The judgement started from physics. The boresight gain of a standard gain horn has a well-known ripple, so a correct model has to reproduce it. We self-referenced first, using iterative mesh refinement to confirm each model converged, with care taken to capture the aperture-edge diffraction that causes that ripple. Running the same geometry in several commercial codes and solver types also counts toward external referencing, because it compares independent implementations and alternate modeling techniques.</p>
+      <p>The flow ends with the feature selective validation (FSV) method and its rating scale, a standardized way to put a number on how well two results agree. The paper's conclusion was that measurement is the remaining external reference. That is the next post.</p>
+    </div>
+
+    <figure class="wide" style="max-width:520px">
+      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/ieee1597-flowchart.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/ieee1597-flowchart.jpg" width="652" height="856" alt="IEEE 1597.1 CEM validation flowchart: level of validation, engineering judgement, self or external referencing, FSV rating."></picture></div>
+      <figcaption>The CEM validation flowchart we followed, after IEEE Standard 1597.1 (Fig. 2, AMTA 2022).</figcaption>
+    </figure>
+
+    <div class="measure">
       <h2>Six solver runs, four numerical methods</h2>
       <p>This was not one method run three times. We used:</p>
       <ul>
