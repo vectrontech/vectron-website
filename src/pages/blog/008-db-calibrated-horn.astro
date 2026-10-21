@@ -105,8 +105,15 @@ const description = "How we modeled an X-band standard gain horn in HFSS, CST St
       <p>Back to the opening question. This paper does not prove the simulation matches the hardware. What it proves is narrower and still important: for a well-defined geometry, four numerical methods in three commercial tools land on the same answer to better than a hundredth of a dB, provided you mesh for the physics that matters. When simulation and measurement disagree by a tenth of a dB, the solver is not the first place to look.</p>
       <p>Paper (IEEE Xplore): <a href="https://doi.org/10.23919/AMTA55213.2022.9954972" target="_blank" rel="noopener">https://doi.org/10.23919/AMTA55213.2022.9954972</a></p>
 
-      <h2>Next: the hardware</h2>
-      <p>Agreement between solvers only proves the solvers agree. In the next post, we hold the model up against measurement of a real horn and see what it takes to close the gap.</p>
+      <h2>Future work</h2>
+      <p>Agreement between solvers only proves the solvers agree. The paper closed by listing what still had to be done before the simulated gain could stand in for a calibration:</p>
+      <ul>
+        <li><strong>Manufacturing tolerances.</strong> Manufacturing will always add uncertainty to the horn's dimensions, so the effect of those tolerances needs its own sensitivity analysis.</li>
+        <li><strong>Measured geometry.</strong> Metrology scans of the manufactured parts could quantify the real dimensions, and the scanned geometry could be modeled directly in the CEM tools.</li>
+        <li><strong>Measurement as the external reference.</strong> Following the IEEE 1597.1 validation flow, the horn needs to be measured and compared against the simulations, with the agreement scored using the feature selective validation (FSV) method and its rating scale.</li>
+        <li><strong>Real-world scatterers.</strong> Interactions with things around the horn, such as absorber collars, mechanical positioners, and horn flanges, need to be accounted for to tighten the gain error terms.</li>
+      </ul>
+      <p>In the next post, we hold the model up against measurement of a real horn and see what it takes to close the gap.</p>
     </div>
 
     <div class="cta">
