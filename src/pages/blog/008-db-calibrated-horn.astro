@@ -45,6 +45,18 @@ const description = "How a full-wave horn model matched calibrated gain measurem
     </figure>
 
     <div class="measure">
+      <h3>Following IEEE Std 1597.1: self-referencing first</h3>
+      <p>The 2022 study was built around the CEM validation flow in IEEE Standard 1597.1. That standard asks what level you are validating: the computational technique, the specific code implementation, or the individual model. Because we used commercial tools, only the individual model's correctness was assessed. The codes and their algorithms were taken as accurate, and the job was to prove our model was right.</p>
+      <p>The next branch is engineering judgement: do you check the model against itself or against an outside reference? The judgement started from physics. The boresight gain of a standard gain horn has a well-known ripple, so a correct model has to reproduce it. We self-referenced first, using iterative mesh refinement to confirm each model converged, with care taken to capture the aperture-edge diffraction that causes that ripple. Running the same geometry in several commercial codes and solver types also counts toward external referencing, because it compares independent implementations and alternate modeling techniques.</p>
+      <p>The flow ends with the feature selective validation (FSV) method and its rating scale, a standardized way to put a number on how well two results agree. The paper's conclusion was that measurement is the remaining external reference, and Part 2 is where that happened.</p>
+    </div>
+
+    <figure class="wide" style="max-width:520px">
+      <div class="frame"><picture><source srcset="/blog/008-db-calibrated-horn/images/ieee1597-flowchart.webp" type="image/webp"><img src="/blog/008-db-calibrated-horn/images/ieee1597-flowchart.jpg" width="652" height="856" alt="IEEE 1597.1 CEM validation flowchart: level of validation, engineering judgement, self or external referencing, FSV rating."></picture></div>
+      <figcaption>The CEM validation flowchart we followed, after IEEE Standard 1597.1 (Fig. 2, AMTA 2022).</figcaption>
+    </figure>
+
+    <div class="measure">
       <p>The three tool suites were not one method run three times. FEKO used a direct Method of Moments solution. HFSS used the finite element method. CST Studio Suite was run four ways: finite integration technique, transmission line method, Method of Moments, and finite elements. Each curve covers 8.2–12.4 GHz at a 25 MHz step, 169 frequencies, to capture the ripple of the curves. The setup followed IEEE Std 1597.1 and IEEE Std 1597.2 for validating computational electromagnetics: mesh convergence as a self-reference, and the intercomparison of independent codes as an external reference. Feature selective validation rated the simulations "Excellent" on the Validation Rating Scale. The paper's conclusion puts the solutions within ±0.0075 dB from an average curve.</p>
     </div>
 
