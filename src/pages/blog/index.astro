@@ -40,7 +40,7 @@ const posts = [
         {posts.map((post) => (
           <article class="card">
             <a href={post.href}>
-              <picture class="work-thumb contain">
+              <picture class="post-thumb">
                 <source srcset={`${post.image}.webp`} type="image/webp" />
                 <img src={`${post.image}.jpg`} alt={post.alt} width={post.width} height={post.height} />
               </picture>

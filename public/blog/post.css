@@ -67,11 +67,19 @@
 
 .post figure { margin: 2.25rem 0 0; }
 .post figure.wide { margin-inline: auto; }
+.post figure picture,
+.post figure .frame { display: block; }
 .post figure .frame {
   background: #fff;
   border: 1px solid var(--color-chrome-rule);
   border-radius: 14px;
   overflow: hidden;
+}
+.post figure img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
 }
 .post figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.55; color: var(--color-chrome-dim); max-width: 46rem; }
 .post figcaption b { color: var(--color-chrome-ink); font-weight: 500; }
@@ -104,6 +112,20 @@
 
 .blog-index .grid { align-items: start; }
 .blog-index .card > a { display: block; }
+.blog-index .post-thumb {
+  display: block;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--color-chrome-rule);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #070707;
+}
+.blog-index .post-thumb img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
 .blog-index .card h2 {
   margin-top: .75rem;
   font-family: var(--font-display);
