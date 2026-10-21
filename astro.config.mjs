@@ -6,9 +6,6 @@ export default defineConfig({
   site: 'https://vectrontechnologies.com',
   integrations: [
     sitemap({
-      // The horn post stays noindex until it is approved, so keep it out of
-      // the sitemap even though /blog/ links to it.
-      filter: (page) => !page.includes("/blog/008-db-calibrated-horn"),
       // /RFtrueLink/ is shipped from public/, so the integration would
       // otherwise miss it. Bump priority on the RF consulting service
       // page — that's the page we want ranking for the target keywords.

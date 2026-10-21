@@ -10,6 +10,7 @@ interface Props {
   ogWidth?: number;
   ogHeight?: number;
   noindex?: boolean;
+  robots?: string;
   ogType?: "website" | "article";
 }
 
@@ -21,6 +22,7 @@ const {
   ogWidth = 1200,
   ogHeight = 630,
   noindex = false,
+  robots,
   ogType = "website",
 } = Astro.props;
 const canonical = new URL(path, Astro.site).toString();
@@ -36,6 +38,7 @@ const absoluteOg = new URL(ogImage, Astro.site).toString();
     <link rel="canonical" href={canonical} />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {robots && <meta name="robots" content={robots} />}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="Vectron Technologies" />
