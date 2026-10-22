@@ -34,7 +34,7 @@ const description = "What goes into a 10 m x 10 m horizontal planar near-field f
       <ul>
         <li>10 m x 10 m scan plane, with 1.5 m of Z travel</li>
         <li>1 to 110 GHz</li>
-        <li>Gain, patterns in any linear polarization, beam pointing, sidelobes, plus active test modes</li>
+        <li>Gain, directivity, 3D patterns, sidelobes, plus active test modes</li>
       </ul>
       <p>Each of those on its own is manageable. Together, they make the RF subsystem and the positioner accuracy the hard parts. Accuracy that is fine at 1 GHz is not fine at 110 GHz, and a 10 m span is a lot of distance to hold flat.</p>
     </div>
@@ -46,42 +46,42 @@ const description = "What goes into a 10 m x 10 m horizontal planar near-field f
 
     <div class="measure">
       <h2>Holding 100 square meters flat</h2>
-      <p>The scanner uses two X-axis linear slides on six floor-mounted masts, leveled as one unit, with a Y-axis beam riding on top that carries the Z and roll stages. The probe aperture sits roughly 7.6 to 9.1 m above the floor.</p>
-      <p>Corrected, each axis is specified to ±0.06 mm, with planarity of 0.035 mm RMS over the full scan area. The word "corrected" is doing the work in that sentence. A laser tracker was used for initial alignment and positioner corrections: X and Y position as a function of (X, Y), Z planarity as a function of (X, Y), and the roll axis aligned to the scan plane. The tracker was also used to measure DUT rotation and translation errors at mounting.</p>
-      <p>The DUT side is just as practical. A telescoping mast (3 to 6 m) sits on a 2 m x 2 m cart with a hexapod on top for fine alignment. The cart is pushed in by hand over locating features, with about 0.02 mm repeatability, so large antennas can be rolled in instead of craned onto a tower. Pull the mast and you can put heavy payloads, or even a vehicle such as a lunar rover or a UAV, on the floor for upper-hemisphere measurements.</p>
+      <p>The scanner uses an X-axis linear slide, built from two modular sections, on six floor-mounted masts, leveled as one unit. A Y-axis linear slide rides on that and carries the Z-roll unit.</p>
+      <p>The corrections are doing the work. MV-Cor corrects X, Y, and Z position as a function of (X, Y), which is what holds Z planarity across the scan plane, and the roll axis is aligned to the scan plane. A Leica AT960-LR laser tracker handles alignment and surface measurements of the reflectors. Tracker data also perturbed ideal positions so those position errors could be pushed through the transform.</p>
+      <p>The DUT side is just as practical. A telescoping mast (3 to 6 m) handles payloads up to 440 lbs, with a Symmetrie BREVA hexapod for fine alignment: ±0.5 μm in X, Y, and Z, and ±2.5 μrad in rotation. For a larger DUT the mast comes off and the payload sits on the floor. The facility takes payloads up to 1320 lbs, including a lunar rover or a UAV.</p>
 
       <h2>One RF system, 1 to 110 GHz</h2>
-      <p>Below 50 GHz, the system runs a dual-PXIe architecture: one chassis on the scanner and one at the DUT, each with Keysight PXIe VNA modules, direct RF from 1 to 50 GHz. Shielded enclosures on the Z axis and DUT tower down-convert test and reference signals to IF, with a multiplier used above 20 GHz. A shared LO from a source in a ground rack keeps the two sides phase coherent.</p>
-      <p>From 50 to 110 GHz, VDI frequency extender modules cover V, E and W bands. Below 50 GHz the probes are dual polarized; in the mmWave bands, polarization is changed by rotating the probe roll axis.</p>
-      <p>Calibration traceability was built in from the start. Every probe came with CST-generated pattern correction coefficients and a gain calibration at UPM. Every reference standard gain horn came with an on-axis gain calibration at NPL.</p>
-      <p>The near-field dynamic range requirement was more than 60 dB. Measured over the air at boresight (50 sweeps, 1 kHz IFBW), it cleared that requirement, with a stepped attenuator used to confirm linearity.</p>
+      <p>Below 50 GHz, the system runs a dual-PXIe architecture: one Keysight M9010A chassis on the scanner and one at the DUT, each with M9808A VNA modules. Shielded enclosures sit next to both chassis. Operation from 1 to 50 GHz breaks into 1 to 20 GHz and 20 to 50 GHz. For 20 to 50 GHz, a 4x multiplier takes the LO from a Keysight MXG in a ground rack, and the reference path is down-converted to a 31 MHz IF.</p>
+      <p>From 50 to 110 GHz, VDI frequency extender modules cover V, E and W bands. Probes are dual linear through Q band. In V, E, and W they are single linear.</p>
+      <p>Calibration traceability was built in from the start. Probes were calibrated at UPM for boresight gain, and the near-field to far-field transform uses simulated probe patterns from MV-Plane. Every reference standard gain horn came with a boresight gain calibration at NPL.</p>
+      <p>Dynamic range is reported by band, not as one number. At 1 kHz IFBW the typical spans are 97 to 100 dB in L and S, 110 to 80 dB in C, 80 to 70 dB in X, 90 to 80 dB in Ku, 75 to 60 dB in Ka, 90 to 65 dB in Q, and 75 to 82 dB in V. E band is 82 to 91 dB and W band is 60 to 80 dB, both at 100 Hz IFBW. Receiver dynamic range was measured at boresight.</p>
     </div>
 
     <figure class="wide" style="max-width:1300px">
-      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/fig2-dynamic-range-l-s-x-ka.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/fig2-dynamic-range-l-s-x-ka.jpg" width="1300" height="920" alt="Measured near-field dynamic range at L, S, X and Ka band against the 60 dB requirement"></picture></div>
-      <figcaption>Measured near-field dynamic range at L, S, X and Ka band against the 60 dB requirement</figcaption>
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/fig2-dynamic-range-l-s-x-ka.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/fig2-dynamic-range-l-s-x-ka.jpg" width="1300" height="920" alt="Measured near-field dynamic range at L, S, X and Ka band"></picture></div>
+      <figcaption>Measured near-field dynamic range at L, S, X and Ka band</figcaption>
     </figure>
 
     <div class="measure">
       <h2>More than patterns</h2>
       <p>Because the payloads include active antennas, the range supports special test modes beyond gain and patterns:</p>
       <ul>
-        <li><strong>EIRP:</strong> NF-to-FF transform for gain, with input power from the PXI in spectrum analyzer mode or a power meter through a calibrated coupler path</li>
-        <li><strong>G/T:</strong> an over-the-air procedure using the near-field peak location, probe-side power meter and DUT-side noise measurements</li>
-        <li><strong>IMD:</strong> delta IM3, either swept frequency with fixed delta, or swept delta at a fixed center frequency</li>
-        <li><strong>Gain compression (P1dB):</strong> automated input power sweeps per frequency</li>
-        <li><strong>Pulsed RF:</strong> using the PXI internal pulsing hardware, or an external pulse switch</li>
-        <li><strong>Park and probe:</strong> the probe parks over an element of an active array and cycles through phase shifter or attenuator states, then moves to the next element</li>
+        <li><strong>EIRP:</strong> a near-field scan, then post-processing, with an integrated power meter capturing input power</li>
+        <li><strong>G/T:</strong> the CW-ambient method, using PXIe spectrum analyzer mode with band noise markers, then post-processing with calibrated power levels</li>
+        <li><strong>IMD:</strong> swept IMD, with an RF combiner in the enclosure from 1 to 50 GHz and dual-source VDI modules from 50 to 110 GHz</li>
+        <li><strong>Gain compression:</strong> input power sweeps to identify the compression point</li>
+        <li><strong>Pulsed RF:</strong> asynchronous narrowband, wideband, and pulse profiling</li>
+        <li><strong>Park and probe:</strong> the probe parks on an X-Y coordinate, measures one DUT state, then moves to the next, with external scripts for phased-array calibration</li>
       </ul>
 
       <h2>Does the uncertainty budget match reality?</h2>
       <p>This is the part I would point any range engineer to.</p>
-      <p>We ran an uncertainty analysis based on the NIST 18-term near-field error model and IEEE Std 1720, computed inside the valid angle, at frequencies across the bands. Each term was evaluated by analysis or measurement: probe calibration data from UPM, laser tracker data used to perturb ideal data and push it through the transform, quarter-wavelength probe and DUT offsets for multiple reflections and room scattering, boresight roll and attenuator checks for linearity, drift tests, and back-to-back repeatability. Main beam 2σ uncertainty landed in the range of about ±0.23 to ±0.52 dB depending on band.</p>
-      <p>Then we checked it against measurement. At each band, five measurements were taken at 1/8-wavelength Z steps. The mean of the five became the "truth," and the 3σ spread within the 3 dB main beam became the gain accuracy metric. The idea is simple: a 3σ (99.7%) spread from real data should fall inside the 2σ (95.4%) interval from the analysis. Measured main-beam 3σ values came in at roughly ±0.09 to ±0.35 dB, and in every band where both numbers were reported, the measured 3σ sat inside the analyzed 2σ. [CHECK: numbers are from the May 2025 NTRS slides; confirm they match the final symposium paper.]</p>
+      <p>We ran an uncertainty analysis from the semi-rigorous 18-term budget in IEEE Std 1720, at analysis frequencies across the bands. Each term was evaluated by analysis or measurement: probe calibration data from UPM, laser tracker data used to perturb ideal data and push it through the transform, quarter-wavelength probe and DUT offsets for multiple reflections and room scattering, boresight roll and attenuator checks for linearity, drift tests, and back-to-back repeatability. Where the table reports it, main beam 2σ uncertainty runs from ±0.230 dB to ±0.519 dB. L band and Q band are blank in that column.</p>
+      <p>Then we checked it against measurement. At each band, five measurements were taken at 1/8-wavelength Z steps. The mean of the five became the "truth," and the worst-case 3σ within the 3 dB main beam became the gain accuracy metric. The idea is simple: a 3σ (99.7%) spread from real data should fall inside the 2σ (95.4%) interval from the analysis. Measured main-beam 3σ values run from ±0.092 dB to ±0.348 dB. In every band where both numbers were reported, the measured 3σ sat inside the analyzed 2σ.</p>
     </div>
 
-    <figure class="wide" style="max-width:1540px">
-      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/fig3-gain-accuracy-10ghz.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/fig3-gain-accuracy-10ghz.jpg" width="1540" height="640" alt="Average normalized pattern and positive 3σ spread at 10 GHz, both principal planes, with the main beam spec window"></picture></div>
+    <figure class="wide" style="max-width:970px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/fig3-gain-accuracy-10ghz.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/fig3-gain-accuracy-10ghz.jpg" width="970" height="410" alt="Average normalized pattern and positive 3σ spread at 10 GHz, both principal planes, with the main beam spec window"></picture></div>
       <figcaption>Average normalized pattern and positive 3σ spread at 10 GHz, both principal planes, with the main beam spec window</figcaption>
     </figure>
 
@@ -89,7 +89,7 @@ const description = "What goes into a 10 m x 10 m horizontal planar near-field f
       <p>That comparison is the useful habit. An uncertainty budget is a model. Checking it against independent repeat measurements tells you whether the model is honest, or just tidy.</p>
 
       <h2>What is next</h2>
-      <p>The paper's conclusion points to a few directions: higher-frequency VDI units to extend the range above 110 GHz, and integrating k-corrections to improve measurement accuracy further. The long-term goal for the laser tracker is surface metrology aligned to the near-field data, so reflector surface defects can be correlated with back-projected aperture fields.</p>
+      <p>The paper's conclusion points to k-corrections, enhancing the uncertainty analysis, and surface metrology. The long-term goal for the laser tracker is surface metrology aligned to the near-field data, so reflector surface defects can be correlated with back-projected aperture fields.</p>
       <p>Paper (IEEE Xplore): <a href="https://doi.org/10.23919/AMTA66658.2025.11317803" target="_blank" rel="noopener">https://doi.org/10.23919/AMTA66658.2025.11317803</a></p>
       <p>Presentation (NASA NTRS): <a href="https://ntrs.nasa.gov/citations/20250004671" target="_blank" rel="noopener">https://ntrs.nasa.gov/citations/20250004671</a></p>
     </div>
