@@ -39,7 +39,7 @@ src/
 
 public/
 ├── CNAME                         vectrontechnologies.com — do not delete
-├── favicon.svg
+├── favicon.ico
 ├── brand/vectron-letterhead.svg  Source letterhead art
 ├── images/generated/*.svg        Branded placeholders (shipped)
 └── images/generated/*.png        Gemini-generated visuals (after gen:images)
