@@ -38,8 +38,31 @@
     .hero-lede { font-family: "Inter", var(--font-sans); font-weight: 400; line-height: 1.6; }
 
     /* Single engagement box */
-    .engage-card .stat-word { font-size: 2rem; }
-    @media (min-width: 768px) { .engage-card .stat-list { columns: 2; column-gap: 3rem; } .engage-card .stat-list li { break-inside: avoid; } }
+    .engage-title { display: block; margin-top: .9rem; font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; line-height: 1.15; letter-spacing: .04em; text-transform: uppercase; color: #fff; }
+    .engage-list { display: grid; gap: 1.25rem 3rem; margin: 1.5rem 0 0; padding: 0; list-style: none; }
+    @media (min-width: 768px) { .engage-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .engage-list li { padding-left: 1rem; position: relative; }
+    .engage-list li::before { content: ""; position: absolute; left: 0; top: .5rem; width: 5px; height: 5px; border-radius: 50%; background: var(--color-accent); }
+    .engage-label { display: block; font-family: var(--font-display); font-weight: 600; font-size: .98rem; letter-spacing: .06em; text-transform: uppercase; color: var(--color-chrome-ink); }
+    .engage-label a { color: inherit; border-bottom: 1px solid var(--color-chrome-edge); }
+    .engage-label a:hover { border-color: var(--color-accent); }
+    .engage-desc { display: block; margin-top: .25rem; font-family: "Inter", var(--font-sans); font-size: .92rem; line-height: 1.55; color: var(--color-muted); }
+    .engage-desc a { color: var(--color-chrome-ink); border-bottom: 1px solid var(--color-chrome-edge); }
+    .engage-desc a:hover { color: #fff; border-color: var(--color-accent); }
+    .review-banner p:not(.eyebrow) { font-family: "Inter", var(--font-sans); }
+    .review-banner h2 { font-size: 1.6rem; line-height: 1.15; letter-spacing: .04em; }
+    .btn { font-family: "Inter", var(--font-sans); font-weight: 500; letter-spacing: 0; }
+
+    /* Type rule: Space Grotesk only in capitals; everything in sentence case is Inter */
+    .card h3, .product-body h3 { font-family: "Inter", var(--font-sans); font-weight: 600; letter-spacing: -.01em; }
+    .product-body h3 { font-size: 2rem; }
+    .pub-title { font-family: "Inter", var(--font-sans); font-weight: 500; letter-spacing: 0; }
+    .tile-link, .about-role, .about-lead, .about-lead strong, .section-lede.ai-lead, details.pub-more > summary {
+      font-family: "Inter", var(--font-sans); letter-spacing: 0;
+    }
+    .tile-link, details.pub-more > summary { font-weight: 500; }
+    /* Hero headline: undo the tight -0.045em tracking */
+    .hero h1 { letter-spacing: -.015em; }
 
     /* Hero proof strip */
     .hero-proof { margin-top: 2.75rem; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,.12); max-width: 60rem; }
@@ -141,12 +164,12 @@
         <div class="grid">
           <article class="card stat-card engage-card">
             <p class="eyebrow">Engagement</p>
-            <span class="stat-value stat-word chrome-text">Ways we can work together</span>
-            <ul class="dot-list stat-list">
-              <li><strong>Consulting:</strong> antenna/EM design and analysis, including HFSS</li>
-              <li><strong>Project work:</strong> fixed-scope design, test, or troubleshooting</li>
-              <li><strong>Technical advisor:</strong> ongoing roles, e.g. <a class="card-link" href="https://www.blackknightsdrones.com" target="_blank" rel="noopener">Black Knights Commercial &amp; Combat Drones</a></li>
-              <li><a class="card-link" href="https://calendar.app.google/BkzA1rurMrozK5Ta9" target="_blank" rel="noopener"><strong>Design review:</strong> one paid working hour</a></li>
+            <span class="engage-title">Ways we can work together</span>
+            <ul class="engage-list">
+              <li><span class="engage-label">Consulting</span><span class="engage-desc">Antenna/EM design and analysis, including HFSS</span></li>
+              <li><span class="engage-label">Technical advisor</span><span class="engage-desc">Ongoing roles, e.g. <a href="https://www.blackknightsdrones.com" target="_blank" rel="noopener">Black Knights Commercial &amp; Combat Drones</a></span></li>
+              <li><span class="engage-label">Project work</span><span class="engage-desc">Fixed-scope design, test, or troubleshooting</span></li>
+              <li><span class="engage-label"><a href="https://calendar.app.google/BkzA1rurMrozK5Ta9" target="_blank" rel="noopener">Design review</a></span><span class="engage-desc">One paid working hour</span></li>
             </ul>
           </article>
         </div>
