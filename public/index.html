@@ -26,13 +26,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=18">
+  <link rel="preload" href="/assets/hero/sunset-landscape.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="stylesheet" href="/styles.css?v=20">
+  <script src="/scripts/hero-parallax.js?v=4" defer></script>
   <style>
     /* Eyebrow labels: #7a7a7a -> #8a8a8a for more contrast margin */
     :root { --color-chrome-dim: #8a8a8a; }
 
     /* Hero: larger company label, crisper subheading */
-    .hero-content > .eyebrow { font-size: .95rem; letter-spacing: .24em; color: #a3a3a3; }
+    .hero-content > .eyebrow { font-size: clamp(.65rem, 1.1vw, .95rem); letter-spacing: .22em; color: #e1d8cb; }
     .hero-lede { font-family: "Inter", var(--font-sans); font-weight: 400; line-height: 1.6; }
 
     /* Single engagement box */
@@ -88,46 +90,54 @@
   </header>
 
   <main id="main">
-    <section class="hero" id="top">
-      <div class="hero-media" aria-hidden="true">
-        <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata" poster="/assets/hero-loop-2026-poster.jpg" aria-hidden="true">
-          <source src="/assets/hero-loop-2026.mp4" type="video/mp4">
-        </video>
-        <div class="hero-overlay"></div>
-        <div class="hero-grid bg-blueprint bg-blueprint-fade"></div>
-        <div class="hero-fade-bottom"></div>
-      </div>
-      <div class="container-narrow">
-        <div class="hero-content">
-          <p class="eyebrow">Vectron Technologies LLC</p>
-          <h1>
-            <span class="line chrome-text">Antenna &amp; EM</span>
-            <span class="line line-white">Engineering.</span>
-          </h1>
-          <p class="hero-lede">Independent antenna design, analysis, and test for defense and aerospace programs.</p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="mailto:domenic@vectrontechnologies.com?subject=Vectron%20Technologies%20inquiry">Contact Domenic <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
-            <a class="btn btn-ghost" href="#work">View past work</a>
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-stage">
+        <div class="hero-media" aria-hidden="true">
+          <img class="hero-landscape" src="/assets/hero/sunset-landscape.webp" alt="" width="1672" height="941" fetchpriority="high" decoding="async">
+          <div class="hero-atmosphere"></div>
+          <div class="hero-aircraft">
+            <img src="/assets/hero/stealth-airplane.webp" alt="" width="1672" height="941" fetchpriority="high" decoding="async" draggable="false">
           </div>
-          <aside class="hero-proof" aria-label="Background and credentials">
-            <p class="eyebrow">15 years of radar, antenna, and RF engineering at</p>
-            <div class="hero-proof-orgs">
-              <span>Raytheon</span><span>Northrop&nbsp;Grumman</span><span>SpaceX</span><span>NASA&nbsp;programs</span>
-            </div>
-            <ul class="hero-proof-creds">
-              <li>Ohio State PhD</li>
-              <li>Arizona LLC</li>
-              <li>8 inventions (2 U.S. patents)</li>
-              <li>29 publications</li>
-              <li>AMTA Senior Member</li>
-            </ul>
-          </aside>
+          <div class="hero-overlay"></div>
+          <div class="hero-fade-bottom"></div>
         </div>
+        <div class="container-narrow hero-layout">
+          <div class="hero-content">
+            <p class="eyebrow"><span class="hero-status" aria-hidden="true"></span>Vectron Technologies LLC</p>
+            <h1 id="hero-title">
+              <span class="line chrome-text">Antenna &amp; EM</span>
+              <span class="line line-white">Engineering.</span>
+            </h1>
+            <p class="hero-lede">Independent antenna design, analysis, and test for defense and aerospace programs.</p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="mailto:domenic@vectrontechnologies.com?subject=Vectron%20Technologies%20inquiry">Contact Domenic <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+              <a class="btn btn-ghost" href="#work">View past work</a>
+            </div>
+          </div>
+        </div>
+        <div class="container-narrow hero-footer">
+          <a class="hero-scroll" href="#achievements"><span class="hero-scroll-line" aria-hidden="true"></span>Scroll to explore <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6" stroke="currentColor" stroke-width="1.5"/></svg></a>
+          <span class="hero-location">Scottsdale, Arizona <span aria-hidden="true">/</span> Independent expertise</span>
+        </div>
+        <div class="hero-progress" aria-hidden="true"><span></span></div>
       </div>
     </section>
 
-    <section class="achievements" aria-label="Achievements">
+    <section class="achievements" id="achievements" aria-label="Achievements">
       <div class="container-narrow">
+        <aside class="hero-proof" aria-label="Background and credentials">
+          <p class="eyebrow">15 years of radar, antenna, and RF engineering at</p>
+          <div class="hero-proof-orgs">
+            <span>Raytheon</span><span>Northrop&nbsp;Grumman</span><span>SpaceX</span><span>NASA&nbsp;programs</span>
+          </div>
+          <ul class="hero-proof-creds">
+            <li>Ohio State PhD</li>
+            <li>Arizona LLC</li>
+            <li>8 inventions (2 U.S. patents)</li>
+            <li>29 publications</li>
+            <li>AMTA Senior Member</li>
+          </ul>
+        </aside>
         <div class="grid">
           <article class="card stat-card engage-card">
             <p class="eyebrow">Engagement</p>
