@@ -22,7 +22,42 @@
   <link rel="manifest" href="/site.webmanifest">
   <link rel="preload" href="/assets/fonts/space-grotesk-latin-wght-normal.BhU9QXUp.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="canonical" href="https://vectrontechnologies.com/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css?v=18">
+  <style>
+    /* Eyebrow labels: #7a7a7a -> #8a8a8a for more contrast margin */
+    :root { --color-chrome-dim: #8a8a8a; }
+
+    /* Hero: larger company label, crisper subheading */
+    .hero-content > .eyebrow { font-size: .95rem; letter-spacing: .24em; color: #a3a3a3; }
+    .hero-lede { font-family: "Inter", var(--font-sans); font-weight: 400; line-height: 1.6; }
+
+    /* Single engagement box */
+    .engage-card .stat-word { font-size: 2rem; }
+    @media (min-width: 768px) { .engage-card .stat-list { columns: 2; column-gap: 3rem; } .engage-card .stat-list li { break-inside: avoid; } }
+
+    /* Hero proof strip */
+    .hero-proof { margin-top: 2.75rem; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,.12); max-width: 60rem; }
+    .hero-proof .eyebrow { margin: 0; }
+    .hero-proof-orgs { display: flex; flex-wrap: wrap; gap: .35rem 1.75rem; margin-top: .65rem; }
+    .hero-proof-orgs span { font-family: var(--font-display); font-weight: 600; font-size: .98rem; letter-spacing: .06em; text-transform: uppercase; color: var(--color-chrome-ink); white-space: nowrap; }
+    .hero-proof-creds { display: flex; flex-wrap: wrap; gap: .3rem 1.15rem; margin: .8rem 0 0; padding: 0; list-style: none; font-size: .86rem; color: var(--color-muted); }
+    .hero-proof-creds li { display: flex; align-items: center; gap: .45rem; white-space: nowrap; }
+    .hero-proof-creds li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--color-accent); flex: none; }
+
+    /* Collapsed conference list */
+    .pub-more > summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.25rem; padding: .7rem 1.1rem; border: 1px solid var(--color-chrome-edge); border-radius: 10px; font-family: var(--font-display); font-weight: 500; font-size: .9rem; color: var(--color-accent); }
+    .pub-more > summary::-webkit-details-marker { display: none; }
+    .pub-more > summary::after { content: "\2193"; transition: transform .2s; }
+    .pub-more[open] > summary::after { transform: rotate(180deg); }
+    .pub-more > summary:hover { border-color: var(--color-accent); }
+    .pub-more > summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+    .pub-more[open] > summary .when-closed, .pub-more:not([open]) > summary .when-open { display: none; }
+
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -55,7 +90,7 @@
   <main id="main">
     <section class="hero" id="top">
       <div class="hero-media" aria-hidden="true">
-        <video class="hero-bg-video" autoplay muted loop playsinline preload="auto" poster="/assets/hero-loop-2026-poster.jpg" aria-hidden="true">
+        <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata" poster="/assets/hero-loop-2026-poster.jpg" aria-hidden="true">
           <source src="/assets/hero-loop-2026.mp4" type="video/mp4">
         </video>
         <div class="hero-overlay"></div>
@@ -74,28 +109,29 @@
             <a class="btn btn-primary" href="mailto:domenic@vectrontechnologies.com?subject=Vectron%20Technologies%20inquiry">Contact Domenic <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
             <a class="btn btn-ghost" href="#work">View past work</a>
           </div>
+          <aside class="hero-proof" aria-label="Background and credentials">
+            <p class="eyebrow">15 years of radar, antenna, and RF engineering at</p>
+            <div class="hero-proof-orgs">
+              <span>Raytheon</span><span>Northrop&nbsp;Grumman</span><span>SpaceX</span><span>NASA&nbsp;programs</span>
+            </div>
+            <ul class="hero-proof-creds">
+              <li>Ohio State PhD</li>
+              <li>Arizona LLC</li>
+              <li>8 inventions (2 U.S. patents)</li>
+              <li>29 publications</li>
+              <li>AMTA Senior Member</li>
+            </ul>
+          </aside>
         </div>
       </div>
     </section>
 
     <section class="achievements" aria-label="Achievements">
       <div class="container-narrow">
-        <div class="grid grid-3">
-          <article class="card stat-card">
-            <p class="eyebrow">Inventions</p>
-            <span class="stat-value chrome-text">8</span>
-            <p class="stat-title">Patent holder, inventor, and trade secret holder</p>
-            <p><a class="card-link" href="#pub-patents">2 U.S. patents</a> (a compact circularly polarized patch antenna and a radar-representative bicycle test target) and 6 trade secrets.</p>
-          </article>
-          <article class="card stat-card">
-            <p class="eyebrow">Publications</p>
-            <span class="stat-value chrome-text">29</span>
-            <p class="stat-title"><a class="card-link" href="#publications">Published author</a></p>
-            <p>4 IEEE Transactions papers, 1 more journal article, and 24 conference papers. <a class="card-link" href="#publications">See the list</a></p>
-          </article>
-          <article class="card stat-card">
+        <div class="grid">
+          <article class="card stat-card engage-card">
             <p class="eyebrow">Engagement</p>
-            <span class="stat-value stat-word chrome-text">Ways to work together</span>
+            <span class="stat-value stat-word chrome-text">Ways we can work together</span>
             <ul class="dot-list stat-list">
               <li><strong>Consulting:</strong> antenna/EM design and analysis, including HFSS</li>
               <li><strong>Project work:</strong> fixed-scope design, test, or troubleshooting</li>
@@ -130,7 +166,7 @@
           <div class="about-body">
             <p class="about-lead"><strong>I help engineering teams solve challenging problems.</strong></p>
             <p>When a design hits a bottleneck, a problem needs a second set of expert eyes, or the workload outgrows your team, I step in. I take on antenna, RF, radar, and EM work as consulting, scoped projects, or an ongoing technical advisor role. I can also support business development and sales: technical proposals, customer meetings, and capability briefs.</p>
-            <p>Behind that is an Ohio State PhD and about 13 years of radar, antenna, and RF engineering at Raytheon, Northrop Grumman, and SpaceX. I'm an AMTA Senior Member, a U.S. citizen with an active security clearance, and based in Scottsdale. With Vectron, you get one point of contact from concept through test.</p>
+            <p>Behind that is an Ohio State PhD and about 15 years of radar, antenna, and RF engineering at Raytheon, Northrop Grumman, and SpaceX. I'm an AMTA Senior Member, a U.S. citizen with an active security clearance, and based in Scottsdale. With Vectron, you get one point of contact from concept through test.</p>
             <p class="eyebrow">Experience</p>
             <ul class="dot-list">
               <li><strong>Vectron Technologies:</strong> Owner and principal engineer, 2024 to present</li>
@@ -598,6 +634,10 @@
               <p class="pub-venue">Antenna Measurement Techniques Association Symposium (AMTA 2022). <a class="pub-link" href="https://doi.org/10.23919/AMTA55213.2022.9954972" target="_blank" rel="noopener">doi:10.23919/AMTA55213.2022.9954972</a></p>
             </div>
           </li>
+        </ul>
+        <details class="pub-more">
+          <summary><span class="when-closed">Show all 24 conference papers</span><span class="when-open">Show fewer</span></summary>
+          <ul class="pub-list">
           <li>
             <span class="pub-year">2021</span>
             <div>
@@ -758,7 +798,8 @@
               <p class="pub-venue">IEEE Photovoltaic Specialists Conference (PVSC 2011). <a class="pub-link" href="https://doi.org/10.1109/PVSC.2011.6186260" target="_blank" rel="noopener">doi:10.1109/PVSC.2011.6186260</a></p>
             </div>
           </li>
-        </ul>
+          </ul>
+        </details>
       </div>
       <div class="pub-group" id="pub-dissertation">
         <div class="pub-group-head"><h3>Dissertation</h3><span class="pub-count">1 entry</span></div>
