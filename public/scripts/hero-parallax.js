@@ -43,13 +43,15 @@
     const y = pointerY;
     const small = mobile.matches;
     const flight = 1 - Math.pow(1 - progress, 1.35);
-    const sweep = small ? 120 : Math.min(bounds.width * 0.34, 600);
+    const sweep = bounds.width * (small ? 0.6 : 0.5);
+    const bank = Math.sin(flight * Math.PI);
 
-    // Fly from the left toward the right while approaching the camera.
-    landscape.style.transform = `translate3d(${-x * 48}px, ${flight * 130 - y * 36}px, 0) rotateZ(${flight * 1.6}deg) scale(${1.02 + flight * 0.36})`;
-    aircraft.style.transform = `translate3d(${flight * sweep + x * 150}px, ${flight * (small ? -90 : -190) + y * 96}px, ${80 + flight * (small ? 220 : 390)}px) rotateX(${flight * 14 - y * 18}deg) rotateY(${-flight * 30 + x * 24}deg) rotateZ(${-flight * (small ? 22 : 30) + x * 9}deg) scale(${1 + flight * (small ? 0.16 : 0.35)})`;
-    atmosphere.style.transform = `translate3d(${x * 64}px, ${flight * -100}px, 0) scale(${1 + flight * 0.24})`;
-    content.style.transform = `translate3d(0, ${flight * -42}px, 0)`;
+    // Keep altitude and camera depth steady so the flyby reads left to right.
+    // A slight dip and shallow bank add depth without climbing out of frame.
+    landscape.style.transform = `translate3d(${-flight * Math.min(bounds.width * 0.045, 90) - x * 24}px, ${-y * 12}px, 0) scale(${1.02 + flight * 0.1})`;
+    aircraft.style.transform = `translate3d(${flight * sweep + x * 150}px, ${bank * (small ? 6 : 12) + y * 12}px, 80px) rotateX(${-y * 3}deg) rotateY(${-flight * 3 + x * 6}deg) rotateZ(${bank * 2 + x * 2}deg) scale(${1 + flight * 0.04})`;
+    atmosphere.style.transform = `translate3d(${-flight * 32 + x * 32}px, ${-y * 8}px, 0) scale(${1 + flight * 0.08})`;
+    content.style.transform = `translate3d(0, ${flight * -18}px, 0)`;
     progressBar.style.transform = `scaleX(${progress})`;
 
     // No permanent animation loop: stop when the pointer has settled.
