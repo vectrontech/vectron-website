@@ -4,6 +4,7 @@
 
   const stage = hero.querySelector('.hero-stage');
   const landscape = hero.querySelector('.hero-landscape');
+  const video = hero.querySelector('.hero-video');
   const aircraft = hero.querySelector('.hero-aircraft');
   const atmosphere = hero.querySelector('.hero-atmosphere');
   const content = hero.querySelector('.hero-content');
@@ -22,6 +23,20 @@
   let targetY = 0;
   let pointerX = 0;
   let pointerY = 0;
+
+  function syncVideoPlayback() {
+    if (!video) return;
+    if (reducedMotion.matches || !visible || document.hidden) {
+      video.pause();
+      return;
+    }
+    // Defer the video download until motion is allowed and the hero is visible.
+    if (!video.getAttribute('src')) video.src = video.dataset.src;
+    video.muted = true;
+    video.play().catch(() => {
+      // The poster remains visible if the browser blocks autoplay.
+    });
+  }
 
   function requestRender() {
     if (!frame && visible && !document.hidden && !reducedMotion.matches) {
@@ -80,6 +95,7 @@
       layer.style.removeProperty('transform');
     }
     measure();
+    syncVideoPlayback();
   }
 
   stage.addEventListener('pointermove', (event) => {
@@ -93,13 +109,17 @@
   window.addEventListener('scroll', requestRender, { passive: true });
   window.addEventListener('resize', measure, { passive: true });
   window.addEventListener('pageshow', measure);
-  document.addEventListener('visibilitychange', requestRender);
+  document.addEventListener('visibilitychange', () => {
+    requestRender();
+    syncVideoPlayback();
+  });
   reducedMotion.addEventListener('change', setMotionPreference);
   finePointer.addEventListener('change', resetPointer);
 
   new ResizeObserver(measure).observe(stage);
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
+    syncVideoPlayback();
     if (visible) requestRender();
     else {
       cancelAnimationFrame(frame);

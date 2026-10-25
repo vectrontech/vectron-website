@@ -26,9 +26,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="preload" href="/assets/hero/sunset-landscape.webp" as="image" type="image/webp" fetchpriority="high">
-  <link rel="stylesheet" href="/styles.css?v=20">
-  <script src="/scripts/hero-parallax.js?v=5" defer></script>
+  <link rel="preload" href="/assets/hero/sunset-loop-poster.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="stylesheet" href="/styles.css?v=21">
+  <script src="/scripts/hero-parallax.js?v=6" defer></script>
   <style>
     /* Eyebrow labels: #7a7a7a -> #8a8a8a for more contrast margin */
     :root { --color-chrome-dim: #8a8a8a; }
@@ -116,7 +116,10 @@
     <section class="hero" id="top" aria-labelledby="hero-title">
       <div class="hero-stage">
         <div class="hero-media" aria-hidden="true">
-          <img class="hero-landscape" src="/assets/hero/sunset-landscape.webp" alt="" width="1672" height="941" fetchpriority="high" decoding="async">
+          <div class="hero-landscape">
+            <img src="/assets/hero/sunset-loop-poster.webp" alt="" width="1280" height="720" fetchpriority="high" decoding="async">
+            <video class="hero-video" data-src="/assets/hero/sunset-loop.mp4" poster="/assets/hero/sunset-loop-poster.webp" muted loop playsinline preload="none" tabindex="-1"></video>
+          </div>
           <div class="hero-atmosphere"></div>
           <div class="hero-aircraft">
             <img src="/assets/hero/stealth-airplane.webp" alt="" width="1672" height="941" fetchpriority="high" decoding="async" draggable="false">
