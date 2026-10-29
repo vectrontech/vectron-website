@@ -6,8 +6,6 @@ export default defineConfig({
   site: 'https://vectrontechnologies.com',
   integrations: [
     sitemap({
-      // Staged stacked-patch patent post stays out of the sitemap until publish.
-      filter: (page) => !page.includes("/blog/009-stacked-patch-patent"),
       // /RFtrueLink/ is shipped from public/, so the integration would
       // otherwise miss it. Bump priority on the RF consulting service
       // page — that's the page we want ranking for the target keywords.
