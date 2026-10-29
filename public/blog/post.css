@@ -101,11 +101,6 @@
   padding: 16px;
   border-radius: 12px;
 }
-.post.patent figure.hero .frame {
-  background: #0b0b0b;
-  padding: 0;
-  border-radius: 14px;
-}
 .post figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.55; color: var(--color-chrome-dim); max-width: 46rem; }
 .post figcaption b { color: var(--color-chrome-ink); font-weight: 500; }
 
