@@ -6,6 +6,8 @@ export default defineConfig({
   site: 'https://vectrontechnologies.com',
   integrations: [
     sitemap({
+      // The staged NASA near-field post stays out of the sitemap until publish.
+      filter: (page) => !page.includes("/blog/009-nasa-hpnf-near-field"),
       // /RFtrueLink/ is shipped from public/, so the integration would
       // otherwise miss it. Bump priority on the RF consulting service
       // page — that's the page we want ranking for the target keywords.
