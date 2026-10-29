@@ -1,0 +1,123 @@
+---
+import BlogLayout from "~/layouts/BlogLayout.astro";
+const description = "Why a simple stacked patch turned out to be patentable: US 12,562,485 B2 combines a single probe feed, circular polarization, two GPS bands and a compact footprint, with elements that can sit close together in a CRPA array.";
+---
+
+<BlogLayout
+  title="We almost didn't patent this one. Notes on my stacked center-slotted patch | Vectron Technologies"
+  description={description}
+  path="/blog/009-stacked-patch-patent/"
+  ogImage="/blog/009-stacked-patch-patent/images/fig1a-stacked-patch-top.png"
+  ogWidth={1400}
+  ogHeight={1053}
+  ogType="article"
+  noindex={true}
+>
+<section class="post-hero">
+    <div class="bg-blueprint" aria-hidden="true"></div>
+    <div class="container-narrow" style="position:relative">
+      <div class="eyebrow">RF / EM &nbsp;·&nbsp; Antenna design</div>
+      <h1><span class="chrome-text">We almost didn't patent this one. Notes on my stacked center-slotted patch</span></h1>
+      <div class="post-byline"><span><strong>Dom Belgiovane, PhD</strong></span><span>Tuesday, November 3, 2026</span></div>
+    </div>
+  </section>
+
+  <article class="post container-narrow patent">
+    <div class="measure">
+      <p>I didn't really think this antenna was patentable. It is a simple design: two stacked patches, a slot in the middle of each, and one probe. My co-inventor C. M. Wangsvick and I kind of took it for granted at first.</p>
+      <p>Then we did more research and looked at what else was out there, and there was nothing quite like it. On review, we realized it had enough novelty to patent. That became US 12,562,485 B2, "Probe-fed circularly-polarized stacked center-slotted patch antenna," assigned to Raytheon Company, filed March 22, 2023 (Appl. 18/187,769), published as US 2024/0322433 A1, and granted February 24, 2026.</p>
+      <p>No single feature is what made it patentable. It was the combination:</p>
+      <ul>
+        <li><strong>One probe feed</strong> for both patches</li>
+        <li><strong>Circular polarization</strong> from that single feed</li>
+        <li><strong>Two bands</strong>, GPS L1 and L2</li>
+        <li><strong>A compact footprint</strong></li>
+      </ul>
+      <p>On top of that, the elements can sit close together. That matters for controlled reception pattern antenna (CRPA) arrays, where anti-jamming and null-steering algorithms need elements that behave alike in gain and phase.</p>
+      <p>The usual single-feed CP trick is to clip two opposite corners of the patch. The patent's background notes that corner-clipped patches have narrow bandwidth and high inter-element coupling. A clipped corner changes the fields right at the patch edge, and the edge is where neighboring elements talk to each other. Our design moves that job to the middle of the patch.</p>
+
+      <h2>How it works: two stacked patches, one probe</h2>
+      <p>The example embodiment is a dual-band GPS antenna covering L1 (1.57542 GHz) and L2 (1.2276 GHz). From the bottom up:</p>
+      <ul>
+        <li>A metal ground plane, 4 in x 4 in in the example</li>
+        <li>A first substrate, 2 in x 2 in x 0.2 in, with the lower patch on top (the L2 patch)</li>
+        <li>A second substrate of the same size, with the upper patch on top (the L1 patch)</li>
+        <li>A single coaxial feed: outer conductor to the ground plane, center pin soldered to the upper patch</li>
+      </ul>
+      <p>The example substrate is Rogers TMM 10i, a ceramic thermoset laminate. The patent treats all of these dimensions as one example, not a limit.</p>
+      <p>The renders and plots in this post come from a quick illustrative model I put together in the open-source EMerge solver. The patent does not give patch dimensions, so the model uses assumed values, and the antenna was not built or measured.</p>
+    </div>
+
+    <figure class="wide" style="max-width:1400px">
+      <div class="frame"><picture><source srcset="/blog/009-stacked-patch-patent/images/fig1a-stacked-patch-top.webp" type="image/webp"><img src="/blog/009-stacked-patch-patent/images/fig1a-stacked-patch-top.png" width="1400" height="1053" alt="Fig. 1A: the full stack, with the upper (L1) patch, its diagonal slot 111, the feed via pin 113, and two layers of TMM 10i on a 4 in ground plane. Source: US 12,562,485 B2, Fig. 1A."></picture></div>
+      <figcaption>Fig. 1A: the full stack, with the upper (L1) patch, its diagonal slot 111, the feed via pin 113, and two layers of TMM 10i on a 4 in ground plane. Source: US 12,562,485 B2, Fig. 1A.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>The center pin passes through the lower patch without touching it. A void in the lower patch around the pin lets RF couple capacitively into it. So one probe drives the upper patch directly and the lower patch by coupling. The patent notes that the same idea extends to three or more patches: direct connection to the top-most patch and capacitive coupling to the rest.</p>
+    </div>
+
+    <figure class="wide" style="max-width:1400px">
+      <div class="frame"><picture><source srcset="/blog/009-stacked-patch-patent/images/emerge/geometry_exploded.webp" type="image/webp"><img src="/blog/009-stacked-patch-patent/images/emerge/geometry_exploded.jpg" width="1400" height="1283" alt="Exploded view of the stack: ground plane, the lower (L2) patch with its diagonal slot and the void around the probe, and the upper (L1) patch with its slot. Illustrative simulation in the open-source EMerge solver. Dimensions are assumed; the patent does not specify them. This is not a measured result or the patented design's exact dimensions."></picture></div>
+      <figcaption>Exploded view of the stack: ground plane, the lower (L2) patch with its diagonal slot and the void around the probe, and the upper (L1) patch with its slot. Illustrative simulation in the open-source EMerge solver. Dimensions are assumed; the patent does not specify them. This is not a measured result or the patented design's exact dimensions.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:1400px">
+      <div class="frame"><picture><source srcset="/blog/009-stacked-patch-patent/images/fig1b-bottom-patch-slot-feed.webp" type="image/webp"><img src="/blog/009-stacked-patch-patent/images/fig1b-bottom-patch-slot-feed.png" width="1400" height="1052" alt="Fig. 1B: the lower (L2) patch with the top layer removed, showing its diagonal slot 115 and the void around the feed pin. Source: US 12,562,485 B2, Fig. 1B."></picture></div>
+      <figcaption>Fig. 1B: the lower (L2) patch with the top layer removed, showing its diagonal slot 115 and the void around the feed pin. Source: US 12,562,485 B2, Fig. 1B.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>Why a center slot</h2>
+      <p>Each patch has a diagonal, non-radiating slot through its center, at roughly 45 degrees to the patch sides. The slot delays the current along one diagonal relative to the other, which excites two orthogonally polarized fields with a phase difference between them. That is the same job the clipped corners do, moved to the middle of the patch.</p>
+    </div>
+
+    <figure class="wide" style="max-width:1400px">
+      <div class="frame"><picture><source srcset="/blog/009-stacked-patch-patent/images/emerge/current_l1.webp" type="image/webp"><img src="/blog/009-stacked-patch-patent/images/emerge/current_l1.jpg" width="1400" height="1243" alt="Surface current on the upper (L1) patch at 1.575 GHz, crowding around the ends of the center slot while the patch edges stay comparatively clean. Illustrative simulation in the open-source EMerge solver. Dimensions are assumed; the patent does not specify them. This is not a measured result or the patented design's exact dimensions."></picture></div>
+      <figcaption>Surface current on the upper (L1) patch at 1.575 GHz, crowding around the ends of the center slot while the patch edges stay comparatively clean. Illustrative simulation in the open-source EMerge solver. Dimensions are assumed; the patent does not specify them. This is not a measured result or the patented design's exact dimensions.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>This is what lets the elements sit close together. In the patent's words, the center slot is a tuning feature that does not perturb the fields at the edge. With clean edges, the CP is less disturbed by neighbors than with a corner-clipped or rectangular CP stacked patch, and the patent ties that reduced coupling to better gain and phase flatness, especially at the waterline.</p>
+      <p>Slots in the same orientation on both patches give RHCP; opposite orientations give LHCP. Because the slots do not radiate, each one can be rotated on its own to clean up CP in its band.</p>
+
+      <h2>The "diving board" offset</h2>
+      <p>The upper patch does not sit centered over the lower one. It is shifted so that it overlaps and overhangs, in what the patent calls a "diving board" configuration. That offset helps match the upper band. Together with the size of the coupling void around the pin, it lets each band be matched without separate matching circuits or extra layers, which is a big part of why the single probe and the compact footprint work together. The independent claims include this offset.</p>
+    </div>
+
+    <figure class="wide" style="max-width:1400px">
+      <div class="frame"><picture><source srcset="/blog/009-stacked-patch-patent/images/fig2-diving-board-offset.webp" type="image/webp"><img src="/blog/009-stacked-patch-patent/images/fig2-diving-board-offset.png" width="1400" height="1332" alt="Fig. 2: top view showing the upper patch 109 offset from the lower patch 105, both diagonal slots, and the feed 113. Source: US 12,562,485 B2, Fig. 2."></picture></div>
+      <figcaption>Fig. 2: top view showing the upper patch 109 offset from the lower patch 105, both diagonal slots, and the feed 113. Source: US 12,562,485 B2, Fig. 2.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:1270px">
+      <div class="frame"><picture><source srcset="/blog/009-stacked-patch-patent/images/emerge/geometry_top.webp" type="image/webp"><img src="/blog/009-stacked-patch-patent/images/emerge/geometry_top.jpg" width="1270" height="1400" alt="Top view of the model: same slot sense on both patches, the probe in the void, and the upper patch offset in the diving board configuration. Illustrative simulation in the open-source EMerge solver. Dimensions are assumed; the patent does not specify them. This is not a measured result or the patented design's exact dimensions."></picture></div>
+      <figcaption>Top view of the model: same slot sense on both patches, the probe in the void, and the upper patch offset in the diving board configuration. Illustrative simulation in the open-source EMerge solver. Dimensions are assumed; the patent does not specify them. This is not a measured result or the patented design's exact dimensions.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>In an array</h2>
+      <p>This is where close spacing pays off. Fig. 3A shows five elements in a circle on a 6.44 in radius metal substrate, with 3.175 in between adjacent elements, the kind of tight layout a CRPA needs.</p>
+    </div>
+
+    <figure class="wide" style="max-width:1260px">
+      <div class="frame"><picture><source srcset="/blog/009-stacked-patch-patent/images/fig3a-five-element-array.webp" type="image/webp"><img src="/blog/009-stacked-patch-patent/images/fig3a-five-element-array.png" width="1260" height="1400" alt="Fig. 3A: a five-element circular array of the stacked patches, with spacing and the radius relation. Source: US 12,562,485 B2, Fig. 3A."></picture></div>
+      <figcaption>Fig. 3A: a five-element circular array of the stacked patches, with spacing and the radius relation. Source: US 12,562,485 B2, Fig. 3A.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:1400px">
+      <div class="frame"><picture><source srcset="/blog/009-stacked-patch-patent/images/emerge/geometry_array.webp" type="image/webp"><img src="/blog/009-stacked-patch-patent/images/emerge/geometry_array.jpg" width="1400" height="1283" alt="Five elements on a 6.44 in radius plate with 3.175 in spacing between neighbors, geometry only. Illustrative simulation in the open-source EMerge solver. Dimensions are assumed; the patent does not specify them. This is not a measured result or the patented design's exact dimensions."></picture></div>
+      <figcaption>Five elements on a 6.44 in radius plate with 3.175 in spacing between neighbors, geometry only. Illustrative simulation in the open-source EMerge solver. Dimensions are assumed; the patent does not specify them. This is not a measured result or the patented design's exact dimensions.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>The lesson</h2>
+      <p>Don't take your simple designs for granted. We almost didn't file this one. Each piece on its own looked ordinary: a probe feed, a stacked patch, a slot. What was new was getting one probe, circular polarization, two bands and a small footprint in the same element, with edges clean enough to pack elements close together. If you have a design like that sitting on a shelf, look at the prior art before you decide it isn't novel.</p>
+
+      <h2>What is next</h2>
+      <p>Next week I go back to measurement work with the UWBRAD ultra-wideband radiometer antenna that flew over the Greenland ice sheet.</p>
+      <p>Patent (Google Patents): <a href="https://patents.google.com/patent/US12562485B2/en">US 12,562,485 B2</a></p>
+      <p>If you're working on a compact CP or dual-band aperture and want a second set of eyes, I do paid one-hour design reviews. Book one here: <a href="https://calendar.app.google/BkzA1rurMrozK5Ta9">https://calendar.app.google/BkzA1rurMrozK5Ta9</a></p>
+    </div>
+  </article>
+</BlogLayout>

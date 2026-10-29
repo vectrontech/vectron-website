@@ -91,6 +91,11 @@
   max-width: 100%;
   height: auto;
 }
+.post.patent figure .frame {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+}
 .post figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.55; color: var(--color-chrome-dim); max-width: 46rem; }
 .post figcaption b { color: var(--color-chrome-ink); font-weight: 500; }
 
