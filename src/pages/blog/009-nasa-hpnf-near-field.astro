@@ -1,0 +1,172 @@
+---
+import BlogLayout from "~/layouts/BlogLayout.astro";
+const description = "What goes into a 10 m x 10 m horizontal planar near-field facility covering 1 to 110 GHz: the scanner, the dual-PXIe RF system, laser tracker alignment, special test modes, and how the uncertainty analysis compared with measured gain repeatability.";
+---
+
+<BlogLayout
+  title="Why would you scan a spaceborne antenna from above? | Vectron Technologies"
+  description={description}
+  path="/blog/009-nasa-hpnf-near-field/"
+  ogImage="/blog/009-nasa-hpnf-near-field/images/dynamic-range.jpg"
+  ogWidth={2240}
+  ogHeight={1280}
+  ogType="article"
+  noindex={true}
+>
+<section class="post-hero">
+    <div class="bg-blueprint" aria-hidden="true"></div>
+    <div class="container-narrow" style="position:relative">
+      <div class="eyebrow">RF / EM &nbsp;·&nbsp; Antenna measurement</div>
+      <h1><span class="chrome-text">Why would you scan a spaceborne antenna from above?</span></h1>
+      <p class="post-subtitle">NASA's 10 m x 10 m horizontal near-field range</p>
+      <div class="post-byline"><span><strong>Dom Belgiovane, PhD</strong></span><span>Tuesday, October 27, 2026</span></div>
+    </div>
+  </section>
+
+  <article class="post container-narrow">
+    <div class="measure">
+      <p>Why would you hang a near-field probe from the ceiling and point the antenna up?</p>
+      <p>Most planar near-field ranges you have seen are vertical. The antenna sits on its side and the probe moves up and down a wall. That works well for a lot of hardware. It works less well for a large deployable reflector designed to fly in zero gravity, because on its side it sags, and you end up measuring a shape it will never have in orbit.</p>
+      <p>That was the starting point for the facility in our 2025 AMTA paper, "NASA's Horizontal Planar Near-Field Facility: A Large-Scale, High-Accuracy System for Spaceborne Antenna Testing," with Jim Downey, Bryan Schoenholtz and Félix Miranda of NASA Glenn Research Center, and Evan Beers, James Caputo and me, then at MVG-OATI. An earlier version was presented at the AMTA Regional Meeting in Tempe, AZ on May 20, 2025.</p>
+
+      <h2>The requirement: big, broadband, and accurate</h2>
+      <p>NASA commissioned a horizontal planar near-field (HPNF) range for space communications antennas, including active electronically scanned arrays and parabolic reflectors. The headline numbers:</p>
+      <ul>
+        <li>10 m x 10 m scan plane, with 1.5 m of Z travel</li>
+        <li>1 to 110 GHz</li>
+        <li>Gain, directivity, 3D patterns, sidelobes, plus active test modes</li>
+      </ul>
+      <p>Each of those on its own is manageable. Together, they make the RF subsystem and the positioner accuracy the hard parts. Accuracy that is fine at 1 GHz is not fine at 110 GHz, and a 10 m span is a lot of distance to hold flat.</p>
+    </div>
+
+    <figure class="wide" style="max-width:1771px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/facility-layout.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/facility-layout.jpg" width="1771" height="1484" alt="Layout of the NASA HPNF antenna measurement facility."></picture></div>
+      <figcaption>Layout of the NASA HPNF antenna measurement facility.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:413px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/facility-photo.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/facility-photo.jpg" width="413" height="310" alt="Picture of the NASA HPNF antenna measurement facility."></picture></div>
+      <figcaption>Picture of the NASA HPNF antenna measurement facility.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>Holding 100 square meters flat</h2>
+      <p>The scanner uses an X-axis linear slide, built from two modular sections, on six floor-mounted masts, leveled as one unit. A Y-axis linear slide rides on that and carries the Z-roll unit.</p>
+    </div>
+
+    <figure class="wide" style="max-width:1787px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/scanner-axes.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/scanner-axes.jpg" width="1787" height="1275" alt="Description of the horizontal scanner axes."></picture></div>
+      <figcaption>Description of the horizontal scanner axes.</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:2016px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/z-axis.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/z-axis.jpg" width="2016" height="1717" alt="Detail of scanner Z-axis."></picture></div>
+      <figcaption>Detail of scanner Z-axis.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>The corrections are doing the work. MV-Cor corrects X, Y, and Z position as a function of (X, Y), which is what holds Z planarity across the scan plane, and the roll axis is aligned to the scan plane. A Leica AT960-LR laser tracker handles alignment and surface measurements of the reflectors. Tracker data also perturbed ideal positions so those position errors could be pushed through the transform.</p>
+      <p>The DUT side is just as practical. A telescoping mast (3 to 6 m) handles payloads up to 440 lbs, with a Symmetrie BREVA hexapod for fine alignment: ±0.5 μm in X, Y, and Z, and ±2.5 μrad in rotation. For a larger DUT the mast comes off and the payload sits on the floor. The facility takes payloads up to 1320 lbs, including a lunar rover or a UAV.</p>
+    </div>
+
+    <figure class="wide" style="max-width:402px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/dut-tower.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/dut-tower.jpg" width="402" height="407" alt="DUT Tower."></picture></div>
+      <figcaption>DUT Tower.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>One RF system, 1 to 110 GHz</h2>
+      <p>Below 50 GHz, the system runs a dual-PXIe architecture: one Keysight M9010A chassis on the scanner and one at the DUT, each with M9808A VNA modules. Shielded enclosures sit next to both chassis. Operation from 1 to 50 GHz breaks into 1 to 20 GHz and 20 to 50 GHz. For 20 to 50 GHz, a 4x multiplier takes the LO from a Keysight MXG in a ground rack, and the reference path is down-converted to a 31 MHz IF.</p>
+      <p>From 50 to 110 GHz, VDI frequency extender modules cover V, E and W bands. Probes are dual linear through Q band. In V, E, and W they are single linear.</p>
+    </div>
+
+    <figure class="wide" style="max-width:8067px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/rf-1-50.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/rf-1-50.jpg" width="8067" height="3935" alt="RF Subsystem Overview (1-50 GHz)."></picture></div>
+      <figcaption>RF Subsystem Overview (1-50 GHz).</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:3327px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/rf-50-110.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/rf-50-110.jpg" width="3327" height="1804" alt="RF Subsystem Overview (50-110 GHz)."></picture></div>
+      <figcaption>RF Subsystem Overview (50-110 GHz).</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:2563px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/rf-enclosures.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/rf-enclosures.jpg" width="2563" height="3568" alt="Close up of the shielded RF Enclosures unique to the NASA HPNF system."></picture></div>
+      <figcaption>Close up of the shielded RF Enclosures unique to the NASA HPNF system.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>Calibration traceability was built in from the start. Probes were calibrated at UPM for boresight gain, and the near-field to far-field transform uses simulated probe patterns from MV-Plane. Every reference standard gain horn came with a boresight gain calibration at NPL.</p>
+      <p>Dynamic range is reported by band, not as one number. At 1 kHz IFBW the typical spans are 97 to 100 dB in L and S, 110 to 80 dB in C, 80 to 70 dB in X, 90 to 80 dB in Ku, 75 to 60 dB in Ka, 90 to 65 dB in Q, and 75 to 82 dB in V. E band is 82 to 91 dB and W band is 60 to 80 dB, both at 100 Hz IFBW. Receiver dynamic range was measured at boresight.</p>
+    </div>
+
+    <figure class="wide" style="max-width:2240px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/dynamic-range.svg" type="image/svg+xml"><source srcset="/blog/009-nasa-hpnf-near-field/images/dynamic-range.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/dynamic-range.jpg" width="2240" height="1280" alt="Typical dynamic range by band, plotted from the values reported in the paper."></picture></div>
+      <figcaption>Typical dynamic range by band, plotted from the values reported in the paper. Each segment runs from the first reported value at the start of that band to the second value at the end. Solid lines are 1 kHz IFBW. Dashed lines (E and W) are 100 Hz IFBW.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>More than patterns</h2>
+      <p>Because the payloads include active antennas, the range supports special test modes beyond gain and patterns:</p>
+      <ul>
+        <li><strong>EIRP:</strong> a near-field scan, then post-processing, with an integrated power meter capturing input power</li>
+        <li><strong>G/T:</strong> the CW-ambient method, using PXIe spectrum analyzer mode with band noise markers, then post-processing with calibrated power levels</li>
+        <li><strong>IMD:</strong> swept IMD, with an RF combiner in the enclosure from 1 to 50 GHz and dual-source VDI modules from 50 to 110 GHz</li>
+        <li><strong>Gain compression:</strong> input power sweeps to identify the compression point</li>
+        <li><strong>Pulsed RF:</strong> asynchronous narrowband, wideband, and pulse profiling</li>
+        <li><strong>Park and probe:</strong> the probe parks on an X-Y coordinate, measures one DUT state, then moves to the next, with external scripts for phased-array calibration</li>
+      </ul>
+
+      <h2>Does the uncertainty budget match reality?</h2>
+      <p>This is the part I would point any range engineer to.</p>
+      <p>We ran an uncertainty analysis from the semi-rigorous 18-term budget in IEEE Std 1720, at analysis frequencies across the bands. Each term was evaluated by analysis or measurement: probe calibration data from UPM, laser tracker data used to perturb ideal data and push it through the transform, quarter-wavelength probe and DUT offsets for multiple reflections and room scattering, boresight roll and attenuator checks for linearity, drift tests, and back-to-back repeatability. Where the table reports it, main beam 2σ uncertainty runs from ±0.230 dB to ±0.519 dB. L band and Q band are blank in that column.</p>
+      <p>Then we checked it against measurement. At each band, five measurements were taken at 1/8-wavelength Z steps. The mean of the five became the "truth," and the worst-case 3σ within the 3 dB main beam became the gain accuracy metric. The idea is simple: a 3σ (99.7%) spread from real data should fall inside the 2σ (95.4%) interval from the analysis. Measured main-beam 3σ values run from ±0.092 dB to ±0.348 dB. In every band where both numbers were reported, the measured 3σ sat inside the analyzed 2σ.</p>
+    </div>
+
+    <figure class="wide" style="max-width:947px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/pattern-1ghz.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/pattern-1ghz.jpg" width="947" height="409" alt="Antenna pattern at 1 GHz (Phi = 0°, Polarization = ETheta)."></picture></div>
+      <figcaption>Antenna pattern at 1 GHz (Phi = 0°, Polarization = ETheta).</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:960px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/pattern-10ghz.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/pattern-10ghz.jpg" width="960" height="410" alt="Antenna pattern at 10 GHz (Phi = 90°, Polarization = EPhi)."></picture></div>
+      <figcaption>Antenna pattern at 10 GHz (Phi = 90°, Polarization = EPhi).</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:893px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/pattern-20ghz.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/pattern-20ghz.jpg" width="893" height="385" alt="Antenna pattern at 20 GHz (Phi = 0°, Polarization = ETheta)."></picture></div>
+      <figcaption>Antenna pattern at 20 GHz (Phi = 0°, Polarization = ETheta).</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:898px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/pattern-40ghz.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/pattern-40ghz.jpg" width="898" height="387" alt="Antenna pattern at 40 GHz (Phi = 90°, Polarization = EPhi)."></picture></div>
+      <figcaption>Antenna pattern at 40 GHz (Phi = 90°, Polarization = EPhi).</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:935px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/pattern-75ghz.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/pattern-75ghz.jpg" width="935" height="403" alt="Antenna pattern at 75 GHz (Phi = 90°, Polarization = EPhi)."></picture></div>
+      <figcaption>Antenna pattern at 75 GHz (Phi = 90°, Polarization = EPhi).</figcaption>
+    </figure>
+
+    <figure class="wide" style="max-width:948px">
+      <div class="frame"><picture><source srcset="/blog/009-nasa-hpnf-near-field/images/pattern-110ghz.webp" type="image/webp"><img src="/blog/009-nasa-hpnf-near-field/images/pattern-110ghz.jpg" width="948" height="406" alt="Antenna pattern at 110 GHz (Phi = 90°, Polarization = EPhi)."></picture></div>
+      <figcaption>Antenna pattern at 110 GHz (Phi = 90°, Polarization = EPhi).</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>That comparison is the useful habit. An uncertainty budget is a model. Checking it against independent repeat measurements tells you whether the model is honest, or just tidy.</p>
+
+      <h2>What is next</h2>
+      <p>The paper's conclusion points to k-corrections, enhancing the uncertainty analysis, and surface metrology. The long-term goal for the laser tracker is surface metrology aligned to the near-field data, so reflector surface defects can be correlated with back-projected aperture fields.</p>
+      <p>Paper (IEEE Xplore): <a href="https://doi.org/10.23919/AMTA66658.2025.11317803" target="_blank" rel="noopener">https://doi.org/10.23919/AMTA66658.2025.11317803</a></p>
+      <p>Presentation (NASA NTRS): <a href="https://ntrs.nasa.gov/citations/20250004671" target="_blank" rel="noopener">https://ntrs.nasa.gov/citations/20250004671</a></p>
+    </div>
+
+    <div class="cta">
+      <p>If your sim and range data don't agree, I do paid one-hour design reviews. Book one here:</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://calendar.app.google/BkzA1rurMrozK5Ta9" target="_blank" rel="noopener">Book a review <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+      </div>
+    </div>
+  </article>
+</BlogLayout>
