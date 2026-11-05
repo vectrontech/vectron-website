@@ -1,0 +1,145 @@
+---
+import BlogLayout from "~/layouts/BlogLayout.astro";
+const description = "How the conical log spiral antenna for UWBRAD, a NASA-funded 500 to 2000 MHz radiometer for sensing ice sheet internal temperature, was designed, measured, and flown over Greenland, and why ultra-wideband apertures need pattern stability you verify on a range.";
+---
+
+<BlogLayout
+  title="Designing an Antenna for Greenland: Ultra-Wideband Lessons From UWBRAD | Vectron Technologies"
+  description={description}
+  path="/blog/010-uwbrad-greenland/"
+  ogImage="/blog/010-uwbrad-greenland/images/field-wing-2016.jpg"
+  ogWidth={710}
+  ogHeight={533}
+  ogType="article"
+  robots="index, follow"
+>
+<section class="post-hero">
+    <div class="bg-blueprint" aria-hidden="true"></div>
+    <div class="container-narrow" style="position:relative">
+      <div class="eyebrow">Past work &nbsp;·&nbsp; Ultra-wideband antennas</div>
+      <h1><span class="chrome-text">Designing an Antenna for Greenland: Ultra-Wideband Lessons From UWBRAD</span></h1>
+      <p class="post-subtitle">Why a 0.5 to 2 GHz radiometer needs an antenna that looks the same at every frequency</p>
+      <div class="post-byline"><span><strong>Dom Belgiovane, PhD</strong></span><span>Thursday, November 5, 2026</span></div>
+    </div>
+  </section>
+
+  <article class="post container-narrow uwbrad">
+    <figure class="wide hero" style="max-width:710px;margin-top:0">
+      <div class="frame"><picture><source srcset="/blog/010-uwbrad-greenland/images/field-wing-2016.webp" type="image/webp"><img src="/blog/010-uwbrad-greenland/images/field-wing-2016.jpg" width="710" height="533" alt="View over the DC-3 wing of snow-covered mountains during the 2016 UWBRAD campaign."></picture></div>
+      <figcaption>Over the wing of the DC-3 during the 2016 UWBRAD campaign. Photo: Dom Belgiovane.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>How do you take the temperature of an ice sheet hundreds of meters below the surface, without drilling a hole?</p>
+      <p>That was the question behind UWBRAD, the Ultra-Wideband Software Defined Microwave Radiometer. The project was led by Joel Johnson at The Ohio State University and funded through NASA's Earth Science Technology Office Instrument Incubator Program. As a graduate research associate at the OSU ElectroScience Laboratory, my job was the antenna. I designed and built the conical log spiral antenna (CLSA), including the balun and the radome, and I measured its gain pattern at Ohio State. It ended up flying out of the bottom of a DC-3 over Greenland.</p>
+
+      <h2>The problem: one antenna, four to one bandwidth</h2>
+      <p>Today the only measured information about ice sheet internal temperature comes from a small number of deep ice core sites. Earlier studies showed that brightness temperatures measured across 500 to 2000 MHz carry information about temperature at different depths inside the ice. UWBRAD was built to test that idea from an aircraft.</p>
+      <p>That puts unusual demands on the antenna. A radiometer compares brightness temperature across frequency, so the antenna cannot quietly change what it is looking at as the frequency changes. If the beam narrows at the top of the band and broadens at the bottom, each channel sees a different patch of ice, and the spectrum mixes frequency with footprint. Over a four to one bandwidth, that is easy to get wrong.</p>
+      <p>There was a second problem. 500 to 2000 MHz is a crowded part of the spectrum, with only a small portion protected for science. Radio frequency interference was a major concern for the whole team, and the receiver was designed around detecting and filtering it in software. The antenna had to be clean and predictable so that the rest of the system could do that work.</p>
+
+      <h2>What I built: a conical log spiral</h2>
+      <p>The UWBRAD antenna is a conical log spiral design with three parts: an internal balun feed, the conical antenna elements, and a protective radome. I designed all three.</p>
+    </div>
+
+    <figure class="wide paper" style="max-width:984px">
+      <div class="frame"><picture><source srcset="/blog/010-uwbrad-greenland/images/fig2-balun-clsa-radome.webp" type="image/webp"><img src="/blog/010-uwbrad-greenland/images/fig2-balun-clsa-radome.jpg" width="984" height="716" alt="Fig. 2 from the TGRS 2018 paper: a) the internal tapered balun board, b) the conical log spiral antenna, and c) the radome over the antenna."></picture></div>
+      <figcaption>Images of a) internal balun board, b) conical log spiral antenna, and c) radome over antenna. From M. J. Andrews et al., "The Ultrawideband Software-Defined Microwave Radiometer: Instrument Description and Initial Campaign Results," IEEE Trans. Geosci. Remote Sens., vol. 56, no. 10, pp. 5923-5935, 2018, Fig. 2. © 2018 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>A conical log spiral is a natural fit for this job. The geometry scales with frequency, so the active region simply moves along the cone as frequency changes, and the radiation pattern stays roughly the same. It radiates circular polarization from its tip. We used right hand circular polarization (RHCP), which simplified the ultra-wideband design and still met the model requirements for retrieving internal ice sheet temperatures.</p>
+      <p>The design goal was near constant gain, and so a near constant footprint for a given platform altitude, from 500 to 2000 MHz. The design was simulated with the aircraft frame included, not just in free space. On the aircraft, the antenna deploys out of the bottom through a "periscope" system and points to nadir in level flight.</p>
+      <p>I built two antennas. One went on an engineering model that the team, with our partners at IFAC-CNR in Florence, tested on a tower at Dome-C in Antarctica. The other was the flight antenna for Greenland.</p>
+
+      <h2>Measured performance</h2>
+      <p>A frequency-independent antenna is only frequency independent on paper. The balun, the finite cone, the feed region, the radome and the mounting all add their own frequency dependence. So I measured the antennas at Ohio State, in an anechoic chamber, and compared them with simulation.</p>
+    </div>
+
+    <figure class="wide paper" style="max-width:1031px">
+      <div class="frame"><picture><source srcset="/blog/010-uwbrad-greenland/images/fig3-antenna-gain.webp" type="image/webp"><img src="/blog/010-uwbrad-greenland/images/fig3-antenna-gain.jpg" width="1031" height="429" alt="Fig. 3 from the TGRS 2018 paper: measured and simulated RHCP gain (solid) and LHCP gain (dashed) versus frequency from about 0.3 to 2.2 GHz for the Greenland antenna (red) and the Antarctica antenna (green), with simulation in black. RHCP gain sits near 10 dB across the band, with cross-pol well below it."></picture></div>
+      <figcaption>Measured and simulated UWBRAD antenna gains (red lines for Greenland campaign). From M. J. Andrews et al., IEEE Trans. Geosci. Remote Sens., vol. 56, no. 10, pp. 5923-5935, 2018, Fig. 3. © 2018 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>The key result in plain numbers, from the TGRS 2018 paper:</p>
+      <ul>
+        <li><strong>About 10 dB RHCP gain</strong> across the frequencies of interest for the Greenland antenna, with a corresponding <strong>half-power beamwidth of about 60 degrees</strong>.</li>
+        <li>At the nominal <strong>500 m</strong> altitude, that gives a circular footprint of <strong>about 0.6 km</strong> in diameter, about <strong>7.5 seconds</strong> to cross at the nominal <strong>150 kts</strong>.</li>
+        <li><strong>Radome loss of 0 to 0.5 dB</strong> and <strong>balun loss of 0.1 to 0.4 dB</strong>.</li>
+        <li><strong>Total measured losses of 1 to 4 dB</strong> during the campaign (radome, balun, mismatch and cable), with <strong>2.5 to 3.5 dB typical</strong>.</li>
+      </ul>
+      <p>That last item is worth a pause. In a radiometer, loss in front of the receiver is not just lost signal. It adds its own thermal emission and has to be calibrated out. The team used flights over open water, with known temperature and salinity, to determine the losses of the antenna and cable and convert antenna temperatures into scene brightness. A measured, well-characterized antenna made that step tractable.</p>
+
+      <h2>Into the field</h2>
+      <p>UWBRAD flew two Greenland campaigns. The first, in September 2016, was the shorter debut: install the instrument, prove the antenna and receiver in the air, and bring home the first ultra-wideband spectra. We came back for a longer campaign in September 2017, the science flights that reached the ice sheet interior and the sea ice the team had planned for.</p>
+
+      <h3>September 2016: the debut</h3>
+      <p>The 2016 campaign ran September 12 to 15. The system was installed on a DC-3 Basler aircraft supplied by Kenn Borek Airlines. Mark Andrews and I went north with the instrument. There were two flights of note: a transit on September 12 from Calgary toward Thule Air Base, with spectrogram results reported for the leg to Cambridge Bay, Canada, and a campaign flight out of Thule on September 15.</p>
+    </div>
+
+    <figure class="wide" style="max-width:710px">
+      <div class="frame"><picture><source srcset="/blog/010-uwbrad-greenland/images/field-cabin-2016.webp" type="image/webp"><img src="/blog/010-uwbrad-greenland/images/field-cabin-2016.jpg" width="710" height="533" alt="The UWBRAD operator station inside the DC-3 cabin, with a live data display on the screen."></picture></div>
+      <figcaption>The UWBRAD operator station in the DC-3 cabin during the 2016 campaign. Photo: Dom Belgiovane.</figcaption>
+    </figure>
+
+    <figure class="wide paper" style="max-width:1160px">
+      <div class="frame"><picture><source srcset="/blog/010-uwbrad-greenland/images/fig11-thule-flight-map.webp" type="image/webp"><img src="/blog/010-uwbrad-greenland/images/fig11-thule-flight-map.jpg" width="1160" height="796" alt="Map of the September 15, 2016 UWBRAD campaign flight line out of Thule, crossing the coast near Qaanaaq and heading east onto the Greenland ice sheet."></picture></div>
+      <figcaption>Campaign flight line out of Thule on September 15, 2016. Adapted from M. J. Andrews et al., IEEE Trans. Geosci. Remote Sens., vol. 56, no. 10, pp. 5923-5935, 2018, Fig. 11. © 2018 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>The September 15 path crossed sea scenes, coastal rock near Qaanaaq, and then headed east onto the Greenland ice sheet through regions where ablation, wet snow, percolation and dry snow are expected to dominate thermal emission from the upper ice. Phys.org covered the result: the 2016 flights provided about 10 hours of the first ultra-wideband microwave radiometer measurements of geophysical scenes including ice sheets (<a href="https://phys.org/news/2017-09-method-remotely-ice-sheet-subsurface.html">Phys.org, September 2017</a>). OSU's College of Engineering also wrote up the trip (<a href="https://engineering.osu.edu/news/2016/10/researchers-measure-global-ice-sheets-sky">OSU, October 2016</a>).</p>
+
+      <h3>September 2017: the longer science campaign</h3>
+      <p>I also flew the September 2017 Greenland campaign. That was the longer one. Calgary was again the aircraft base of operations (<a href="https://doi.org/10.1109/IGARSS.2018.8517321">IGARSS 2018</a>). In Greenland we flew out of Thule and Kangerlussuaq. The tracks covered northwestern Greenland, the Camp Century to NEEM to NGRIP interior line, and a far-north leg over Arctic sea ice in the Lincoln Sea, up toward the North Pole but not quite there (<a href="https://doi.org/10.3389/feart.2022.1029216">Jezek et al., Frontiers 2022</a>; <a href="https://doi.org/10.1109/TGRS.2020.3043954">Yardim et al., TGRS 2022</a>). The instrument observed the ice sheet as well as sea ice, the ocean surface and land regions during the transit to and from Calgary (<a href="https://doi.org/10.1109/IGARSS.2018.8517321">IGARSS 2018</a>).</p>
+    </div>
+
+    <figure class="wide paper" style="max-width:831px">
+      <div class="frame"><picture><source srcset="/blog/010-uwbrad-greenland/images/fig7-2017-flight-map.webp" type="image/webp"><img src="/blog/010-uwbrad-greenland/images/fig7-2017-flight-map.jpg" width="831" height="769" alt="Map of UWBRAD Greenland flight tracks: 2016 in yellow, 2017 in black, with the Camp Century to NEEM to NGRIP temperature-retrieval segment in red, and black tracks extending north over the Lincoln Sea."></picture></div>
+      <figcaption>2016 (yellow) and 2017 (black) UWBRAD Greenland flight tracks. Red marks the Camp Century to NEEM to NGRIP temperature-retrieval segment. The Lincoln Sea is the northern apex of the 2017 tracks. Adapted from K. C. Jezek et al., Front. Earth Sci., vol. 10, Art. 1029216, 2022, Fig. 7 (left), CC BY 4.0; after Yardim et al., 2022.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>Along the Camp Century to NEEM to NGRIP segment, the team later retrieved vertical temperature profiles and compared them with borehole measurements at those three campsites (<a href="https://doi.org/10.1109/TGRS.2020.3043954">Yardim et al., TGRS 2022</a>). Over Lincoln Sea sea ice, UWBRAD spectra were used to invert for sea ice thickness and salinity (<a href="https://doi.org/10.1109/TGRS.2019.2922163">Jezek et al., TGRS 2019</a>). For that 2017 Greenland campaign I received the Old Polar Explorer Award from the Byrd Polar and Climate Research Center at The Ohio State University.</p>
+
+      <h2>What the flights showed</h2>
+      <p>UWBRAD had three main objectives: observe ice sheet brightness temperatures from 500 to 2000 MHz, identify and mitigate RFI in software in real time and in post-processing, and retrieve internal ice sheet temperatures from the measured spectra with models. The September 2016 flights were the airborne debut. The September 2017 flights were the longer science campaign that put those objectives to work over the ice sheet interior and sea ice.</p>
+
+      <h3>2016: instrument, RFI and calibration</h3>
+      <p>On the September 12 transit, spectrograms show a hard RFI environment near Calgary and Edmonton, then more usable data after Lake Athabasca. RFI below about 1 GHz was generally more frequent and more powerful. On the September 15 Thule flight, heavy RFI appears in raw Level 0 stretches; Level 1 (time domain) and Level 2 (frequency domain) processing remove much of it. The TGRS 2018 paper reports RFI magnitudes ranging up to 1 million K in these unprotected bands.</p>
+      <p>Flights over water on both days provided external calibration. Water temperature and salinity give an expected scene brightness, which the team used to determine antenna and cable losses and convert antenna temperatures into scene brightness. That is why a measured, band-wide antenna characterization matters: the aperture is part of the calibration chain, and its near-constant gain and footprint across 500 to 2000 MHz keep each channel looking at roughly the same patch of ice or water.</p>
+      <p>After RFI processing, the integrated time series become significantly smoother and appear to correspond to geophysical expectations, though some residual RFI remains in the full-spectrum product and is reduced further in individual channels. The TGRS 2018 paper focuses on the instrument, calibration and RFI. A more detailed look at the ice sheet brightness temperature spectra over the different snow zones is in the companion paper by Jezek and coauthors.</p>
+      <p>The campaign was not without hardware trouble. The RF frontend failed twice: once shortly after takeoff from Cambridge Bay on the transit toward Greenland, and again on the backup unit after about 90 minutes of collecting data in Greenland. Both failures damaged the initial amplifiers and appeared to be caused by an excessively high input signal, possibly from static discharge in the antenna or from high power radars in the area. A bandpass filter, power limiter and ESD diode were added at the input, and a second campaign to observe the central Greenland ice sheet was successfully carried out in September 2017.</p>
+
+      <h3>2017: ice sheet temperature and sea ice</h3>
+      <p>The 2017 spectra over northwestern Greenland showed strong spatial and spectral variations that correlate with internal ice sheet temperature. Along the Camp Century to NEEM to NGRIP segment, Yardim and coauthors retrieved vertical temperature profiles with a sequential Bayesian estimator, using borehole measurements at the three campsites as priors. The retrieved profiles show reasonable behaviors and demonstrate the potential of ultra-wideband microwave radiometry for remotely sensing internal ice sheet temperatures (<a href="https://doi.org/10.1109/TGRS.2020.3043954">Yardim et al., TGRS 2022</a>).</p>
+      <p>At the northern apex of the 2017 tracks, over Arctic sea ice in the Lincoln Sea, UWBRAD spectra were compared with thermal infrared imagery from the campaign and with nearly concurrent Sentinel-1 C-band SAR (<a href="https://doi.org/10.3389/feart.2022.1029216">Jezek et al., Frontiers 2022</a>). Spectral signatures were associated with thick multiyear ice and thin ice, and a radiative transfer model was used to invert the spectra for sea ice thickness and salinity. Inferred thicknesses were consistent with ice thickness climatology for floes in the Lincoln Sea (<a href="https://doi.org/10.1109/TGRS.2019.2922163">Jezek et al., TGRS 2019</a>).</p>
+      <p>By the TGRS 2018 paper's conclusion, UWBRAD showed in the lab and in the field that it can make stable and accurate ultra-wideband radiometric measurements from 500 to 2000 MHz in the presence of significant RFI. The 2016 debut delivered roughly 10 hours of first ultra-wideband radiometer data and a hardened instrument. The longer 2017 campaign delivered the ice sheet and sea ice science the project was built for.</p>
+
+      <h2>The lesson: pattern stability is the spec</h2>
+      <p>If you are designing an ultra-wideband aperture, gain at boresight is not enough. What I took away from UWBRAD:</p>
+      <ul>
+        <li><strong>Write the requirement as pattern stability across the band.</strong> Gain, beamwidth and polarization purity at the bottom, middle and top of the band, not one headline number.</li>
+        <li><strong>Simulate the installed antenna.</strong> We modeled the antenna with the aircraft frame because the platform is part of the aperture.</li>
+        <li><strong>Measure with and without the radome, and measure the balun loss.</strong> Small losses that vary over frequency matter, especially in a receive-only, calibration-driven system like a radiometer.</li>
+        <li><strong>Verify on a range, across the full band.</strong> "Frequency independent" is a design intent. A measured gain curve that sits on the simulation from 0.5 to 2 GHz is the evidence.</li>
+      </ul>
+
+      <h2>More on UWBRAD</h2>
+      <p>The antenna design itself is in my APSURSI 2016 paper with Chi-Chih Chen and Joel Johnson. The instrument, calibration and RFI work is in the TGRS 2018 paper led by Mark Andrews. The 2017 campaign overview is in our IGARSS 2018 paper. Ice sheet subsurface temperature retrieval from the 2017 flight is in Yardim et al., TGRS 2022. The Lincoln Sea sea ice work is in Jezek et al., TGRS 2019, and the combined 2016/2017 flight-track map is in Jezek et al., Frontiers 2022. Ken Jezek at the Byrd Polar and Climate Research Center and Giovanni Macelloni and Marco Brogioni at IFAC-CNR are among the coauthors across these papers.</p>
+      <p>If you're working on a wideband or ultra-wideband aperture and want a second set of eyes on pattern stability, installed performance or a measurement plan, I do paid one-hour wideband aperture design reviews. Book one here: <a href="https://calendar.app.google/BkzA1rurMrozK5Ta9">https://calendar.app.google/BkzA1rurMrozK5Ta9</a></p>
+
+      <h2>References</h2>
+      <ol>
+        <li>M. J. Andrews, J. T. Johnson, K. C. Jezek, H. Li, A. Bringer, C.-C. Chen, D. J. Belgiovane, V. Leuski, G. Macelloni, M. Brogioni, "The Ultrawideband Software-Defined Microwave Radiometer: Instrument Description and Initial Campaign Results," IEEE Trans. Geosci. Remote Sens., vol. 56, no. 10, pp. 5923-5935, 2018. <a href="https://doi.org/10.1109/TGRS.2018.2828604">doi:10.1109/TGRS.2018.2828604</a></li>
+        <li>D. Belgiovane, C.-C. Chen, J. T. Johnson, "Conical Log Spiral Antenna Development for the UWBRAD Ice Sheet Internal Temperature Sensing," IEEE APSURSI 2016, Fajardo, pp. 1825-1826. <a href="https://doi.org/10.1109/APS.2016.7696619">doi:10.1109/APS.2016.7696619</a></li>
+        <li>J. T. Johnson, K. C. Jezek, M. Andrews, H. Li, A. Bringer, C. Yardim, D. Belgiovane, et al., "Measurements of 0.5-2 GHz Thermal Emission Spectra from the Greenland Ice Sheet, Sea Ice, and Permafrost: Results from September 2017 Campaign," IGARSS 2018. <a href="https://doi.org/10.1109/IGARSS.2018.8517321">doi:10.1109/IGARSS.2018.8517321</a></li>
+        <li>C. Yardim, J. T. Johnson, K. C. Jezek, M. J. Andrews, M. Durand, Y. Duan, S. Tan, L. Tsang, M. Brogioni, G. Macelloni, A. Bringer, "Greenland Ice Sheet Subsurface Temperature Estimation Using Ultrawideband Microwave Radiometry," IEEE Trans. Geosci. Remote Sens., vol. 60, pp. 1-12, 2022. <a href="https://doi.org/10.1109/TGRS.2020.3043954">doi:10.1109/TGRS.2020.3043954</a></li>
+        <li>K. C. Jezek, R. Kwok, L. Kaleschke, D. J. Belgiovane, C.-C. Chen, A. Bringer, J. T. Johnson, O. Demir, M. J. Andrews, G. Macelloni, M. Brogioni, M. Leduc-Leballeur, S. Tan, L. Tsang, "Remote Sensing of Sea Ice Thickness and Salinity With 0.5-2 GHz Microwave Radiometry," IEEE Trans. Geosci. Remote Sens., vol. 57, no. 11, pp. 8672-8684, Nov. 2019. <a href="https://doi.org/10.1109/TGRS.2019.2922163">doi:10.1109/TGRS.2019.2922163</a></li>
+        <li>K. C. Jezek, J. T. Johnson, L. Tsang, M. Brogioni, G. Macelloni, M. Aksoy, L. Kaleschke, S. Wang, M. Leduc-Leballeur, C. Yardim, M. Andrews, H. Xu, O. Demir, S. Tan, J. Miller, "A review of recent developments in low-frequency ultra-wideband microwave radiometry for studies of the cryosphere," Front. Earth Sci., vol. 10, Art. 1029216, 2022. <a href="https://doi.org/10.3389/feart.2022.1029216">doi:10.3389/feart.2022.1029216</a> (CC BY 4.0)</li>
+        <li>Phys.org, "New method to remotely sense ice sheet subsurface temperature demonstrated," September 2017. <a href="https://phys.org/news/2017-09-method-remotely-ice-sheet-subsurface.html">https://phys.org/news/2017-09-method-remotely-ice-sheet-subsurface.html</a></li>
+      </ol>
+    </div>
+  </article>
+</BlogLayout>
