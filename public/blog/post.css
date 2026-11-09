@@ -123,6 +123,39 @@
   overflow-wrap: anywhere;
 }
 .post.uwbrad li a:hover { border-bottom-color: var(--color-accent); }
+.post.oewg figure .frame {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+}
+.post.oewg figure.hero .frame {
+  background: #0b0b0b;
+  padding: 0;
+  border-radius: 14px;
+}
+.post.oewg li a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: 1px solid #5eead466;
+  overflow-wrap: anywhere;
+}
+.post.oewg li a:hover { border-bottom-color: var(--color-accent); }
+.post.oewg .table-wrap { overflow-x: auto; margin-top: 1.1rem; }
+.post.oewg table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .95rem;
+  line-height: 1.45;
+}
+.post.oewg th,
+.post.oewg td {
+  text-align: left;
+  padding: .45rem .55rem;
+  border-bottom: 1px solid var(--color-chrome-rule);
+  color: #c4c8cd;
+  white-space: nowrap;
+}
+.post.oewg th { color: #fff; font-weight: 600; }
 .post figcaption { margin-top: .8rem; font-size: .88rem; line-height: 1.55; color: var(--color-chrome-dim); max-width: 46rem; }
 .post figcaption b { color: var(--color-chrome-ink); font-weight: 500; }
 

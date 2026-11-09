@@ -1,0 +1,185 @@
+---
+import BlogLayout from "~/layouts/BlogLayout.astro";
+const description = "Simulated radiation and monostatic RCS of chamfered-tip open-ended rectangular waveguide probes for planar near-field use, from our AMTA 2021 paper: radiation stays nearly unchanged until W-band, while boresight RCS drops more as frequency rises.";
+---
+
+<BlogLayout
+  title="Why Chamfer the Tip of a Waveguide Probe? | Vectron Technologies"
+  description={description}
+  path="/blog/011-oewg-chamfered-tip/"
+  ogImage="/blog/011-oewg-chamfered-tip/images/hero-hpnf-probe.jpg"
+  ogWidth={2016}
+  ogHeight={1134}
+  ogType="article"
+  robots="index, follow"
+>
+<section class="post-hero">
+    <div class="bg-blueprint" aria-hidden="true"></div>
+    <div class="container-narrow" style="position:relative">
+      <div class="eyebrow">Past work &nbsp;·&nbsp; Near-field probes</div>
+      <h1><span class="chrome-text">Why Chamfer the Tip of a Waveguide Probe?</span></h1>
+      <p class="post-subtitle">Simulated radiation and scattering of chamfered-tip OEWG probes for planar near-field work</p>
+      <div class="post-byline"><span><strong>Dom Belgiovane, PhD</strong></span><span>Saturday, November 7, 2026</span></div>
+    </div>
+  </section>
+
+  <article class="post container-narrow oewg">
+    <figure class="wide hero" style="max-width:2016px;margin-top:0">
+      <div class="frame"><picture><source srcset="/blog/011-oewg-chamfered-tip/images/hero-hpnf-probe.webp" type="image/webp"><img src="/blog/011-oewg-chamfered-tip/images/hero-hpnf-probe.jpg" width="2016" height="1134" alt="Photo: NASA Glenn HPNF, Belgiovane et al., AMTA 2025 (NTRS public release). MVG is the company behind the range."></picture></div>
+      <figcaption>Photo: NASA Glenn HPNF, Belgiovane et al., AMTA 2025 (NTRS public release). MVG is the company behind the range.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>IEEE Std 1720-2012 says any open-ended waveguide probe used for near-field work "should have tapered edges to reduce the on-axis scattering cross section." When Elbert Ko and I dug into that claim for our AMTA 2021 paper, we could not find a published, methodical study that justified it. Correspondence with people who know this field confirmed the same gap. This post walks through the computational study we published to fill it.</p>
+
+      <h2>Why probe tip geometry is an error term</h2>
+      <p>In a planar near-field range, the probe is not a passive observer. It sits in the extreme near field of the antenna under test. Whatever it radiates, and whatever it scatters back toward the AUT, can walk into your pattern and gain numbers. Radiation pattern matters for probe correction. On-axis (boresight) monostatic RCS is a compact way to talk about the tip's contribution to probe-AUT multiple reflections.</p>
+      <p>Commercial open-ended rectangular waveguide (OEWG) probes usually come with a chamfered, sharpened, or beveled tip. Blunt tips exist in analysis and in older work. The IEEE language prefers the taper. What was missing was a controlled comparison of tip geometry across standard waveguide bands, for both radiation and scattering, under a common wall thickness.</p>
+      <p>One honest scope limit up front: like most of the literature we cited, this study neglects the absorber collar that is usually wrapped around a real near-field probe. The collar is there to reduce interactions with the probe mount. Our goal was to isolate the tip chamfer itself.</p>
+
+      <h2>What we modeled</h2>
+      <p>We parameterized an open-ended rectangular waveguide tip with three independent dimensions: wall thickness, wall thickness at the tip, and chamfer angle. Chamfer length follows from those.</p>
+    </div>
+
+    <figure class="wide" style="max-width:1496px">
+      <div class="frame"><picture><source srcset="/blog/011-oewg-chamfered-tip/images/fig1-chamfer-geometry.webp" type="image/webp"><img src="/blog/011-oewg-chamfered-tip/images/fig1-chamfer-geometry.png" width="1496" height="1744" alt="Fig. 1 from the AMTA 2021 paper: open-ended rectangular waveguide probe with labeled wall thickness, wall thickness at tip, and chamfer angle."></picture></div>
+      <figcaption>Open-ended rectangular waveguide probe chamfered-tip geometry. From E. H. Ko and D. J. Belgiovane, "Radiation and Scattering Pattern Characteristics of Chamfered-Tip Open-Ended Rectangular Waveguide Probes for Planar Near-Field Antenna Measurement Applications," AMTA 2021, Fig. 1. © 2021 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>Three tip cases shared a 0.050 in wall thickness, matching what is commonly sold:</p>
+      <ul>
+        <li>Commercial-style: 0.020 in tip wall, 10° chamfer, 0.170 in chamfer length</li>
+        <li>Steeper taper: 0.020 in tip wall, 45° chamfer, 0.030 in chamfer length</li>
+        <li>Blunt: 0.050 in tip wall, no chamfer</li>
+      </ul>
+      <p>WR-90 (X-band) was the baseline. The same wall and tip thicknesses were then carried to higher-frequency standard sizes, the way commercial probe families are often built.</p>
+      <p>Radiation patterns were computed with a waveguide port and a radiation boundary. The overall probe length was 12 times the long aperture dimension. Scattering used full-wave models in two solvers; the plotted RCS results are from one of them, and the solver-to-solver differences were negligibly small. The geometry alone was not enough. We also had to keep the finite back end of the probe from contaminating the tip comparison.</p>
+
+      <h2>Accounting for reflections off the back of the probe</h2>
+      <p>A finite-length open-ended waveguide is not just a tip in free space. Exterior currents can travel along the outer wall toward the rear termination. When those currents reach the back edges of the guide, they scatter and reradiate. In a radiation pattern, that looks like an extra contribution that has nothing to do with the chamfer. In a monostatic RCS cut, it is worse: the back edges are an undesired scattering source that can sit at a similar magnitude to the tip return you are trying to measure. Section IV of the paper names the two contaminants explicitly: back-edge scattering from the finite length, and interior reflection at the waveguide port.</p>
+      <p>Those are different mechanisms, and we treated them differently.</p>
+      <p>For the exterior path, we put a tapered resistive surface impedance on the outside of the guide in the region extending from the port end. Its job was to attenuate exterior surface currents before they reached, and scattered from, the rear termination. That reduces the finite-length artifact and isolates the tip chamfer. The taper followed a Taylor profile over about 70% of the overall waveguide length, quantized into 20 equal-length steps, with sheet resistance ranging from 0 ohms/sq to about 10,000 ohms/sq. Figure 2 in the paper shows the model with surface current intensity overlaid; the currents fall along the tapered section toward the port end.</p>
+    </div>
+
+    <figure class="wide" style="max-width:592px">
+      <div class="frame"><picture><source srcset="/blog/011-oewg-chamfered-tip/images/fig2-surface-current.webp" type="image/webp"><img src="/blog/011-oewg-chamfered-tip/images/fig2-surface-current.png" width="592" height="1700" alt="Fig. 2 from the AMTA 2021 paper: model of the chamfered-tip open-ended waveguide with exterior surface current intensity showing the resistive taper toward the port end."></picture></div>
+      <figcaption>Computational model for the chamfered-tip open-ended rectangular waveguide probe, with surface current intensity overlaid to show the exterior resistive taper. From Ko and Belgiovane, AMTA 2021, Fig. 2. © 2021 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>The same Taylor exterior taper was effective in the integral-equation scattering model. In the second full-wave model that same surface-impedance approach did not give the results we needed, so that model used a bulk absorber material on the exterior instead, still to attenuate currents before they reached the port-end termination. In both tools we also varied overall guide length and exterior treatment length until the RCS answer stopped moving with those dimensions.</p>
+      <p>Separately, for the interior path, the waveguide port itself can reflect. That is not exterior back-edge scatter; it is energy bouncing inside the guide and coming back out the aperture. In the scattering models we replaced the waveguide port with a resistive sheet to mitigate those internal reflections. A numerical study put the optimum near 450 ohms/sq.</p>
+      <p>One distinction that matters for reading this work: the exterior resistive taper and the bulk absorber are numerical terminations on a finite probe model. They are not the physical absorber collar that usually wraps a real near-field probe to reduce interactions with the mount. As noted above, that collar was left out of the study on purpose. Confusing the two would oversell what the model represents.</p>
+      <p>We needed this accounting before interpreting small chamfer differences. At WR-90 the computed boresight gap between blunt and chamfered is only 0.64 dB. If rear-edge scatter or port reflection were still in the answer at that level, you could not trust the tip comparison. The paper does not publish a before/after error budget for the taper itself; what it states is the purpose: keep undesired finite-length and port contributions from obscuring the tip.</p>
+
+      <h2>Checking the radiation model against Yaghjian</h2>
+      <p>Before trusting tip sweeps, we checked a blunt WR-90 against Yaghjian's measured and calculated far-field patterns at 9.32 GHz. E-plane and H-plane agreement was excellent. That is a simulated-versus-published-reference check on the blunt geometry, not a new range measurement of our own.</p>
+    </div>
+
+    <figure class="wide" style="max-width:2720px">
+      <div class="frame"><picture><source srcset="/blog/011-oewg-chamfered-tip/images/fig3-yaghjian-validation-9p32ghz.webp" type="image/webp"><img src="/blog/011-oewg-chamfered-tip/images/fig3-yaghjian-validation-9p32ghz.png" width="2720" height="1940" alt="Fig. 3 from the AMTA 2021 paper: blunt WR-90 E- and H-plane patterns at 9.32 GHz, computed versus Yaghjian measured and calculated."></picture></div>
+      <figcaption>Blunt-ended WR-90 radiation patterns at 9.32 GHz: computed results versus Yaghjian measured and calculated results. From Ko and Belgiovane, AMTA 2021, Fig. 3. © 2021 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>Radiation: mostly insensitive until W-band</h2>
+      <p>At 12 GHz on WR-90, the three tip geometries of Table I sit on top of each other in both principal planes. The radiation pattern is relatively insensitive to the chamfer designs we studied.</p>
+    </div>
+
+    <figure class="wide" style="max-width:2716px">
+      <div class="frame"><picture><source srcset="/blog/011-oewg-chamfered-tip/images/fig4-wr90-radiation-12ghz.webp" type="image/webp"><img src="/blog/011-oewg-chamfered-tip/images/fig4-wr90-radiation-12ghz.png" width="2716" height="1936" alt="Fig. 4 from the AMTA 2021 paper: WR-90 E- and H-plane radiation patterns at 12 GHz for blunt, 10° taper, and 45° taper tips."></picture></div>
+      <figcaption>WR-90 open-ended waveguide radiation patterns at 12 GHz for blunt, 10° taper, and 45° taper tips. From Ko and Belgiovane, AMTA 2021, Fig. 4. © 2021 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>We also ran the same wall and tip thicknesses on WR-10 at 110 GHz, blunt versus a 10° chamfer. There the patterns diverge, mainly in the E-plane. Intermediate standard sizes between WR-90 and WR-10 were computed as well; those curves are not in the paper, but the written conclusion is the same: radiation stays relatively insensitive to the chamfer tip designs we studied until frequency moves into W-band (WR-10).</p>
+    </div>
+
+    <figure class="wide" style="max-width:2716px">
+      <div class="frame"><picture><source srcset="/blog/011-oewg-chamfered-tip/images/fig5-wr10-radiation-110ghz.webp" type="image/webp"><img src="/blog/011-oewg-chamfered-tip/images/fig5-wr10-radiation-110ghz.png" width="2716" height="1952" alt="Fig. 5 from the AMTA 2021 paper: WR-10 E- and H-plane radiation patterns at 110 GHz for blunt and 10° chamfer tips."></picture></div>
+      <figcaption>WR-10 open-ended waveguide radiation patterns at 110 GHz for a blunt tip and a 10° chamfer. From Ko and Belgiovane, AMTA 2021, Fig. 5. © 2021 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>If you are picking a chamfer mainly to "fix the pattern" at X-band, this work says you are probably optimizing the wrong thing. The tip's job in the radiation sense only starts to show up clearly once the wall and tip thickness become a larger fraction of a wavelength.</p>
+
+      <h2>Scattering: where the chamfer shows up</h2>
+      <p>Monostatic RCS is a different story.</p>
+      <p>At 12 GHz on WR-90, the on-axis (boresight) angular regime is still relatively insensitive to tip geometry in the paper's reading of the cuts. Away from boresight the exterior side walls take over, with a specular response near 90°. Near boresight, the dominant return is the polarization that is cross-polarized to the guide.</p>
+    </div>
+
+    <figure class="wide" style="max-width:2720px">
+      <div class="frame"><picture><source srcset="/blog/011-oewg-chamfered-tip/images/fig6-wr90-rcs-12ghz.webp" type="image/webp"><img src="/blog/011-oewg-chamfered-tip/images/fig6-wr90-rcs-12ghz.png" width="2720" height="3960" alt="Fig. 6 from the AMTA 2021 paper: WR-90 monostatic RCS at 12 GHz for blunt, 10° taper, and 45° taper tips."></picture></div>
+      <figcaption>Monostatic scattering patterns at 12 GHz for a WR-90 open-ended waveguide probe, blunt, 10° taper, and 45° taper tips. From Ko and Belgiovane, AMTA 2021, Fig. 6. © 2021 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>At 110 GHz on WR-10, both theta-theta and phi-phi monostatic cuts show a clearly lower on-axis RCS for the chamfered tip than for the blunt tip.</p>
+    </div>
+
+    <figure class="wide" style="max-width:2720px">
+      <div class="frame"><picture><source srcset="/blog/011-oewg-chamfered-tip/images/fig7-wr10-rcs-110ghz.webp" type="image/webp"><img src="/blog/011-oewg-chamfered-tip/images/fig7-wr10-rcs-110ghz.png" width="2720" height="3964" alt="Fig. 7 from the AMTA 2021 paper: WR-10 H- and E-plane monostatic RCS at 110 GHz, blunt versus 10° taper."></picture></div>
+      <figcaption>Monostatic scattering patterns at 110 GHz for a WR-10 open-ended waveguide probe, H-plane (a) and E-plane (b), blunt versus 10° taper. From Ko and Belgiovane, AMTA 2021, Fig. 7. © 2021 IEEE.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>We then tabulated maximum on-axis RCS for standard sizes from WR-90 to WR-3, blunt and chamfered, against the specular RCS of a flat perfectly conducting plate having the same area as the waveguide tip area, including the wall thickness at the tip. Following the paper, that tip area is the outer face of the tip (aperture opening plus the metal wall at the tip), not metal-only area:</p>
+      <p>σ = 4π A<sup>2</sup> / λ<sup>2</sup>, with A = (a + 2w)(b + 2w),</p>
+      <p>where a and b are the waveguide aperture dimensions and w is the waveguide wall thickness at the tip.</p>
+      <p>Selected boresight-max values from the computed column of Table II in the paper:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Guide</th><th>Tip</th><th>Frequency</th><th>Boresight max RCS</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>WR-90</td><td>Blunt</td><td>12 GHz</td><td>-24.56 dBsm</td></tr>
+            <tr><td>WR-90</td><td>Chamfered</td><td>12 GHz</td><td>-25.20 dBsm</td></tr>
+            <tr><td>WR-28</td><td>Blunt</td><td>40 GHz</td><td>-31.11 dBsm</td></tr>
+            <tr><td>WR-28</td><td>Chamfered</td><td>40 GHz</td><td>-32.58 dBsm</td></tr>
+            <tr><td>WR-15</td><td>Blunt</td><td>75 GHz</td><td>-33.40 dBsm</td></tr>
+            <tr><td>WR-15</td><td>Chamfered</td><td>75 GHz</td><td>-37.02 dBsm</td></tr>
+            <tr><td>WR-10</td><td>Blunt</td><td>110 GHz</td><td>-33.11 dBsm</td></tr>
+            <tr><td>WR-10</td><td>Chamfered</td><td>110 GHz</td><td>-39.29 dBsm</td></tr>
+            <tr><td>WR-5</td><td>Blunt</td><td>220 GHz</td><td>-30.73 dBsm</td></tr>
+            <tr><td>WR-5</td><td>Chamfered</td><td>220 GHz</td><td>-41.82 dBsm</td></tr>
+            <tr><td>WR-3</td><td>Blunt</td><td>330 GHz</td><td>-28.58 dBsm</td></tr>
+            <tr><td>WR-3</td><td>Chamfered</td><td>330 GHz</td><td>-41.78 dBsm</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Three takeaways from that table, in the paper's own framing:</p>
+      <ol>
+        <li>Boresight max RCS tracks the flat-plate tip-area formula closely enough to be a useful mental model.</li>
+        <li>For a common wall and tip thickness family, RCS falls with rising frequency until an inflection set by the tip wall thickness. For a blunt 0.050 in wall that inflection is around WR-10. For a chamfered tip with 0.020 in tip wall it holds off until WR-3.</li>
+        <li>The RCS reduction of chamfered versus blunt grows as frequency increases (equivalently, as the standard waveguide gets smaller). At WR-90 the gap is 0.64 dB. By WR-10 it is about 6 dB. By WR-3 it is more than 13 dB.</li>
+      </ol>
+      <p>That is the quantitative backing for the IEEE taper language: the chamfer is mainly a scattering control, and it matters more the higher you go.</p>
+
+      <h2>What I would take into a range review</h2>
+      <p>If you are buying, modeling, or arguing about OEWG probes on a planar near-field system:</p>
+      <ol>
+        <li><strong>Treat tip geometry as a scattering design choice first.</strong> At X-band, radiation pattern barely moves among the blunt, 10°, and 45° cases we ran. On-axis RCS is the term the chamfer mainly improves, and that improvement grows toward W-band and above.</li>
+        <li><strong>Do not ignore tip wall thickness when you scale a probe family.</strong> A constant 0.050 in blunt wall hits an RCS floor near WR-10. Thinning the tip to 0.020 in with a chamfer pushes that floor out.</li>
+        <li><strong>Validate the probe model the same way you validate the AUT model.</strong> Our blunt WR-90 radiation check against Yaghjian was the gate before any tip comparison. If the blunt reference is wrong, the chamfer differences are not meaningful.</li>
+        <li><strong>Terminate the finite probe honestly in simulation.</strong> Exterior currents that reach the back edges, and interior port reflections, are not tip physics. We used a Taylor exterior resistive taper (or a bulk absorber in the second model) plus a resistive port sheet so those terms did not dominate the tip comparison.</li>
+        <li><strong>Remember what was left out.</strong> The numerical exterior taper is not a stand-in for the physical absorber collar. Collar, mount, and the extreme near-field of a real AUT were outside this study. Tip RCS is necessary. It is not the whole multiple-reflection budget.</li>
+        <li><strong>When sim and range disagree on a planar near-field job, put the probe on the suspect list.</strong> Tip sharpness, wall thickness, collar, and residual probe-AUT interaction are all fair game before you blame the transform.</li>
+      </ol>
+
+      <h2>Paper and next steps</h2>
+      <p>The full write-up is E. H. Ko and D. J. Belgiovane, "Radiation and Scattering Pattern Characteristics of Chamfered-Tip Open-Ended Rectangular Waveguide Probes for Planar Near-Field Antenna Measurement Applications," Antenna Measurement Techniques Association Symposium (AMTA 2021). <a href="https://doi.org/10.23919/AMTA52830.2021.9620710">doi:10.23919/AMTA52830.2021.9620710</a>. We thanked Justin A. Dobbins and Robert G. Yaccarino for guidance, and Dr. Edwin Barry at NSI-MI Technologies for information on commercial planar near-field probes.</p>
+      <p>Suggested follow-on work in the paper, still worth doing: intercardinal radiation and scattering cuts, and extreme-near-field AUT studies that quantify how much a chamfered tip actually reduces probe-AUT interaction on a real scanner.</p>
+      <p>If you are fighting a planar near-field residual, picking a probe family, or trying to put honest error bars on probe-AUT interaction, I do paid one-hour design reviews. <a href="https://calendar.app.google/BkzA1rurMrozK5Ta9">Book a one-hour design review</a>.</p>
+      <p>Dom Belgiovane, PhD, is the founder of Vectron Technologies, an independent antenna and electromagnetics consultancy. He holds a PhD from The Ohio State University and is an AMTA Senior Member.</p>
+
+      <h2>References</h2>
+      <ol>
+        <li>E. H. Ko, D. J. Belgiovane, "Radiation and Scattering Pattern Characteristics of Chamfered-Tip Open-Ended Rectangular Waveguide Probes for Planar Near-Field Antenna Measurement Applications," AMTA 2021. <a href="https://doi.org/10.23919/AMTA52830.2021.9620710">doi:10.23919/AMTA52830.2021.9620710</a></li>
+        <li>IEEE Std 1720-2012, Recommended Practice for Near-Field Antenna Measurements.</li>
+        <li>A. D. Yaghjian, "Approximate formulas for the far field and gain of open-ended rectangular waveguide," IEEE Trans. Antennas Propagat., vol. 32, pp. 378-384, April 1984.</li>
+      </ol>
+    </div>
+  </article>
+</BlogLayout>
