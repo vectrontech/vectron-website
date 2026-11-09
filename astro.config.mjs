@@ -6,6 +6,8 @@ export default defineConfig({
   site: 'https://vectrontechnologies.com',
   integrations: [
     sitemap({
+      // Draft OEWG chamfer post stays out of the sitemap until publish.
+      filter: (page) => !page.includes("/blog/011-oewg-chamfered-tip"),
       // /RFtrueLink/ is shipped from public/, so the integration would
       // otherwise miss it. Bump priority on the RF consulting service
       // page — that's the page we want ranking for the target keywords.
