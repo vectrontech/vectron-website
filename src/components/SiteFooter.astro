@@ -1,33 +1,44 @@
-<footer class="site-footer">
-  <div class="container-narrow">
-    <div class="footer-grid">
-      <div>
-        <p class="footer-brand">Vectron Technologies</p>
-        <p class="footer-tag">Independent antenna and electromagnetics engineering for defense and aerospace programs.</p>
+---
+/** Site footer for blog pages. Mirrors the homepage footer in public/index.html;
+ *  styles live in public/chrome.css. */
+const nav = [
+  { href: "/#about", label: "About" },
+  { href: "/#capabilities", label: "Capabilities" },
+  { href: "/#work", label: "Work" },
+  { href: "/#products", label: "RF TrueLink" },
+  { href: "/#ai", label: "AI" },
+  { href: "/blog/", label: "Writing" },
+  { href: "/#publications", label: "Publications" },
+];
+const mail = "mailto:domenic@vectrontechnologies.com?subject=Vectron%20Technologies%20inquiry";
+const book = "https://calendar.app.google/BkzA1rurMrozK5Ta9";
+---
+
+<footer class="vx-footer">
+  <div class="vx-wrap">
+    <div class="vx-footer__top">
+      <div class="vx-footer__brand">
+        <img src="/brand/vectron-wordmark.svg" alt="Vectron Technologies" width="137" height="48" loading="lazy">
+        <p>Independent antenna and electromagnetics engineering for defense and aerospace programs.</p>
       </div>
-      <div class="footer-col">
-        <p class="eyebrow">Site</p>
+      <nav class="vx-footer__col" aria-label="Footer">
+        <p class="vx-label">Site</p>
         <ul>
-          <li><a href="/#about">About</a></li>
-          <li><a href="/#products">Products</a></li>
-          <li><a href="/#capabilities">Capabilities</a></li>
-          <li><a href="/#work">Past work</a></li>
-          <li><a href="/#ai">AI integration</a></li>
-          <li><a href="/#publications">Publications</a></li>
+          {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
         </ul>
-      </div>
-      <div class="footer-col">
-        <p class="eyebrow">Contact</p>
+      </nav>
+      <div class="vx-footer__col">
+        <p class="vx-label">Contact</p>
         <ul>
-          <li><a href="mailto:domenic@vectrontechnologies.com?subject=Vectron%20Technologies%20inquiry">domenic@vectrontechnologies.com</a></li>
+          <li><a href={mail}>domenic@vectrontechnologies.com</a></li>
+          <li><a href={book} target="_blank" rel="noopener">Book a design review</a></li>
           <li><span>Scottsdale, Arizona</span></li>
         </ul>
       </div>
     </div>
-    <div class="rule-chrome"></div>
-    <div class="footer-bottom">
+    <div class="vx-footer__base">
       <p>&copy; 2026 Vectron Technologies LLC</p>
-      <p class="made">Scottsdale, Arizona</p>
+      <p>Scottsdale, Arizona</p>
     </div>
   </div>
 </footer>

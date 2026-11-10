@@ -1,40 +1,51 @@
 ---
-/** Homepage header. Hash links are rooted so they work from /blog/. */
-const home = "/";
+/** Site header for blog pages. Mirrors the homepage header in public/index.html;
+ *  styles live in public/chrome.css. Hash links are rooted so they work from /blog/. */
+const nav = [
+  { href: "/#about", label: "About" },
+  { href: "/#capabilities", label: "Capabilities" },
+  { href: "/#work", label: "Work" },
+  { href: "/#products", label: "RF TrueLink" },
+  { href: "/#ai", label: "AI" },
+  { href: "/blog/", label: "Writing" },
+  { href: "/#publications", label: "Publications" },
+];
+const current = Astro.url.pathname.startsWith("/blog") ? "/blog/" : "";
+const book = "https://calendar.app.google/BkzA1rurMrozK5Ta9";
 ---
 
 <a class="skip-link" href="#main">Skip to content</a>
-<header class="site-header">
-  <div class="container-narrow header-inner">
-    <a class="brand" href={home} aria-label="Vectron Technologies home">
+<header class="vx-header">
+  <div class="vx-wrap vx-header__in">
+    <a class="vx-brand" href="/" aria-label="Vectron Technologies home">
       <img src="/brand/vectron-wordmark.svg" alt="Vectron Technologies" width="126" height="44">
     </a>
-    <details class="nav-disclosure">
-      <summary class="nav-toggle" aria-label="Menu">
-        <span class="nav-toggle-icon" aria-hidden="true"></span>
-      </summary>
+    <details class="vx-menu">
+      <summary class="vx-menu__btn" aria-label="Menu"><span aria-hidden="true"></span></summary>
     </details>
-    <nav class="site-nav" aria-label="Primary">
-      <a href="/#about">About</a>
-      <a href="/#products">Products</a>
-      <a href="/#capabilities">Capabilities</a>
-      <a href="/#work">Past work</a>
-      <a href="/#ai">AI integration</a>
-      <a href="/#publications">Publications</a>
+    <nav class="vx-nav" aria-label="Primary">
+      {nav.map((item, i) => (
+        <a href={item.href} data-n={String(i + 1).padStart(2, "0")} aria-current={item.href === current ? "true" : undefined}>{item.label}</a>
+      ))}
+      <a class="vx-nav__m" href="/#contact" data-n="08">Contact</a>
     </nav>
-    <div class="header-actions">
-      <a class="btn btn-ghost btn-sm" href="/#contact">Contact</a>
-      <a class="btn btn-primary btn-sm" href="mailto:domenic@vectrontechnologies.com?subject=Vectron%20Technologies%20inquiry">Email Domenic <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+    <div class="vx-header__act">
+      <a class="vx-btn vx-btn--ghost vx-btn--sm" href="/#contact">Contact</a>
+      <a class="vx-btn vx-btn--primary vx-btn--sm" href={book} target="_blank" rel="noopener"><span class="vx-long">Book a design review</span><span class="vx-short">Book a review</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
     </div>
   </div>
 </header>
 <script>
-  const menu = document.querySelector(".nav-disclosure");
+  const menu = document.querySelector(".vx-menu");
   if (menu instanceof HTMLDetailsElement) {
-    document.querySelectorAll(".site-nav a").forEach((link) => {
-      link.addEventListener("click", () => {
+    document.querySelector(".vx-nav")?.addEventListener("click", (event) => {
+      if (event.target instanceof Element && event.target.closest("a")) menu.open = false;
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && menu.open) {
         menu.open = false;
-      });
+        menu.querySelector("summary")?.focus();
+      }
     });
   }
 </script>

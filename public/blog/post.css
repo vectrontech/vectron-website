@@ -87,7 +87,7 @@
 .post figure .frame {
   background: #0b0b0b;
   border: none;
-  border-radius: 14px;
+  border-radius: 4px;
   overflow: hidden;
 }
 .post figure img {
@@ -99,22 +99,22 @@
 .post.patent figure .frame {
   background: #fff;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 4px;
 }
 .post.patent figure.hero .frame {
   background: #0b0b0b;
   padding: 0;
-  border-radius: 14px;
+  border-radius: 4px;
 }
 .post.uwbrad figure.paper .frame {
   background: #fff;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 4px;
 }
 .post.uwbrad figure.hero .frame {
   background: #0b0b0b;
   padding: 0;
-  border-radius: 14px;
+  border-radius: 4px;
 }
 .post.uwbrad li a {
   color: var(--color-accent);
@@ -126,12 +126,12 @@
 .post.oewg figure .frame {
   background: #fff;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 4px;
 }
 .post.oewg figure.hero .frame {
   background: #0b0b0b;
   padding: 0;
-  border-radius: 14px;
+  border-radius: 4px;
 }
 .post.oewg li a {
   color: var(--color-accent);
@@ -163,7 +163,7 @@
   margin-top: 4rem;
   padding: 2rem 1.5rem;
   border: 1px solid var(--color-chrome-rule);
-  border-radius: 14px;
+  border-radius: 4px;
   background: linear-gradient(180deg, #ffffff06, transparent 60%), var(--color-bg-elev);
 }
 @media (min-width: 640px) { .post .cta { padding: 2.5rem; } }
@@ -191,7 +191,7 @@
   display: block;
   margin-bottom: 1.25rem;
   border: 1px solid var(--color-chrome-rule);
-  border-radius: 10px;
+  border-radius: 4px;
   overflow: hidden;
   background: #070707;
 }
@@ -210,3 +210,6 @@
   letter-spacing: -.02em;
   color: #fff;
 }
+
+/* 2026-11 refresh: match the homepage corners */
+.card, .work-thumb, .product-shot { border-radius: 4px; }

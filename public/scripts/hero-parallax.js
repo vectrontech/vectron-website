@@ -19,6 +19,7 @@
   let visible = true;
   let headerHeight = 64;
   let stageHeight = 0;
+  let stickTop = 64;
   let targetX = 0;
   let targetY = 0;
   let pointerX = 0;
@@ -50,7 +51,10 @@
 
     // Read layout once, then move the layers with compositor transforms only.
     const bounds = hero.getBoundingClientRect();
-    const travel = Math.max(1, bounds.height - stageHeight);
+    // The flight runs from the top of the page until the stage lets go. A stage
+    // taller than the screen sticks by its bottom edge (stickTop below the
+    // header), so that extra scroll is part of the flight too.
+    const travel = Math.max(1, bounds.height - stageHeight + headerHeight - stickTop);
     const progress = clamp((headerHeight - bounds.top) / travel, 0, 1);
     pointerX += (targetX - pointerX) * 0.075;
     pointerY += (targetY - pointerY) * 0.075;
@@ -58,13 +62,15 @@
     const y = pointerY;
     const small = mobile.matches;
     const flight = 1 - Math.pow(1 - progress, 1.35);
-    const sweep = bounds.width * (small ? 0.6 : 0.5);
+    const sweep = bounds.width * (small ? 0.5 : 0.27);
     const bank = Math.sin(flight * Math.PI);
+    // The aircraft starts clear of the headline and climbs a little as it
+    // leaves, so the lower wing never drops onto the text.
+    const climb = flight * (small ? 14 : 34);
 
-    // Keep altitude and camera depth steady so the flyby reads left to right.
-    // A slight dip and shallow bank add depth without climbing out of frame.
+    // Keep camera depth steady so the flyby reads left to right, with a shallow bank for depth.
     landscape.style.transform = `translate3d(${-flight * Math.min(bounds.width * 0.045, 90) - x * 24}px, ${-y * 12}px, 0) scale(${1.02 + flight * 0.1})`;
-    aircraft.style.transform = `translate3d(${flight * sweep + x * 150}px, ${bank * (small ? 6 : 12) + y * 12}px, 80px) rotateX(${-y * 3}deg) rotateY(${-flight * 3 + x * 6}deg) rotateZ(${bank * 2 + x * 2}deg) scale(${1 + flight * 0.04})`;
+    aircraft.style.transform = `translate3d(${flight * sweep + x * 60}px, ${bank * (small ? 4 : 8) - climb + y * 8}px, 80px) rotateX(${-y * 3}deg) rotateY(${-flight * 3 + x * 5}deg) rotateZ(${bank * 2 + x * 1.5}deg) scale(${1 + flight * 0.04})`;
     atmosphere.style.transform = `translate3d(${-flight * 32 + x * 32}px, ${-y * 8}px, 0) scale(${1 + flight * 0.08})`;
     content.style.transform = `translate3d(0, ${flight * -18}px, 0)`;
     progressBar.style.transform = `scaleX(${progress})`;
@@ -77,6 +83,8 @@
     headerHeight = header?.getBoundingClientRect().height || 64;
     stageHeight = stage.getBoundingClientRect().height;
     hero.style.setProperty('--hero-stage-height', `${stageHeight}px`);
+    const top = parseFloat(getComputedStyle(stage).top);
+    stickTop = Number.isFinite(top) ? Math.min(top, headerHeight) : headerHeight;
     requestRender();
   }
 
@@ -119,6 +127,8 @@
   new ResizeObserver(measure).observe(stage);
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
+    // Pauses the tower lights (CSS animation) off screen.
+    hero.classList.toggle('is-offscreen', !visible);
     syncVideoPlayback();
     if (visible) requestRender();
     else {
