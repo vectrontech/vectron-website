@@ -6,6 +6,8 @@ export default defineConfig({
   site: 'https://vectrontechnologies.com',
   integrations: [
     sitemap({
+      // Draft horn sim-vs-measurement post stays out of the sitemap until publish.
+      filter: (page) => !page.includes("/blog/012-horn-sim-vs-measurement"),
       // /RFtrueLink/ is shipped from public/, so the integration would
       // otherwise miss it. Bump priority on the RF consulting service
       // page — that's the page we want ranking for the target keywords.

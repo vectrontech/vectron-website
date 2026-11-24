@@ -1,0 +1,158 @@
+---
+import BlogLayout from "~/layouts/BlogLayout.astro";
+const description = "We held a high-fidelity model of an X-band standard gain horn up to NPL's 2023 gain measurement and landed within ±0.08 dB. Along the way, a tolerance study showed which horn dimension actually matters.";
+---
+
+<BlogLayout
+  title="How Close Can We Match Measurement and Simulation? | Vectron Technologies"
+  description={description}
+  path="/blog/012-horn-sim-vs-measurement/"
+  ogImage="/blog/012-horn-sim-vs-measurement/images/fig12-npl2023-vs-highfidelity.jpg"
+  ogWidth={1200}
+  ogHeight={758}
+  ogType="article"
+  noindex={true}
+>
+<section class="post-hero">
+    <div class="bg-blueprint" aria-hidden="true"></div>
+    <div class="container-narrow" style="position:relative">
+      <div class="eyebrow">RF / EM &nbsp;·&nbsp; Antenna measurement</div>
+      <h1><span class="chrome-text">How Close Can We Match Measurement and Simulation?</span></h1>
+      <p class="post-subtitle">An X-band standard gain horn against NPL's 2023 measurement, within ±0.08 dB</p>
+      <div class="post-byline"><span><strong>Dom Belgiovane, PhD</strong></span><span>November 2026</span></div>
+    </div>
+  </section>
+
+  <article class="post container-narrow">
+    <div class="measure">
+      <p>In the last post, six solver runs of an X-band standard gain horn landed within ±0.0075 dB of each other. That proves the solvers agree. It does not prove they agree with the horn sitting on the range.</p>
+      <p>That post ended with an error budget, and one line in it said "Physical versus model dimensions: unknown." This post is about that line, and about the comparison that matters most: simulation against a horn measured by a national standards laboratory.</p>
+      <p>The work was published at the 2024 AMTA Symposium as "Antenna Gain Calibration with Improved Accuracy Modeling of Pyramidal Standard Gain Horns, Part 2," with Justin Dobbins and Afifeh Khatabi of Raytheon Technologies, and Andrea Giacomini, Francesco Saccardi and Lars J. Foged of Microwave Vision Italy.</p>
+
+      <h2>Two horns that are supposed to be identical</h2>
+      <p>We studied two commercial X-band NRL type horns: the original Scientific Atlanta (SA) Model 12-8.2 and the MVG SGH820. They were intended to have the same interior geometry. In reality they differ slightly. The SA horn has a 2.590 in waveguide section and a 0.125 in wall at the aperture. The SGH820 has a 1.331 in waveguide section and a 0.079 in wall. The aperture and flare length are within a thousandth of an inch of each other.</p>
+      <p>The SA 12-8.2 was chosen for a reason. It is the horn from the international X-band horn gain intercomparison, so it has national laboratory measurements from NIST and NPL behind it, each with a published uncertainty.</p>
+      <p>Both nominal designs were modeled in HFSS 2022 R2 with higher-order basis functions, electric and magnetic symmetry planes, a PML radiation boundary, and a λ/20 at 12 GHz mesh on the inner and outer aperture edges to capture edge diffraction. The two horns differ by less than 0.04 dB anywhere in the band.</p>
+    </div>
+
+    <figure class="wide" style="max-width:760px">
+      <div class="frame"><picture><source srcset="/blog/012-horn-sim-vs-measurement/images/fig04-sgh820-vs-sa-sim.webp" type="image/webp"><img src="/blog/012-horn-sim-vs-measurement/images/fig04-sgh820-vs-sa-sim.jpg" width="1200" height="759" alt="Simulated gain of the SA Model 12-8.2 and the MVG SGH820 from HFSS, with their difference on the right axis"></picture></div>
+      <figcaption>Simulated gain of the two nominal horns. The difference stays between +0.027 dB and -0.039 dB. Source: Fig. 4, Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>The edge of the horn has a history</h2>
+      <p>Building the SA model meant some detective work. The drawings from SA, MI Technologies and NSI-MI are consistent across decades of production, but at least two publications used dimensions that are off-nominal, though still within manufacturing tolerance.</p>
+      <p>We also found that the way the horns were made changed over the years. Serial numbers 1 and 2, likely built in the early 1970s, had the front edge beveled flat, perpendicular to the horn axis. Later horns skipped that finishing step and left a square-cut sheet metal edge. The SGH820 has both: its H-plane edges are flat and beveled from thick aluminum plate, and its E-plane edges are square-cut from thin sheet.</p>
+      <p>That detail matters because the aperture edge is where the diffraction behind the boresight gain ripple comes from. Edge shape was not part of the tolerance sweep, but initial studies suggest it has a non-negligible effect on the peak-to-peak ripple.</p>
+    </div>
+
+    <figure class="wide" style="max-width:620px">
+      <div class="frame"><picture><source srcset="/blog/012-horn-sim-vs-measurement/images/fig03-aperture-edge-cut.webp" type="image/webp"><img src="/blog/012-horn-sim-vs-measurement/images/fig03-aperture-edge-cut.jpg" width="1049" height="421" alt="Square-cut and flat (beveled) aperture edge profiles of a standard gain horn"></picture></div>
+      <figcaption>Square-cut versus flat (beveled) aperture edges. Source: Fig. 3, Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>Which tolerance actually matters</h2>
+      <p>We took the build tolerances from the manufacturing drawing and applied them to the SA 12-8.2 one at a time, including ±0.005 in on the waveguide width and height, ±0.040 in on the aperture width and height, ±0.060 in on the horn length, and ±0.010 in on the wall thickness. For each one we took the largest and smallest gain change from nominal across the band.</p>
+      <p>One dimension dominates. The horn length moves the gain by +0.066 dB and -0.071 dB. Every other dimension stays around a hundredth of a dB or less, with wall thickness the largest of the rest at +0.010 dB and -0.012 dB.</p>
+      <p>This was not a Monte Carlo study. Instead, every variable was set to its maximum, then to its minimum, and compared against the nominal model. Those corner cases moved the gain by +0.076 dB and -0.078 dB.</p>
+    </div>
+
+    <figure class="wide" style="max-width:760px">
+      <div class="frame"><picture><source srcset="/blog/012-horn-sim-vs-measurement/images/fig05-tolerance-bar-chart.webp" type="image/webp"><img src="/blog/012-horn-sim-vs-measurement/images/fig05-tolerance-bar-chart.jpg" width="1200" height="721" alt="Bar chart of the maximum and minimum gain change for each tolerance variable of the SA Model 12-8.2"></picture></div>
+      <figcaption>Gain change from each tolerance variable alone, and from all of them together. Horn length dominates. Source: Fig. 5, Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>The unknown gets a number</h2>
+      <p>With the tolerance study done, the 2022 error budget could be updated:</p>
+      <ul>
+        <li>Differences in code implementation: ±0.0075 dB</li>
+        <li>Differences in physical versus model dimensions: ±0.0781 dB</li>
+        <li>Higher-order waveguide modes, numerical precision, air box reflections, mesh noise: negligible</li>
+        <li>Coax-to-waveguide adapter: measurable, still to be quantified</li>
+      </ul>
+      <p>The root sum square of those terms is ±0.0791 dB. Because it uses the extreme ends of the manufacturing tolerances and several commercial codes, it is a worst-case value, effectively a 100% confidence interval. It also assumes a perfectly symmetric horn, since the models used symmetry planes. A real horn may be slightly asymmetric, and that was not studied.</p>
+      <p>The practical lesson is simple. Most of that uncertainty comes from not knowing the as-built dimensions, and a coordinate measuring machine can remove most of it. If you want to trust a simulated horn gain to a few hundredths of a dB, measure the horn, starting with its length.</p>
+
+      <h2>The measurements</h2>
+      <p>The intercomparison gives on-axis gain for SA 12-8.2 serial numbers 1 and 2. NIST measured them in 1992 from 8.2 to 12 GHz with a published uncertainty (2σ) of ±0.07 dB. NPL measured them in 1991 with a published uncertainty between ±0.04 and ±0.07 dB, depending on frequency. Both used the three-antenna extrapolation technique with the reference plane at the waveguide flange, so no adapter loss is included.</p>
+      <p>Serial number 2 reads lower than serial number 1 above 10 GHz, and that was never explained in the original intercomparison. We used serial number 1 as the reference.</p>
+      <p>In 2023, NPL measured the on-axis gain of an SGH820 with an uncertainty (2σ) of ±0.09 dB. The SGH820 has an integrated coax-to-waveguide adapter, so that measurement includes its loss. Even so, the two horn types agree fairly well.</p>
+    </div>
+
+    <figure class="wide" style="max-width:760px">
+      <div class="frame"><picture><source srcset="/blog/012-horn-sim-vs-measurement/images/fig08-npl-sa-vs-sgh820.webp" type="image/webp"><img src="/blog/012-horn-sim-vs-measurement/images/fig08-npl-sa-vs-sgh820.jpg" width="1200" height="761" alt="NPL gain measurements of SA Model 12-8.2 serial numbers 1 and 2 from 1991 and of an MVG SGH820 from 2023, with uncertainty bars"></picture></div>
+      <figcaption>NPL measurements of the SA 12-8.2 (1991) and the SGH820 (2023), with uncertainty bars. Source: Fig. 8, Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>The legacy horn: close, with a bias</h2>
+      <p>Against serial number 1, the nominal HFSS model is almost always higher than the measurement. Measured minus simulated ranges from +0.005 dB to -0.149 dB against NIST 1992, and from -0.027 dB to -0.166 dB against NPL 1991.</p>
+      <p>That is respectable for a model built on nominal dimensions of a horn whose as-built dimensions are not available. It is also exactly the kind of gap the tolerance study says to expect when you do not know the horn length.</p>
+    </div>
+
+    <figure class="wide" style="max-width:620px">
+      <div class="frame"><picture><source srcset="/blog/012-horn-sim-vs-measurement/images/fig10-sa-sim-vs-nist-npl.webp" type="image/webp"><img src="/blog/012-horn-sim-vs-measurement/images/fig10-sa-sim-vs-nist-npl.jpg" width="1200" height="1628" alt="Measured IEEE gain of SA Model 12-8.2 serial number 1 from NIST 1992 and NPL 1991 compared with HFSS, with the difference on the right axis"></picture></div>
+      <figcaption>SA 12-8.2 serial number 1: HFSS versus (a) NIST 1992 and (b) NPL 1991. Source: Fig. 10, Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>The SGH820: within ±0.08 dB of NPL</h2>
+      <p>For the SGH820 we built a high-fidelity model in CST using the FIT solver. It includes the coax-to-waveguide adapter section, the mixed flat and square-cut aperture edges, the machined exterior ribs, and the mounting plate at the back of the transition.</p>
+      <p>One piece was left out: the short length of coaxial line that represents the field-replaceable SMA connector, which is a significant contributor to the antenna's ohmic loss. Rather than guess at it, we measured the insertion loss of the coax portion alone in a back-to-back configuration and subtracted it to get IEEE gain.</p>
+    </div>
+
+    <figure class="wide" style="max-width:620px">
+      <div class="frame"><picture><source srcset="/blog/012-horn-sim-vs-measurement/images/fig11-cst-highfidelity-model.webp" type="image/webp"><img src="/blog/012-horn-sim-vs-measurement/images/fig11-cst-highfidelity-model.jpg" width="1014" height="606" alt="High-fidelity CST model of the MVG SGH820 with exterior ribs, mounting plate and coax-to-waveguide adapter"></picture></div>
+      <figcaption>High-fidelity CST model of the SGH820. Source: Fig. 11, Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <p>With the connector loss accounted for, simulation and the NPL 2023 measurement agree within ±0.08 dB, from +0.061 dB to -0.080 dB across the band. The two curves fall inside each other's uncertainty bounds, and the agreement is comparable to the published uncertainty of the calibration laboratory itself.</p>
+    </div>
+
+    <figure class="wide" style="max-width:760px">
+      <div class="frame"><picture><source srcset="/blog/012-horn-sim-vs-measurement/images/fig12-npl2023-vs-highfidelity.webp" type="image/webp"><img src="/blog/012-horn-sim-vs-measurement/images/fig12-npl2023-vs-highfidelity.jpg" width="1200" height="758" alt="NPL 2023 gain measurement of the MVG SGH820 compared with the high-fidelity CST simulation, with the difference on the right axis"></picture></div>
+      <figcaption>NPL 2023 measurement of the SGH820 versus the high-fidelity CST FIT simulation. Source: Fig. 12, Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>What about the NRL curve?</h2>
+      <p>Most ranges still take SGH gain from the NRL curve, Slayton's 1954 geometric optics solution that leaves out aperture diffraction, and carry ±0.3 dB for it. We compared that curve with the CEM model of the nominal SA 12-8.2. The difference runs from +0.159 dB to -0.133 dB, so if the dimensions are known perfectly, the NRL curve is good to about ±0.16 dB, with no adapter.</p>
+      <p>Slayton wrote that "in all probability, the actual errors are considerably less than the maximum possible tolerances quoted." He was right. Add the ±0.0791 dB for not knowing the as-built dimensions, and the maximum error from using the NRL curve comes to ±0.239 dB. That is remarkably close to his ±0.3 dB from seventy years ago.</p>
+    </div>
+
+    <figure class="wide" style="max-width:760px">
+      <div class="frame"><picture><source srcset="/blog/012-horn-sim-vs-measurement/images/fig09-cem-vs-nrl.webp" type="image/webp"><img src="/blog/012-horn-sim-vs-measurement/images/fig09-cem-vs-nrl.jpg" width="1200" height="819" alt="HFSS model of the SA Model 12-8.2 compared with the NRL gain curve, with the difference on the right axis"></picture></div>
+      <figcaption>CEM model of the SA 12-8.2 versus the NRL gain curve. The ripple the NRL curve leaves out is the aperture diffraction. Source: Fig. 9, Belgiovane et al., AMTA 2024.</figcaption>
+    </figure>
+
+    <div class="measure">
+      <h2>What this means on a range</h2>
+      <ul>
+        <li>±0.3 dB for the NRL curve is honest but conservative. With known dimensions it is closer to ±0.16 dB.</li>
+        <li>A careful full-wave model of the horn you actually own can match a national laboratory measurement within that laboratory's own uncertainty.</li>
+        <li>If you only measure one dimension of your reference horn, measure its length.</li>
+        <li>The coax-to-waveguide adapter is the open term, and it still has to be quantified.</li>
+      </ul>
+      <p>Paper (IEEE Xplore): <a href="https://ieeexplore.ieee.org/document/10789678" target="_blank" rel="noopener">https://ieeexplore.ieee.org/document/10789678</a></p>
+
+      <h2>Future work</h2>
+      <ul>
+        <li>Characterize the uncertainty of common coax-to-waveguide adapters, to finish the budget for the most common SGH configuration.</li>
+        <li>Tighten the manufacturing tolerances on a high-fidelity standard gain horn so its on-axis gain uncertainty approaches the limits of the commercial EM solvers.</li>
+        <li>Quantify the effects of aperture edge shape and horn asymmetry, which this work did not study.</li>
+      </ul>
+      <p>Thanks to Raffaele Scuderi for his work on the CST simulations, and to the late Edwin "Ned" Barry, who was part of this paper early on and provided the history of the SA 12-8.2.</p>
+    </div>
+
+    <div class="cta">
+      <p>If your sim and range data don't agree, I do paid one-hour design reviews. Book one here:</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://calendar.app.google/BkzA1rurMrozK5Ta9" target="_blank" rel="noopener">Book a review <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+      </div>
+    </div>
+  </article>
+</BlogLayout>
